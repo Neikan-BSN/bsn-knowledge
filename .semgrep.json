@@ -1,0 +1,35 @@
+{
+  "rules": [
+    {
+      "id": "hardcoded-secrets",
+      "pattern-either": [
+        {
+          "pattern": "password = \"...\""
+        },
+        {
+          "pattern": "api_key = \"...\""
+        },
+        {
+          "pattern": "secret = \"...\""
+        },
+        {
+          "pattern": "token = \"...\""
+        }
+      ],
+      "message": "Hardcoded secret detected",
+      "severity": "ERROR",
+      "languages": [
+        "python"
+      ]
+    },
+    {
+      "id": "sql-injection",
+      "pattern": "execute(\"SELECT * FROM \" + $VAR)",
+      "message": "Potential SQL injection",
+      "severity": "ERROR",
+      "languages": [
+        "python"
+      ]
+    }
+  ]
+}

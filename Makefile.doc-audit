@@ -1,0 +1,26 @@
+
+# BSN Knowledge Documentation Automation Integration
+# Knowledge management and information governance
+
+.PHONY: docs-audit-knowledge docs-audit-governance docs-audit-access docs-audit-classification
+
+# BSN Knowledge-Specific Documentation Commands
+docs-audit-knowledge: ## Audit knowledge base documentation
+	@echo "📚 Auditing knowledge base documentation..."
+	@python .doc-audit/scripts/audit-knowledge-base.py
+
+docs-audit-governance: ## Audit information governance
+	@echo "🏛️ Auditing information governance documentation..."
+	@python .doc-audit/scripts/audit-governance.py
+
+docs-audit-access: ## Audit access control documentation
+	@echo "🔐 Auditing access control documentation..."
+	@python .doc-audit/scripts/audit-access-control.py
+
+docs-audit-classification: ## Audit information classification
+	@echo "🏷️ Auditing information classification documentation..."
+	@python .doc-audit/scripts/audit-classification.py
+
+docs-audit-organization: ## Audit knowledge organization
+	@echo "🗂️ Auditing knowledge organization documentation..."
+	@python .doc-audit/scripts/audit-organization.py

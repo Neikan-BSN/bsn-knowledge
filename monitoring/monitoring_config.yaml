@@ -1,0 +1,6 @@
+# Monitoring Configuration for bsn-knowledge
+project:
+  name: bsn-knowledge
+  monitoring_enabled: true
+  health_endpoint: /health
+  metrics_enabled: true

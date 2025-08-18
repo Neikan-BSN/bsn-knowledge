@@ -1,0 +1,310 @@
+# BSN Knowledge Base - Docker Compose Configuration
+# Task Group 5 patterns with Neo4j service coordination
+# Service coordination matrix: Neo4j on port 7476
+
+services:
+  # Database Services
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5438:5432"  # Coordinated port to avoid conflicts with other projects
+    environment:
+      - POSTGRES_DB=bsn_knowledge
+      - POSTGRES_USER=bsn_knowledge
+      - POSTGRES_PASSWORD=bsn_dev_pass
+      - POSTGRES_HOST_AUTH_METHOD=md5
+      - POSTGRES_INITDB_ARGS=--auth-host=md5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bsn_knowledge -d bsn_knowledge -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    command: >
+      postgres 
+        -c max_connections=200 
+        -c shared_buffers=256MB 
+        -c effective_cache_size=1GB 
+        -c maintenance_work_mem=64MB
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"  # Coordinated port to avoid conflicts
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Neo4j Graph Database - Primary service for BSN Knowledge
+  neo4j:
+    image: neo4j:5.15-community
+    ports:
+      - "7476:7474"  # HTTP - coordinated with Task Group 2 service matrix
+      - "7688:7687"  # Bolt
+    environment:
+      NEO4J_AUTH: neo4j/bsn_neo4j_dev
+      NEO4J_dbms_memory_heap_initial__size: 512M
+      NEO4J_dbms_memory_heap_max__size: 1G
+      NEO4J_dbms_memory_pagecache_size: 512M
+      NEO4J_dbms_default__listen__address: 0.0.0.0
+      NEO4J_dbms_connector_bolt_listen__address: 0.0.0.0:7687
+      NEO4J_dbms_connector_http_listen__address: 0.0.0.0:7474
+      NEO4J_dbms_logs_debug_level: INFO
+      # Knowledge base specific configurations
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*,algo.*
+      NEO4J_dbms_memory_transaction_total_max: 1G
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_import:/import
+      - neo4j_plugins:/plugins
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "bsn_neo4j_dev", "RETURN 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # Vector Storage for Semantic Search
+  qdrant:
+    image: qdrant/qdrant:v1.8.4
+    ports:
+      - "6334:6333"  # HTTP API - coordinated port
+      - "6335:6334"  # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__HTTP_PORT: 6333
+      QDRANT__SERVICE__GRPC_PORT: 6334
+      QDRANT__LOG_LEVEL: INFO
+      QDRANT__SERVICE__MAX_REQUEST_SIZE_MB: 32
+      QDRANT__STORAGE__WAL_CAPACITY_MB: 64
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/readyz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # Core BSN Knowledge Services
+  api-gateway:
+    build:
+      context: .
+      dockerfile: docker/api-gateway/Dockerfile
+      target: production
+    ports:
+      - "8010:8000"  # Coordinated port for BSN Knowledge API
+    environment:
+      # Database connections
+      - DATABASE_URL=postgresql://bsn_knowledge:bsn_dev_pass@postgres:5432/bsn_knowledge
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=bsn_neo4j_dev
+      - REDIS_URL=redis://redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
+      
+      # Service configuration
+      - SERVICE_NAME=bsn-knowledge-api
+      - SERVICE_VERSION=1.0.0
+      - LOG_LEVEL=INFO
+      - DEBUG=false
+      
+      # Performance settings
+      - MAX_WORKERS=4
+      - KEEP_ALIVE_TIMEOUT=65
+      - MAX_REQUESTS=1000
+      - MAX_REQUESTS_JITTER=50
+      
+      # Security
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8080
+      - API_KEY_ENABLED=true
+      
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src:ro
+      - ./config:/app/config:ro
+      - api_logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  knowledge-processor:
+    build:
+      context: .
+      dockerfile: docker/knowledge-processor/Dockerfile
+      target: production
+    ports:
+      - "8011:8000"  # Knowledge processor API
+    environment:
+      # Database connections
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=bsn_neo4j_dev
+      - QDRANT_URL=http://qdrant:6333
+      - REDIS_URL=redis://redis:6379/1
+      
+      # Processing configuration
+      - PROCESSOR_TYPE=medical_terminology
+      - BATCH_SIZE=100
+      - MAX_CONCURRENT_PROCESSES=4
+      - PROCESSING_TIMEOUT=300
+      
+      # Medical NLP settings
+      - ENABLE_SCISPACY=true
+      - ENABLE_MEDICAL_NER=true
+      - MODEL_CACHE_SIZE=1000
+      
+      # Performance
+      - WORKER_PROCESSES=2
+      - MEMORY_LIMIT=2G
+      
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src:ro
+      - processing_cache:/app/cache
+      - processing_logs:/app/logs
+      - medical_models:/app/models
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Monitoring and Analytics Service
+  analytics-service:
+    build:
+      context: .
+      dockerfile: docker/analytics-service/Dockerfile
+      target: production
+    ports:
+      - "8012:8000"  # Analytics API
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=bsn_neo4j_dev
+      - REDIS_URL=redis://redis:6379/2
+      - ANALYTICS_CACHE_TTL=3600
+      - METRICS_COLLECTION_INTERVAL=60
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src:ro
+      - analytics_data:/app/data
+      - analytics_logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Development and Testing Services (only in development)
+  adminer:
+    image: adminer:4.8.1-standalone
+    ports:
+      - "8013:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: flat
+    depends_on:
+      - postgres
+    profiles:
+      - dev
+      - debug
+
+  # Neo4j Browser (development only)
+  neo4j-browser:
+    image: neo4j:5.15-community
+    ports:
+      - "7477:7474"  # Alternative browser port
+    environment:
+      NEO4J_AUTH: neo4j/browser_dev
+      NEO4J_dbms_connector_http_listen__address: 0.0.0.0:7474
+    volumes:
+      - neo4j_browser_data:/data
+    profiles:
+      - dev
+      - debug
+    depends_on:
+      - neo4j
+
+volumes:
+  # Database volumes
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  neo4j_data:
+    driver: local
+  neo4j_logs:
+    driver: local
+  neo4j_import:
+    driver: local
+  neo4j_plugins:
+    driver: local
+  neo4j_browser_data:
+    driver: local
+  qdrant_data:
+    driver: local
+  
+  # Application volumes
+  api_logs:
+    driver: local
+  processing_cache:
+    driver: local
+  processing_logs:
+    driver: local
+  medical_models:
+    driver: local
+  analytics_data:
+    driver: local
+  analytics_logs:
+    driver: local
+
+networks:
+  default:
+    name: bsn-knowledge-network
+    driver: bridge

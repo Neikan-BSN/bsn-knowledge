@@ -1,0 +1,24 @@
+{
+  "project_name": "bsn-knowledge",
+  "project_path": "/home/user01/projects/active-projects/bsn-knowledge",
+  "architecture_type": "knowledge_base",
+  "documentation_targets": [
+    "ARCHITECTURE.md",
+    "TECHNICAL_SPECIFICATIONS.md"
+  ],
+  "change_detection_patterns": [
+    "*.py",
+    "*.md",
+    "*.yaml"
+  ],
+  "regeneration_triggers": [
+    "src/",
+    "docs/",
+    "knowledge/"
+  ],
+  "performance_targets": {
+    "files_per_minute": 48.0,
+    "accuracy": 94.0
+  },
+  "monitoring_enabled": true
+}
