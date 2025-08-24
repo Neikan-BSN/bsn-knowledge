@@ -1,19 +1,39 @@
 # Technical Specifications - BSN Knowledge
 
 ## Overview
-Generated: 2025-08-14T22:40:09.550130
+Generated: 2025-08-18T12:46:43.237740
 Architecture Type: knowledge_base
 Project Path: /home/user01/projects/active-projects/bsn-knowledge
 
 ## API Endpoints
-Detected Endpoints: 1
+Detected Endpoints: 13
 
-1. src/bsn_knowledge/api/main.py
+1. src/api/main.py
+2. src/api/routers/study_guides.py
+3. src/api/routers/quizzes.py
+4. src/api/routers/adaptive_learning.py
+5. src/bsn_knowledge/api/main.py
+6. .venv/lib/python3.12/site-packages/fastapi/exceptions.py
+7. .venv/lib/python3.12/site-packages/fastapi/routing.py
+8. .venv/lib/python3.12/site-packages/fastapi/applications.py
+9. .venv/lib/python3.12/site-packages/fastapi/param_functions.py
+10. .venv/lib/python3.12/site-packages/fastapi/security/http.py
+... and 3 more
 
 ## Database Schema
-Detected Tables: 0
+Detected Tables: 385
 
-No database tables detected.
+1. src/generators/study_guide_generator.py
+2. src/generators/nclex_generator.py
+3. src/generators/quiz_generator.py
+4. src/models/student_profile.py
+5. src/models/educational_content.py
+6. src/models/assessment_models.py
+7. src/services/ragnostic_client.py
+8. src/assessment/competency_framework.py
+9. src/assessment/knowledge_gap_analyzer.py
+10. src/assessment/learning_path_optimizer.py
+... and 375 more
 
 ## Dependencies
 Total Dependencies: 1

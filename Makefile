@@ -255,3 +255,18 @@ docs: env-check ## Generate documentation
 docs-serve: env-check ## Serve documentation locally
 	@echo "📖 Serving documentation at http://localhost:8000"
 	uv run mkdocs serve
+
+# Project Documentation Automation
+# Auto-generated integration for bsn-knowledge
+
+docs-update: ## Process commit and update documentation
+	@echo "🔄 Processing commit and updating documentation..."
+	uv run python scripts/unified_documentation_agent.py --process-commit
+
+docs-status: ## Show documentation system status
+	@echo "📊 Checking documentation system status..."
+	uv run python scripts/unified_documentation_agent.py --status-check
+
+docs-validate: ## Validate documentation system
+	@echo "🔍 Validating documentation system..."
+	uv run python scripts/unified_documentation_agent.py --validate-system

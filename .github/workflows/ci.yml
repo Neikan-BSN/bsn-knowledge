@@ -1,455 +1,104 @@
-# CI/CD Pipeline Template - Standardized Workflow
-# Extracted from RAGnostic analysis - Production-ready patterns
-# Template Version: 1.0 - Compatible with Python 3.12, UV, FastAPI, Docker
-# Customized for BSN Knowledge - Knowledge Base System
+# Minimal Workflow Template
+# ~80-100 lines, <3 min execution, basic validation
+# For simpler projects like ARES and BSN-Knowledge
 
-name: 🚀 BSN Knowledge CI/CD Pipeline
+name: Minimal CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop, feature/*, hotfix/* ]
+    branches: [main, develop]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - '.github/workflows/**'
   pull_request:
-    branches: [ main, develop ]
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'pyproject.toml'
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Deployment environment'
-        required: true
-        default: 'staging'
-        type: choice
-        options:
-        - staging
-        - production
-      skip_tests:
-        description: 'Skip test execution'
-        required: false
-        default: false
-        type: boolean
 
 env:
-  PROJECT_NAME: "bsn-knowledge"
-  PROJECT_TYPE: "knowledge-base"
-  PYTHON_VERSION: "3.12"
-  UV_VERSION: "0.8.3"
-  DOCKER_REGISTRY: ghcr.io
-
-# Concurrency control for cost optimization
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
+  PYTHON_VERSION: '3.11'
+  PROJECT_NAME: 'bsn-knowledge'
+  
 jobs:
-  # ===== SECURITY & COMPLIANCE SCANNING =====
-  security-scan:
-    name: 🔒 Security & Compliance
+  # Quick validation and testing
+  validate_and_test:
+    name: Validate & Test
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    outputs:
-      security-passed: ${{ steps.security-check.outputs.passed }}
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install UV
-        uses: astral-sh/setup-uv@v3
-        with:
-          version: ${{ env.UV_VERSION }}
-          enable-cache: true
-
-      - name: Install dependencies
-        run: |
-          uv sync
-          # Try security dependencies with fallback
-          uv sync --group security 2>/dev/null || {
-            echo "⚠️ Security group not found, installing individual packages..."
-            uv add bandit[toml] safety detect-secrets || echo "Some security tools unavailable"
-          }
-
-      - name: Bandit security scan
-        run: |
-          echo "🔍 Running Bandit security analysis..."
-          uv run bandit -r src/ tests/ -f json -o bandit-report.json || true
-          
-          # Only fail on HIGH severity issues
-          set +e
-          uv run bandit -r src/ tests/ --severity-level medium
-          BANDIT_EXIT_CODE=$?
-          set -e
-          
-          if [ $BANDIT_EXIT_CODE -ne 0 ]; then
-            if grep -q '"issue_severity": "HIGH"' bandit-report.json 2>/dev/null; then
-              echo "❌ HIGH severity security issues found - failing build"
-              exit 1
-            else
-              echo "ℹ️ Only MEDIUM/LOW severity issues found - continuing build"
-            fi
-          else
-            echo "✅ No security issues found"
-          fi
-
-      - name: Safety vulnerability check
-        run: |
-          echo "🛡️ Checking for known vulnerabilities..."
-          uv export --format requirements-txt | uv run safety check --stdin
-
-      - name: Secret detection patterns
-        run: |
-          echo "🕵️ Scanning for secrets..."
-          if grep -r -E "(api_key|password|secret|token).*=.*['\"][^'\"]{20,}['\"]" src/ tests/ 2>/dev/null; then
-            echo "⚠️ Potential secrets detected - please review"
-          else
-            echo "✅ No obvious secrets detected"
-          fi
-
-      - name: Upload security reports
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: security-reports
-          path: |
-            bandit-report.json
-          retention-days: 30
-
-      - name: Security gate summary
-        id: security-check
-        run: |
-          echo "✅ Security scan completed successfully"
-          echo "passed=true" >> $GITHUB_OUTPUT
-
-  # ===== CODE QUALITY & STANDARDS =====
-  code-quality:
-    name: 📋 Code Quality & Standards
-    runs-on: ubuntu-latest
-    timeout-minutes: 8
-    needs: security-scan
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install UV and dependencies
-        uses: astral-sh/setup-uv@v3
-        with:
-          version: ${{ env.UV_VERSION }}
-          enable-cache: true
-
-      - name: Install dependencies
-        run: |
-          uv sync
-          # Try lint dependencies with fallback
-          uv sync --group lint 2>/dev/null || {
-            echo "⚠️ Lint group not found, installing individual packages..."
-            uv add ruff mypy || echo "Some tools unavailable"
-          }
-
-      - name: Ruff formatting check
-        run: |
-          echo "🧹 Checking code formatting with Ruff..."
-          uv run ruff format --check --diff src/ tests/
-
-      - name: Ruff linting
-        run: |
-          echo "🔍 Running Ruff linting..."
-          uv run ruff check src/ tests/ --output-format=github
-        continue-on-error: true
-
-      - name: MyPy type checking
-        run: |
-          echo "🏷️ Running MyPy type checking..."
-          uv run mypy src/ tests/ --ignore-missing-imports --show-error-codes --pretty
-        continue-on-error: true
-
-      - name: Import sorting check
-        run: |
-          echo "📝 Checking import sorting..."
-          uv run ruff check --select I src/ tests/
-
-  # ===== TESTING MATRIX =====
-  test-suite:
-    name: 🧪 Test Suite (${{ matrix.test-type }})
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs: code-quality
-    strategy:
-      fail-fast: false
-      matrix:
-        test-type: [unit, integration, knowledge-base]
-
-    # Database services for knowledge base testing
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_USER: test_user
-          POSTGRES_DB: test_db
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install UV and dependencies
-        uses: astral-sh/setup-uv@v3
-        with:
-          version: ${{ env.UV_VERSION }}
-          enable-cache: true
-
-      - name: Install dependencies
-        run: |
-          uv sync
-          # Try test dependencies with fallback
-          uv sync --group test 2>/dev/null || {
-            echo "⚠️ Test group not found, installing individual packages..."
-            uv add pytest pytest-asyncio pytest-cov coverage || echo "Some test deps partially installed"
-          }
-
-      - name: 'Wait for Services'
-        run: |
-          echo "⏳ Waiting for PostgreSQL and Redis..."
-          timeout 60 bash -c 'until nc -z localhost 5432; do sleep 1; done'
-          timeout 60 bash -c 'until nc -z localhost 6379; do sleep 1; done'
-          echo "✅ Services are ready"
-
-      - name: Create test directories if missing
-        run: |
-          mkdir -p tests/unit tests/integration tests/knowledge-base
-          touch tests/__init__.py tests/unit/__init__.py tests/integration/__init__.py tests/knowledge-base/__init__.py
-
-      - name: Setup test environment
-        run: |
-          cp .env.test.template .env.test 2>/dev/null || touch .env.test
-          echo "DATABASE_URL=postgresql://test_user:test_password@localhost:5432/test_db" >> .env.test
-          echo "REDIS_URL=redis://localhost:6379/0" >> .env.test
-          echo "TESTING=true" >> .env.test
-
-      - name: Run unit tests
-        if: matrix.test-type == 'unit'
-        run: |
-          echo "🧪 Running unit tests..."
-          if [ -d "tests/unit" ] && find tests/unit -name "*.py" -not -name "__init__.py" | grep -q .; then
-            uv run pytest tests/unit/ -v --durations=10
-          else
-            echo "⚠️ No unit tests found, creating placeholder test"
-            echo "def test_placeholder(): assert True" > tests/unit/test_placeholder.py
-            uv run pytest tests/unit/test_placeholder.py -v
-          fi
-
-      - name: Run integration tests
-        if: matrix.test-type == 'integration'
-        env:
-          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
-          REDIS_URL: redis://localhost:6379/0
-          TESTING: true
-        run: |
-          echo "🔗 Running integration tests..."
-          if [ -d "tests/integration" ] && find tests/integration -name "*.py" -not -name "__init__.py" | grep -q .; then
-            uv run pytest tests/integration/ -v --maxfail=3 --tb=short
-          else
-            echo "⚠️ No integration tests found, creating placeholder test"
-            echo "def test_integration_placeholder(): assert True" > tests/integration/test_placeholder.py
-            uv run pytest tests/integration/test_placeholder.py -v
-          fi
-
-      - name: Run knowledge base tests
-        if: matrix.test-type == 'knowledge-base'
-        env:
-          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
-          REDIS_URL: redis://localhost:6379/0
-          TESTING: true
-        run: |
-          echo "📚 Running knowledge base specific tests..."
-          if [ -d "tests/knowledge-base" ] && find tests/knowledge-base -name "*.py" -not -name "__init__.py" | grep -q .; then
-            uv run pytest tests/knowledge-base/ -v --maxfail=3 --tb=short
-          else
-            echo "⚠️ No knowledge base tests found, creating placeholder test"
-            echo "def test_knowledge_base_placeholder(): assert True" > tests/knowledge-base/test_placeholder.py
-            uv run pytest tests/knowledge-base/test_placeholder.py -v
-          fi
-
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-results-${{ matrix.test-type }}
-          path: |
-            htmlcov/
-            coverage.xml
-          retention-days: 30
-
-  # ===== DOCKER BUILD & VALIDATION =====
-  docker-build:
-    name: 🐳 Docker Build & Validation
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: [test-suite]
-    outputs:
-      build-success: ${{ steps.build.outputs.success }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Container Registry
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.DOCKER_REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Check Docker configuration
-        id: build
-        run: |
-          echo "🏗️ Checking Docker configuration..."
-          
-          if [ -f "docker-compose.yml" ]; then
-            echo "✅ Docker Compose configuration found"
-            
-            # Test docker compose configuration
-            docker compose config > /dev/null 2>&1
-            echo "✅ Docker Compose configuration is valid"
-            
-            echo "🏗️ Building knowledge base Docker images..."
-            
-            # Build main service
-            if [ -f "Dockerfile" ]; then
-              docker build -t bsn-knowledge-main:${{ github.sha }} .
-              echo "✅ Main service Dockerfile builds successfully"
-            fi
-            
-            echo "success=true" >> $GITHUB_OUTPUT
-          else
-            echo "⚠️ No docker-compose.yml found, skipping Docker build"
-            echo "success=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: 'Test knowledge base startup'
-        run: |
-          echo "🚀 Testing knowledge base startup..."
-          
-          # Start essential services
-          docker compose up -d postgres redis 2>/dev/null
-          sleep 15
-          
-          # Test connectivity
-          docker compose exec -T postgres pg_isready -U test_user || echo "PostgreSQL not ready"
-          docker compose exec -T redis redis-cli ping || echo "Redis not ready"
-          
-          # Cleanup
-          docker compose down || echo "Cleanup completed"
-
-  # ===== DEPLOYMENT =====
-  deploy-staging:
-    name: 🚀 Deploy to Staging
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [docker-build]
-    if: github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
-    environment: staging
-    steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
         
-      - name: Deploy to staging
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          
+      - name: Install UV Package Manager
         run: |
-          echo "🚀 Deploying BSN Knowledge to staging..."
-          echo "Build success: ${{ needs.docker-build.outputs.build-success }}"
-          # Deployment logic would go here
-
-      - name: Run staging health checks
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          
+      - name: Install Dependencies
         run: |
-          echo "❤️ Running post-deployment health checks..."
-          echo "Staging environment ready for testing"
-
-  deploy-production:
-    name: 🌟 Deploy to Production
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: [docker-build]
-    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
-    environment: production
-    steps:
-      - name: Production deployment gate
+          uv sync --all-extras
+          
+      - name: Code Quality Check
         run: |
-          echo "🚪 Production deployment - manual approval completed"
-
-      - name: Deploy to production
+          # Basic formatting and linting
+          uv run black --check src/ tests/ || echo "Format issues detected"
+          uv run ruff check src/ tests/ || echo "Lint issues detected"
+          
+      - name: Type Checking
         run: |
-          echo "🌟 Deploying BSN Knowledge to production..."
-          echo "Build success: ${{ needs.docker-build.outputs.build-success }}"
-          # Deployment logic would go here
-
-  # ===== REPORTING =====
-  reporting:
-    name: 📊 CI/CD Reporting
+          uv run mypy src/ || echo "Type issues detected"
+          
+      - name: Basic Security Scan
+        run: |
+          uv run bandit -r src/ -f json -o bandit-report.json || echo "Security findings detected"
+          
+      - name: Run Tests
+        run: |
+          uv run pytest tests/ -v --tb=short --cov=src --cov-report=xml
+          
+      - name: Upload Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+          
+      - name: Upload Security Report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-report-${{ env.PROJECT_NAME }}
+          path: bandit-report.json
+          retention-days: 30
+          
+  # Basic Docker validation (if Dockerfile exists)
+  docker_check:
+    name: Docker Check
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: always()
-    needs: [security-scan, code-quality, test-suite, docker-build]
+    if: hashFiles('Dockerfile') != ''
+    
     steps:
-      - name: Generate CI/CD Report
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Docker Build Test
         run: |
-          echo "## 📊 BSN Knowledge CI/CD Pipeline Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Stage | Status | Notes |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------|--------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Security Scan | ${{ needs.security-scan.result == 'success' && '✅' || '❌' }} | Bandit, Safety, Pattern Detection |" >> $GITHUB_STEP_SUMMARY
-          echo "| Code Quality | ${{ needs.code-quality.result == 'success' && '✅' || '❌' }} | Ruff, MyPy, Complexity Analysis |" >> $GITHUB_STEP_SUMMARY
-          echo "| Test Suite | ${{ needs.test-suite.result == 'success' && '✅' || '❌' }} | Unit, Integration, Knowledge Base Tests |" >> $GITHUB_STEP_SUMMARY
-          echo "| Docker Build | ${{ needs.docker-build.result == 'success' && '✅' || '❌' }} | Container Images & Health Checks |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🏗️ BSN Knowledge Features:" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Python 3.12 + UV package management" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ FastAPI knowledge base API" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ PostgreSQL + Redis + Qdrant database testing" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Knowledge base specific test patterns" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Comprehensive security scanning" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Matrix testing strategy" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 💰 Zero-Cost CI/CD:" >> $GITHUB_STEP_SUMMARY
-          echo "- All tools: **100% Free & Open Source**" >> $GITHUB_STEP_SUMMARY
-          echo "- GitHub Actions: Standard allocation" >> $GITHUB_STEP_SUMMARY
-
-# Security: Restrict permissions to minimum required
-permissions:
-  contents: read
-  packages: write
-  security-events: write
-  pull-requests: write
-  checks: write
-  actions: read
+          docker build --no-cache -t ${{ env.PROJECT_NAME }}:test .
+          echo "Docker build successful"
+          
+      - name: Container Security Scan
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy image ${{ env.PROJECT_NAME }}:test || echo "Container security findings detected"

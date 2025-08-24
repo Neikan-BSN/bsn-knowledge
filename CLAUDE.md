@@ -301,3 +301,105 @@ make deployment-check  # Knowledge base deployment readiness
 ---
 
 *This file is part of the standardized workspace documentation system and is auto-maintained.*
+
+
+---
+
+## MCP Server Configuration
+
+This project is configured with **Medical Documentation Systems** MCP integration.
+Medical device documentation and OCR processing with safety validation
+
+### Essential MCP Servers
+
+These servers are required for core functionality:
+
+- **filesystem**: Core functionality
+- **git**: Git version control operations and repository management
+- **sqlite**: Core functionality
+
+### Recommended MCP Servers
+
+These servers enhance project capabilities:
+
+- **code-checker**: Enhanced functionality
+- **github**: github server functionality
+
+### Optional MCP Servers
+
+These servers provide additional features:
+
+- **docker**: docker server functionality
+- **fetch**: fetch server functionality
+- **memory**: Persistent memory storage and knowledge graphs
+
+### Configuration Examples
+
+```bash
+# Install and configure MCP servers for this project
+cd /home/user01/projects/workspace-tools
+./configure-mcp.sh
+
+# Select this project and choose recommended servers
+# Project type: Medical Documentation Systems
+```
+
+```bash
+# Required environment variables:
+export DATABASE_PATH="your_project_root/data/medical_project_name.db"
+export SQLITE_EXTENSIONS="json1,fts5"
+export ENCRYPTION="true"
+export BACKUP_PATH="your_project_root/secure_backups"
+export ALLOWED_DIRECTORIES="your_project_root/documents,project_root/processed,project_root/data"
+export MAX_FILE_SIZE="50MB"
+export ALLOWED_EXTENSIONS=".pdf,.jpg,.png,.tiff,.dcm,.json"
+export AUDIT_LOG="true"
+export ENABLE_SECURITY_CHECKS="true"
+export HIPAA_COMPLIANCE="true"
+export PII_DETECTION="true"
+```
+
+### Usage Patterns
+
+```bash
+# Medical Documentation Operations
+"Process medical documents with OCR validation"
+"Ensure HIPAA compliance in document handling"
+"Validate clinical terminology and accuracy"
+"Secure storage of sensitive medical information"
+```
+
+### Troubleshooting
+
+#### Common Issues
+
+**MCP Server Connection Issues:**
+```bash
+# Check server status
+cd /home/user01/projects/workspace-tools
+./configure-mcp.sh --test-connection
+
+# Restart problematic servers
+./configure-mcp.sh --restart-servers
+```
+
+**Environment Variable Issues:**
+```bash
+# Verify environment setup
+echo $CLAUDE_CONFIG_PATH
+cat ~/.claude.json | jq '.mcpServers'
+
+# Reload configuration
+source ~/.bashrc
+./configure-mcp.sh --reload-config
+```
+
+**WSL-Specific Issues:**
+```bash
+# Check WSL interoperability
+wsl.exe --version
+
+# Verify Node.js access
+which node && node --version
+which npm && npm --version
+```

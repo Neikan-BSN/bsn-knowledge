@@ -1,0 +1,22 @@
+#!/bin/bash
+# Auto-generated post-commit hook for bsn-knowledge
+# Updates project documentation tracking on every commit
+
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+AGENT_SCRIPT="$PROJECT_ROOT/scripts/unified_documentation_agent.py"
+
+# Check if documentation agent exists
+if [ -f "$AGENT_SCRIPT" ]; then
+    # Run documentation update in background to avoid slowing down commits
+    {
+        python3 "$AGENT_SCRIPT" --process-commit 2>/dev/null || {
+            echo "Warning: Documentation update failed" >&2
+        }
+    } &
+else
+    # Fallback: just log the commit for manual processing later
+    echo "$(date): Commit $(git rev-parse --short HEAD) - $(git log -1 --pretty=%s)" >> "$PROJECT_ROOT/project_plan/.pending_updates.log"
+fi
+
+# Always exit successfully so commits aren't blocked
+exit 0
