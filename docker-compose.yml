@@ -18,6 +18,17 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
     restart: unless-stopped
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U bsn_knowledge -d bsn_knowledge -h localhost"]
       interval: 10s
@@ -37,8 +48,18 @@ services:
       - "6380:6379"  # Coordinated port to avoid conflicts
     volumes:
       - redis_data:/data
+      - redis_temp:/tmp
     command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
     restart: unless-stopped
+    read_only: true
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -68,7 +89,17 @@ services:
       - neo4j_logs:/logs
       - neo4j_import:/import
       - neo4j_plugins:/plugins
+      - neo4j_temp:/tmp
     restart: unless-stopped
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
     healthcheck:
       test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "bsn_neo4j_dev", "RETURN 1"]
       interval: 30s
@@ -84,6 +115,7 @@ services:
       - "6335:6334"  # gRPC
     volumes:
       - qdrant_data:/qdrant/storage
+      - qdrant_temp:/tmp
     environment:
       QDRANT__SERVICE__HTTP_PORT: 6333
       QDRANT__SERVICE__GRPC_PORT: 6334
@@ -91,6 +123,12 @@ services:
       QDRANT__SERVICE__MAX_REQUEST_SIZE_MB: 32
       QDRANT__STORAGE__WAL_CAPACITY_MB: 64
     restart: unless-stopped
+    read_only: true
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:6333/readyz"]
       interval: 30s
@@ -144,7 +182,14 @@ services:
       - ./src:/app/src:ro
       - ./config:/app/config:ro
       - api_logs:/app/logs
+      - api_gateway_temp:/tmp
     restart: unless-stopped
+    read_only: true
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -194,6 +239,12 @@ services:
       - processing_cache:/app/cache
       - processing_logs:/app/logs
       - medical_models:/app/models
+      - knowledge_processor_temp:/tmp
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     deploy:
       resources:
         limits:
@@ -234,7 +285,14 @@ services:
       - ./src:/app/src:ro
       - analytics_data:/app/data
       - analytics_logs:/app/logs
+      - analytics_service_temp:/tmp
     restart: unless-stopped
+    read_only: true
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -254,6 +312,13 @@ services:
     profiles:
       - dev
       - debug
+    volumes:
+      - adminer_temp:/tmp
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
 
   # Neo4j Browser (development only)
   neo4j-browser:
@@ -265,17 +330,29 @@ services:
       NEO4J_dbms_connector_http_listen__address: 0.0.0.0:7474
     volumes:
       - neo4j_browser_data:/data
+      - neo4j_browser_temp:/tmp
     profiles:
       - dev
       - debug
     depends_on:
       - neo4j
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
 
 volumes:
   # Database volumes
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  redis_temp:
     driver: local
   neo4j_data:
     driver: local
@@ -285,9 +362,15 @@ volumes:
     driver: local
   neo4j_plugins:
     driver: local
+  neo4j_temp:
+    driver: local
   neo4j_browser_data:
     driver: local
+  neo4j_browser_temp:
+    driver: local
   qdrant_data:
+    driver: local
+  qdrant_temp:
     driver: local
   
   # Application volumes
@@ -302,6 +385,16 @@ volumes:
   analytics_data:
     driver: local
   analytics_logs:
+    driver: local
+  
+  # Service-specific temporary volumes
+  api_gateway_temp:
+    driver: local
+  knowledge_processor_temp:
+    driver: local
+  analytics_service_temp:
+    driver: local
+  adminer_temp:
     driver: local
 
 networks:
