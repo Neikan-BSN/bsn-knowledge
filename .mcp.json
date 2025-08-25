@@ -6,7 +6,7 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "/home/user01/projects/bsn-knowledge"
+        "/home/user01/projects/active-projects/bsn_knowledge"
       ],
       "env": {}
     },
@@ -28,7 +28,7 @@
       "args": [
         "-y",
         "mcp-sqlite-tools",
-        "/home/user01/projects/bsn-knowledge/data"
+        "/home/user01/projects/active-projects/bsn_knowledge/data"
       ],
       "env": {}
     },
@@ -38,7 +38,7 @@
       "args": [
         "-y",
         "mcp-sqlite",
-        "/home/user01/projects/bsn-knowledge/data/bsn.db"
+        "/home/user01/projects/active-projects/bsn_knowledge/data/bsn.db"
       ],
       "env": {}
     },
@@ -90,12 +90,13 @@
       "args": ["-y", "elevenlabs-mcp-enhanced"],
       "env": {}
     },
-    "codanna-websocket": {
-      "type": "websocket",
-      "url": "wss://127.0.0.1:8444",
-      "ssl": {
-        "rejectUnauthorized": false
-      }
+    "codanna": {
+      "type": "stdio",
+      "command": "/home/user01/.local/bin/codanna",
+      "args": [
+        "serve"
+      ],
+      "env": {}
     }
   }
 }

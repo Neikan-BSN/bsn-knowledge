@@ -4,7 +4,7 @@ Comprehensive error handling and validation utilities for BSN Knowledge API
 
 import logging
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import HTTPException, Request, status
 from fastapi.responses import JSONResponse

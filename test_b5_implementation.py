@@ -310,10 +310,10 @@ async def test_dynamic_difficulty_adjustment(adaptive_engine):
             print_info(f"  Confidence: {difficulty_adjustment.confidence_score:.2f}")
             print_info(f"  Reason: {difficulty_adjustment.adjustment_reason[:80]}...")
 
-        print_success(\"Dynamic difficulty adjustment working correctly for all scenarios\")
+        print_success("Dynamic difficulty adjustment working correctly for all scenarios")
 
     except Exception as e:
-        print_error(f\"Failed dynamic difficulty adjustment test: {str(e)}\")
+        print_error(f"Failed dynamic difficulty adjustment test: {str(e)}")
         raise
 
 
