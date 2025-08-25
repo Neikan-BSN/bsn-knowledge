@@ -6,15 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is the **bsn-knowledge** project, part of a multi-project Python development workspace focused on AI-assisted development tools, RAG systems, and intelligent automation.
 
-## MCP Server Configuration (14 Servers)
+## MCP Server Configuration (18 Servers)
 
 ### Available Servers
-- **Core Development**: filesystem, git, memory, context7
-- **Code Quality**: eslint, ripgrep  
-- **Database Operations**: sqlite, sqlite-secondary, postgres
-- **AI/ML Capabilities**: sequential-thinking, elevenlabs
-- **Web Operations**: fetch, playwright
-- **Local Services**: codanna-https (SSE)
+- **Core Development**: filesystem, git, memory, context7, sqlite, sqlite-secondary, ripgrep
+- **Extended Capabilities**: eslint, fetch, sequential-thinking, playwright, postgres, elevenlabs
+- **Local Services**: codanna
+- **Integration Services**: github, kubernetes, aws, docker
 
 ### Server Descriptions
 - **filesystem**: File system operations for knowledge base content and indexing
@@ -30,14 +28,15 @@ This is the **bsn-knowledge** project, part of a multi-project Python developmen
 - **playwright**: Web automation for testing search interfaces and knowledge workflows
 - **postgres**: PostgreSQL operations for production-scale knowledge storage
 - **elevenlabs**: Text-to-speech for accessibility in knowledge base interfaces
-- **codanna-https**: Local code analysis server via SSE protocol
-  - URL: https://127.0.0.1:8443/mcp/sse
-  - Protocol: Server-Sent Events (SSE)
-  - Dependency: Requires local codanna service running
+- **codanna**: Local Codanna AI assistant server with stdio transport
+- **github**: GitHub repository management, issues, PRs, workflows, and collaboration
+- **kubernetes**: Kubernetes cluster management, deployments, services, and orchestration
+- **aws**: AWS cloud services integration for EC2, S3, Lambda, RDS, and infrastructure
+- **docker**: Docker container management, image operations, and compose orchestration
 
 ### MCP Operations
 ```bash
-# Install and test all 14 MCP servers
+# Install and test all 18 MCP servers
 make mcp-install && make mcp-test
 
 # Quick health check for all servers

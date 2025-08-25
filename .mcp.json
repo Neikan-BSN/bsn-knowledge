@@ -8,19 +8,28 @@
         "@modelcontextprotocol/server-filesystem",
         "/home/user01/projects/active-projects/bsn_knowledge"
       ],
-      "env": {}
+      "env": {},
+      "description": "File system operations with secure read/write access",
+      "category": "core",
+      "status": "operational"
     },
     "git": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@cyanheads/git-mcp-server"],
-      "env": {}
+      "env": {},
+      "description": "Git version control operations (clone, commit, branch, diff, log, status, push, pull, merge)",
+      "category": "core",
+      "status": "operational"
     },
     "memory": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-memory"],
-      "env": {}
+      "env": {},
+      "description": "Knowledge graph and memory operations for context persistence",
+      "category": "core",
+      "status": "operational"
     },
     "sqlite": {
       "type": "stdio",
@@ -30,7 +39,10 @@
         "mcp-sqlite-tools",
         "/home/user01/projects/active-projects/bsn_knowledge/data"
       ],
-      "env": {}
+      "env": {},
+      "description": "Primary SQLite database operations with better-sqlite3 and CSV support",
+      "category": "core",
+      "status": "operational"
     },
     "sqlite-secondary": {
       "type": "stdio",
@@ -40,61 +52,135 @@
         "mcp-sqlite",
         "/home/user01/projects/active-projects/bsn_knowledge/data/bsn.db"
       ],
-      "env": {}
+      "env": {},
+      "description": "Secondary SQLite database operations for redundancy and specialized operations",
+      "category": "core",
+      "status": "operational"
     },
     "context7": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp"],
-      "env": {}
+      "env": {},
+      "description": "AI documentation search and context management with Upstash integration",
+      "category": "core",
+      "status": "operational"
     },
     "ripgrep": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "mcp-ripgrep@latest"],
-      "env": {}
+      "env": {},
+      "description": "Fast code search with regex support using ripgrep",
+      "category": "core",
+      "status": "operational"
     },
     "eslint": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@eslint/mcp@latest"],
-      "env": {}
+      "env": {},
+      "description": "JavaScript/TypeScript code quality analysis and linting",
+      "category": "extended",
+      "status": "operational"
     },
     "fetch": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@tokenizin/mcp-npx-fetch"],
-      "env": {}
+      "env": {},
+      "description": "HTTP requests and web scraping capabilities",
+      "category": "extended",
+      "status": "operational"
     },
     "sequential-thinking": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
-      "env": {}
+      "env": {},
+      "description": "Sequential reasoning and complex problem-solving workflows",
+      "category": "extended",
+      "status": "operational"
     },
     "playwright": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@automatalabs/mcp-server-playwright"],
-      "env": {}
+      "env": {},
+      "description": "Browser automation and web testing with Playwright",
+      "category": "extended",
+      "status": "operational"
     },
     "postgres": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@henkey/postgres-mcp-server"],
-      "env": {}
+      "env": {},
+      "description": "PostgreSQL database operations for production-scale data management",
+      "category": "extended",
+      "status": "operational"
     },
     "elevenlabs": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "elevenlabs-mcp-enhanced"],
-      "env": {}
+      "env": {},
+      "description": "Text-to-speech and voice synthesis with ElevenLabs API",
+      "category": "extended",
+      "status": "operational"
     },
     "codanna": {
       "type": "stdio",
       "command": "/home/user01/.local/bin/codanna",
       "args": ["serve"],
-      "env": {}
+      "env": {},
+      "description": "Local Codanna AI assistant server with stdio transport",
+      "category": "local",
+      "status": "operational"
+    },
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      },
+      "description": "GitHub repository management, issues, PRs, workflows, and collaboration",
+      "category": "integration",
+      "status": "operational"
+    },
+    "kubernetes": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "kubernetes-mcp-server"],
+      "env": {
+        "KUBECONFIG": "${KUBECONFIG_PATH}"
+      },
+      "description": "Kubernetes cluster management, deployments, services, and orchestration",
+      "category": "integration",
+      "status": "operational"
+    },
+    "aws": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@imazhar101/mcp-aws-server"],
+      "env": {
+        "AWS_ACCESS_KEY_ID": "${AWS_ACCESS_KEY_ID}",
+        "AWS_SECRET_ACCESS_KEY": "${AWS_SECRET_ACCESS_KEY}",
+        "AWS_DEFAULT_REGION": "${AWS_DEFAULT_REGION}"
+      },
+      "description": "AWS cloud services integration for EC2, S3, Lambda, RDS, and infrastructure",
+      "category": "integration",
+      "status": "operational"
+    },
+    "docker": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@thelord/mcp-server-docker-npx"],
+      "env": {},
+      "description": "Docker container management, image operations, and compose orchestration",
+      "category": "integration",
+      "status": "operational"
     }
   }
 }
