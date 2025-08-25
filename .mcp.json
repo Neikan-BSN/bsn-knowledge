@@ -13,19 +13,13 @@
     "git": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@cyanheads/git-mcp-server"
-      ],
+      "args": ["-y", "@cyanheads/git-mcp-server"],
       "env": {}
     },
     "memory": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-memory"
-      ],
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
       "env": {}
     },
     "sqlite": {
@@ -51,78 +45,57 @@
     "context7": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp"
-      ],
+      "args": ["-y", "@upstash/context7-mcp"],
       "env": {}
     },
     "ripgrep": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "mcp-ripgrep@latest"
-      ],
+      "args": ["-y", "mcp-ripgrep@latest"],
       "env": {}
     },
     "eslint": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@eslint/mcp@latest"
-      ],
+      "args": ["-y", "@eslint/mcp@latest"],
       "env": {}
     },
     "fetch": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@tokenizin/mcp-npx-fetch"
-      ],
+      "args": ["-y", "@tokenizin/mcp-npx-fetch"],
       "env": {}
     },
     "sequential-thinking": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-sequential-thinking"
-      ],
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
       "env": {}
     },
     "playwright": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@automatalabs/mcp-server-playwright"
-      ],
+      "args": ["-y", "@automatalabs/mcp-server-playwright"],
       "env": {}
     },
     "postgres": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@henkey/postgres-mcp-server"
-      ],
+      "args": ["-y", "@henkey/postgres-mcp-server"],
       "env": {}
     },
     "elevenlabs": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "elevenlabs-mcp-enhanced"
-      ],
+      "args": ["-y", "elevenlabs-mcp-enhanced"],
       "env": {}
     },
     "codanna-websocket": {
-      "type": "sse",
-      "url": "wss://127.0.0.1:8444"
+      "type": "websocket",
+      "url": "wss://127.0.0.1:8444",
+      "ssl": {
+        "rejectUnauthorized": false
+      }
     }
   }
 }

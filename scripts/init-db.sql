@@ -51,6 +51,18 @@ CREATE TABLE IF NOT EXISTS knowledge.medical_categories (
     is_active BOOLEAN DEFAULT TRUE
 );
 
+-- Insert AACN Competency Domains
+INSERT INTO analytics.aacn_competencies (domain, competency_name, description, minimum_level, weight) VALUES
+    ('knowledge_for_nursing_practice', 'Knowledge for Nursing Practice', 'Integrate knowledge from nursing science, liberal education, and health sciences to inform evidence-based practice', 'competent', 1.2),
+    ('person_centered_care', 'Person-Centered Care', 'Provide person-centered care that is culturally responsive, developmentally appropriate, and holistic', 'proficient', 1.3),
+    ('population_health', 'Population Health', 'Engage with individuals, families, communities, and populations to improve health outcomes and reduce health disparities', 'competent', 1.0),
+    ('scholarship_for_nursing_discipline', 'Scholarship for the Nursing Discipline', 'Demonstrate professional identity through scholarship, service, and engagement in professional organizations', 'competent', 0.9),
+    ('information_technology', 'Information and Healthcare Technologies', 'Use information and healthcare technologies ethically and effectively to communicate, manage knowledge, mitigate error, and support decision making', 'competent', 0.8),
+    ('healthcare_systems', 'Healthcare Systems and Safety', 'Apply knowledge of healthcare systems, policies, and financing to optimize healthcare outcomes and patient safety', 'competent', 1.1),
+    ('interprofessional_partnerships', 'Interprofessional Partnerships', 'Collaborate effectively within nursing and interprofessional teams to optimize patient/population outcomes', 'competent', 1.0),
+    ('personal_professional_development', 'Personal, Professional, and Leadership Development', 'Demonstrate accountability to the public, profession, and self through continuous personal and professional development', 'competent', 0.8)
+ON CONFLICT DO NOTHING;
+
 -- Insert standard medical categories
 INSERT INTO knowledge.medical_categories (name, description, hierarchy_level) VALUES
     ('cardiovascular', 'Heart and blood vessel related conditions', 1),
@@ -90,7 +102,178 @@ INSERT INTO knowledge.relationship_types (name, description, bidirectional) VALU
     ('PART_OF', 'Hierarchical relationship', FALSE)
 ON CONFLICT (name) DO NOTHING;
 
--- Analytics schema for performance tracking
+-- B.4 Learning Analytics Schema
+
+-- Student profiles for competency tracking
+CREATE TABLE IF NOT EXISTS analytics.student_profiles (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    student_id VARCHAR(100) UNIQUE NOT NULL,
+    program VARCHAR(50) NOT NULL DEFAULT 'BSN',
+    semester INTEGER NOT NULL DEFAULT 1,
+    enrollment_date DATE,
+    graduation_target_date DATE,
+    overall_gpa NUMERIC(3,2),
+    competency_gpa NUMERIC(3,2),
+    graduation_readiness_score NUMERIC(5,2) DEFAULT 0.0,
+    at_risk_status BOOLEAN DEFAULT FALSE,
+    intervention_level VARCHAR(20) DEFAULT 'routine', -- routine, moderate, intensive
+    learning_style_preferences JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- AACN Competency domains and definitions
+CREATE TABLE IF NOT EXISTS analytics.aacn_competencies (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    domain VARCHAR(100) NOT NULL,
+    competency_name VARCHAR(200) NOT NULL,
+    description TEXT,
+    sub_competencies TEXT[],
+    learning_outcomes TEXT[],
+    assessment_methods TEXT[],
+    prerequisites TEXT[],
+    minimum_level VARCHAR(50) DEFAULT 'competent',
+    weight NUMERIC(3,2) DEFAULT 1.0,
+    umls_concepts TEXT[],
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Student competency assessments
+CREATE TABLE IF NOT EXISTS analytics.competency_assessments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    student_id VARCHAR(100) NOT NULL,
+    competency_id UUID REFERENCES analytics.aacn_competencies(id),
+    assessment_id VARCHAR(100),
+    current_level VARCHAR(50) NOT NULL, -- novice, advanced_beginner, competent, proficient, expert
+    target_level VARCHAR(50) NOT NULL,
+    proficiency_score NUMERIC(5,2) NOT NULL,
+    evidence_items TEXT[],
+    strengths TEXT[],
+    improvement_areas TEXT[],
+    recommended_resources TEXT[],
+    assessment_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    assessor_id VARCHAR(100),
+    confidence_score NUMERIC(3,2) DEFAULT 0.0,
+    next_assessment_due TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Knowledge gaps tracking
+CREATE TABLE IF NOT EXISTS analytics.knowledge_gaps (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    student_id VARCHAR(100) NOT NULL,
+    competency_id UUID REFERENCES analytics.aacn_competencies(id),
+    gap_topic VARCHAR(200) NOT NULL,
+    domain VARCHAR(100) NOT NULL,
+    gap_type VARCHAR(50) DEFAULT 'knowledge', -- knowledge, skill, attitude
+    severity VARCHAR(20) NOT NULL, -- critical, major, moderate, minor
+    priority VARCHAR(20) NOT NULL, -- high, medium, low
+    current_score NUMERIC(5,2),
+    target_score NUMERIC(5,2),
+    gap_size NUMERIC(5,2),
+    description TEXT,
+    evidence TEXT[],
+    prerequisite_gaps TEXT[],
+    recommended_interventions TEXT[],
+    estimated_remediation_hours INTEGER DEFAULT 0,
+    priority_score NUMERIC(5,2) DEFAULT 0.0,
+    identified_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    target_resolution_date TIMESTAMP WITH TIME ZONE,
+    status VARCHAR(20) DEFAULT 'identified', -- identified, in_progress, resolved
+    resolved_date TIMESTAMP WITH TIME ZONE
+);
+
+-- Learning path recommendations
+CREATE TABLE IF NOT EXISTS analytics.learning_paths (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    student_id VARCHAR(100) NOT NULL,
+    path_name VARCHAR(200) NOT NULL,
+    target_competencies TEXT[],
+    current_proficiency JSONB,
+    target_proficiency JSONB,
+    recommended_sequence JSONB,
+    estimated_duration_hours INTEGER DEFAULT 0,
+    difficulty_progression VARCHAR(50) DEFAULT 'adaptive', -- linear, adaptive, accelerated
+    personalization_factors JSONB,
+    success_probability NUMERIC(3,2) DEFAULT 0.0,
+    alternative_paths TEXT[],
+    status VARCHAR(20) DEFAULT 'active', -- active, paused, completed, cancelled
+    progress_percentage NUMERIC(5,2) DEFAULT 0.0,
+    created_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    completed_date TIMESTAMP WITH TIME ZONE
+);
+
+-- Student learning activities tracking
+CREATE TABLE IF NOT EXISTS analytics.learning_activities (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    student_id VARCHAR(100) NOT NULL,
+    activity_type VARCHAR(100) NOT NULL, -- study, assessment, simulation, clinical
+    activity_name VARCHAR(200),
+    content_id VARCHAR(100),
+    competency_ids TEXT[],
+    duration_minutes INTEGER,
+    score NUMERIC(5,2),
+    completion_status VARCHAR(20) DEFAULT 'in_progress', -- in_progress, completed, abandoned
+    difficulty_rating INTEGER, -- 1-5 scale
+    effectiveness_rating INTEGER, -- 1-5 scale
+    engagement_score NUMERIC(5,2),
+    learning_objectives_met TEXT[],
+    session_id VARCHAR(100),
+    platform VARCHAR(50) DEFAULT 'web',
+    started_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    completed_at TIMESTAMP WITH TIME ZONE,
+    metadata JSONB
+);
+
+-- Institutional program effectiveness
+CREATE TABLE IF NOT EXISTS analytics.program_effectiveness (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    institution_id VARCHAR(100) DEFAULT 'default',
+    program_id VARCHAR(100) NOT NULL,
+    program_name VARCHAR(200) NOT NULL,
+    reporting_period VARCHAR(50) NOT NULL, -- e.g., '2024_Q1', 'AY2023-2024'
+    total_students INTEGER DEFAULT 0,
+    total_graduates INTEGER DEFAULT 0,
+    nclex_pass_rate NUMERIC(5,2) DEFAULT 0.0,
+    employment_rate NUMERIC(5,2) DEFAULT 0.0,
+    employer_satisfaction NUMERIC(3,2) DEFAULT 0.0,
+    competency_achievement_rates JSONB, -- per AACN domain
+    curriculum_alignment_score NUMERIC(5,2) DEFAULT 0.0,
+    student_satisfaction NUMERIC(3,2) DEFAULT 0.0,
+    faculty_student_ratio NUMERIC(4,2) DEFAULT 0.0,
+    resource_utilization JSONB,
+    improvement_recommendations TEXT[],
+    accreditation_compliance JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Cohort analytics tracking
+CREATE TABLE IF NOT EXISTS analytics.cohort_analytics (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    cohort_id VARCHAR(100) NOT NULL,
+    program VARCHAR(50) NOT NULL,
+    semester INTEGER NOT NULL,
+    academic_year VARCHAR(10) NOT NULL,
+    total_students INTEGER DEFAULT 0,
+    active_students INTEGER DEFAULT 0,
+    average_competency_score NUMERIC(5,2) DEFAULT 0.0,
+    competency_distribution JSONB,
+    at_risk_students INTEGER DEFAULT 0,
+    high_performers INTEGER DEFAULT 0,
+    engagement_metrics JSONB,
+    completion_rates JSONB,
+    time_to_mastery JSONB,
+    resource_effectiveness JSONB,
+    comparison_to_historical JSONB,
+    analysis_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Analytics query performance tracking
 CREATE TABLE IF NOT EXISTS analytics.query_performance (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     query_type VARCHAR(50) NOT NULL,
@@ -104,7 +287,41 @@ CREATE TABLE IF NOT EXISTS analytics.query_performance (
     error_message TEXT
 );
 
--- Index for analytics
+-- B.4 Learning Analytics Indexes
+CREATE INDEX IF NOT EXISTS idx_student_profiles_student_id ON analytics.student_profiles(student_id);
+CREATE INDEX IF NOT EXISTS idx_student_profiles_program ON analytics.student_profiles(program, semester);
+CREATE INDEX IF NOT EXISTS idx_student_profiles_at_risk ON analytics.student_profiles(at_risk_status) WHERE at_risk_status = TRUE;
+
+CREATE INDEX IF NOT EXISTS idx_competency_assessments_student ON analytics.competency_assessments(student_id);
+CREATE INDEX IF NOT EXISTS idx_competency_assessments_competency ON analytics.competency_assessments(competency_id);
+CREATE INDEX IF NOT EXISTS idx_competency_assessments_date ON analytics.competency_assessments(assessment_date);
+CREATE INDEX IF NOT EXISTS idx_competency_assessments_level ON analytics.competency_assessments(current_level, target_level);
+
+CREATE INDEX IF NOT EXISTS idx_knowledge_gaps_student ON analytics.knowledge_gaps(student_id);
+CREATE INDEX IF NOT EXISTS idx_knowledge_gaps_severity ON analytics.knowledge_gaps(severity, priority);
+CREATE INDEX IF NOT EXISTS idx_knowledge_gaps_domain ON analytics.knowledge_gaps(domain);
+CREATE INDEX IF NOT EXISTS idx_knowledge_gaps_status ON analytics.knowledge_gaps(status);
+CREATE INDEX IF NOT EXISTS idx_knowledge_gaps_date ON analytics.knowledge_gaps(identified_date);
+
+CREATE INDEX IF NOT EXISTS idx_learning_paths_student ON analytics.learning_paths(student_id);
+CREATE INDEX IF NOT EXISTS idx_learning_paths_status ON analytics.learning_paths(status);
+CREATE INDEX IF NOT EXISTS idx_learning_paths_created ON analytics.learning_paths(created_date);
+
+CREATE INDEX IF NOT EXISTS idx_learning_activities_student ON analytics.learning_activities(student_id);
+CREATE INDEX IF NOT EXISTS idx_learning_activities_type ON analytics.learning_activities(activity_type);
+CREATE INDEX IF NOT EXISTS idx_learning_activities_date ON analytics.learning_activities(started_at);
+CREATE INDEX IF NOT EXISTS idx_learning_activities_completion ON analytics.learning_activities(completion_status);
+CREATE INDEX IF NOT EXISTS idx_learning_activities_competency ON analytics.learning_activities USING gin(competency_ids);
+
+CREATE INDEX IF NOT EXISTS idx_program_effectiveness_program ON analytics.program_effectiveness(program_id);
+CREATE INDEX IF NOT EXISTS idx_program_effectiveness_period ON analytics.program_effectiveness(reporting_period);
+CREATE INDEX IF NOT EXISTS idx_program_effectiveness_institution ON analytics.program_effectiveness(institution_id);
+
+CREATE INDEX IF NOT EXISTS idx_cohort_analytics_cohort ON analytics.cohort_analytics(cohort_id);
+CREATE INDEX IF NOT EXISTS idx_cohort_analytics_program ON analytics.cohort_analytics(program, semester);
+CREATE INDEX IF NOT EXISTS idx_cohort_analytics_year ON analytics.cohort_analytics(academic_year);
+
+-- Query performance indexes
 CREATE INDEX IF NOT EXISTS idx_query_performance_timestamp ON analytics.query_performance(timestamp);
 CREATE INDEX IF NOT EXISTS idx_query_performance_type ON analytics.query_performance(query_type);
 
@@ -197,7 +414,7 @@ RETURNS TABLE(
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
+    SELECT
         mt.id,
         mt.neo4j_id,
         mt.name,
@@ -205,7 +422,7 @@ BEGIN
         mt.description,
         similarity(mt.name, search_text) as similarity
     FROM knowledge.medical_terms_metadata mt
-    WHERE 
+    WHERE
         (category_filter IS NULL OR mt.category = category_filter)
         AND mt.is_active = TRUE
         AND (
@@ -218,9 +435,99 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- B.4 Learning Analytics Views
+
+-- Student competency summary view
+CREATE OR REPLACE VIEW analytics.student_competency_summary AS
+SELECT
+    sp.student_id,
+    sp.program,
+    sp.semester,
+    sp.competency_gpa,
+    sp.graduation_readiness_score,
+    sp.at_risk_status,
+    COUNT(ca.id) as total_assessments,
+    AVG(ca.proficiency_score) as avg_proficiency_score,
+    COUNT(kg.id) as total_knowledge_gaps,
+    COUNT(kg.id) FILTER (WHERE kg.severity = 'critical') as critical_gaps,
+    COUNT(kg.id) FILTER (WHERE kg.severity = 'major') as major_gaps,
+    MAX(ca.assessment_date) as last_assessment_date
+FROM analytics.student_profiles sp
+LEFT JOIN analytics.competency_assessments ca ON sp.student_id = ca.student_id
+LEFT JOIN analytics.knowledge_gaps kg ON sp.student_id = kg.student_id AND kg.status != 'resolved'
+WHERE sp.is_active = TRUE
+GROUP BY sp.student_id, sp.program, sp.semester, sp.competency_gpa, sp.graduation_readiness_score, sp.at_risk_status;
+
+-- Domain competency performance view
+CREATE OR REPLACE VIEW analytics.domain_competency_performance AS
+SELECT
+    ac.domain,
+    ac.competency_name,
+    COUNT(ca.id) as total_assessments,
+    AVG(ca.proficiency_score) as avg_proficiency_score,
+    COUNT(ca.id) FILTER (WHERE ca.current_level = 'expert') as expert_count,
+    COUNT(ca.id) FILTER (WHERE ca.current_level = 'proficient') as proficient_count,
+    COUNT(ca.id) FILTER (WHERE ca.current_level = 'competent') as competent_count,
+    COUNT(ca.id) FILTER (WHERE ca.current_level = 'advanced_beginner') as advanced_beginner_count,
+    COUNT(ca.id) FILTER (WHERE ca.current_level = 'novice') as novice_count,
+    COUNT(kg.id) as related_knowledge_gaps,
+    DATE_TRUNC('month', ca.assessment_date) as assessment_month
+FROM analytics.aacn_competencies ac
+LEFT JOIN analytics.competency_assessments ca ON ac.id = ca.competency_id
+LEFT JOIN analytics.knowledge_gaps kg ON ac.domain = kg.domain AND kg.status != 'resolved'
+WHERE ac.is_active = TRUE
+GROUP BY ac.domain, ac.competency_name, DATE_TRUNC('month', ca.assessment_date)
+ORDER BY assessment_month DESC, avg_proficiency_score DESC;
+
+-- Learning activity effectiveness view
+CREATE OR REPLACE VIEW analytics.learning_activity_effectiveness AS
+SELECT
+    la.activity_type,
+    COUNT(la.id) as total_activities,
+    AVG(la.duration_minutes) as avg_duration,
+    AVG(la.score) as avg_score,
+    AVG(la.effectiveness_rating) as avg_effectiveness,
+    AVG(la.engagement_score) as avg_engagement,
+    COUNT(la.id) FILTER (WHERE la.completion_status = 'completed') as completed_count,
+    COUNT(la.id) FILTER (WHERE la.completion_status = 'abandoned') as abandoned_count,
+    DATE_TRUNC('week', la.started_at) as activity_week
+FROM analytics.learning_activities la
+WHERE la.started_at >= NOW() - INTERVAL '12 weeks'
+GROUP BY la.activity_type, DATE_TRUNC('week', la.started_at)
+ORDER BY activity_week DESC, avg_effectiveness DESC;
+
+-- At-risk students identification view
+CREATE OR REPLACE VIEW analytics.at_risk_students AS
+SELECT
+    sp.student_id,
+    sp.program,
+    sp.semester,
+    sp.competency_gpa,
+    sp.graduation_readiness_score,
+    sp.intervention_level,
+    COUNT(kg.id) FILTER (WHERE kg.severity = 'critical') as critical_gaps,
+    COUNT(kg.id) FILTER (WHERE kg.severity = 'major') as major_gaps,
+    AVG(ca.proficiency_score) as avg_competency_score,
+    COUNT(la.id) FILTER (WHERE la.started_at >= NOW() - INTERVAL '4 weeks') as recent_activities,
+    AVG(la.engagement_score) as avg_engagement,
+    CASE
+        WHEN COUNT(kg.id) FILTER (WHERE kg.severity = 'critical') > 2 THEN 'high'
+        WHEN COUNT(kg.id) FILTER (WHERE kg.severity IN ('critical', 'major')) > 3 THEN 'medium'
+        WHEN sp.competency_gpa < 2.5 THEN 'medium'
+        WHEN AVG(la.engagement_score) < 50 THEN 'low'
+        ELSE 'low'
+    END as calculated_risk_level
+FROM analytics.student_profiles sp
+LEFT JOIN analytics.knowledge_gaps kg ON sp.student_id = kg.student_id AND kg.status != 'resolved'
+LEFT JOIN analytics.competency_assessments ca ON sp.student_id = ca.student_id
+LEFT JOIN analytics.learning_activities la ON sp.student_id = la.student_id
+WHERE sp.is_active = TRUE
+GROUP BY sp.student_id, sp.program, sp.semester, sp.competency_gpa, sp.graduation_readiness_score, sp.intervention_level
+HAVING COUNT(kg.id) FILTER (WHERE kg.severity IN ('critical', 'major')) > 0 OR sp.competency_gpa < 3.0;
+
 -- Performance monitoring view
 CREATE OR REPLACE VIEW analytics.performance_summary AS
-SELECT 
+SELECT
     query_type,
     database_type,
     COUNT(*) as total_queries,
@@ -233,6 +540,198 @@ WHERE timestamp >= NOW() - INTERVAL '24 hours'
 GROUP BY query_type, database_type, DATE_TRUNC('hour', timestamp)
 ORDER BY hour_bucket DESC, avg_execution_time DESC;
 
+-- B.4 Learning Analytics Functions
+
+-- Function to calculate student competency GPA
+CREATE OR REPLACE FUNCTION analytics.calculate_student_competency_gpa(student_id_param VARCHAR(100))
+RETURNS NUMERIC(3,2) AS $$
+DECLARE
+    gpa_result NUMERIC(3,2);
+BEGIN
+    SELECT
+        COALESCE(AVG(
+            CASE
+                WHEN ca.current_level = 'expert' THEN 4.0
+                WHEN ca.current_level = 'proficient' THEN 3.5
+                WHEN ca.current_level = 'competent' THEN 3.0
+                WHEN ca.current_level = 'advanced_beginner' THEN 2.0
+                ELSE 1.0
+            END * ac.weight
+        ), 0.0)
+    INTO gpa_result
+    FROM analytics.competency_assessments ca
+    JOIN analytics.aacn_competencies ac ON ca.competency_id = ac.id
+    WHERE ca.student_id = student_id_param;
+
+    RETURN ROUND(gpa_result, 2);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to identify knowledge gaps for a student
+CREATE OR REPLACE FUNCTION analytics.identify_student_knowledge_gaps(
+    student_id_param VARCHAR(100),
+    severity_threshold VARCHAR(20) DEFAULT 'moderate'
+)
+RETURNS TABLE(
+    gap_topic VARCHAR(200),
+    domain VARCHAR(100),
+    severity VARCHAR(20),
+    gap_size NUMERIC(5,2),
+    estimated_hours INTEGER
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        kg.gap_topic,
+        kg.domain,
+        kg.severity,
+        kg.gap_size,
+        kg.estimated_remediation_hours
+    FROM analytics.knowledge_gaps kg
+    WHERE
+        kg.student_id = student_id_param
+        AND kg.status != 'resolved'
+        AND (
+            (severity_threshold = 'critical' AND kg.severity = 'critical')
+            OR (severity_threshold = 'major' AND kg.severity IN ('critical', 'major'))
+            OR (severity_threshold = 'moderate' AND kg.severity IN ('critical', 'major', 'moderate'))
+            OR (severity_threshold = 'minor')
+        )
+    ORDER BY
+        CASE kg.severity
+            WHEN 'critical' THEN 4
+            WHEN 'major' THEN 3
+            WHEN 'moderate' THEN 2
+            ELSE 1
+        END DESC,
+        kg.gap_size DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to calculate graduation readiness score
+CREATE OR REPLACE FUNCTION analytics.calculate_graduation_readiness(student_id_param VARCHAR(100))
+RETURNS NUMERIC(5,2) AS $$
+DECLARE
+    competency_score NUMERIC(5,2) := 0;
+    gap_penalty NUMERIC(5,2) := 0;
+    engagement_score NUMERIC(5,2) := 0;
+    readiness_score NUMERIC(5,2);
+BEGIN
+    -- Calculate competency score (0-40 points)
+    SELECT COALESCE(AVG(ca.proficiency_score) * 0.4, 0)
+    INTO competency_score
+    FROM analytics.competency_assessments ca
+    WHERE ca.student_id = student_id_param;
+
+    -- Calculate gap penalty (subtract up to 20 points)
+    SELECT COALESCE(
+        (COUNT(*) FILTER (WHERE severity = 'critical') * 5 +
+         COUNT(*) FILTER (WHERE severity = 'major') * 3 +
+         COUNT(*) FILTER (WHERE severity = 'moderate') * 1), 0
+    )
+    INTO gap_penalty
+    FROM analytics.knowledge_gaps
+    WHERE student_id = student_id_param AND status != 'resolved';
+
+    gap_penalty := LEAST(gap_penalty, 20); -- Cap at 20 points
+
+    -- Calculate engagement score (0-20 points)
+    SELECT COALESCE(AVG(la.engagement_score) * 0.2, 0)
+    INTO engagement_score
+    FROM analytics.learning_activities la
+    WHERE la.student_id = student_id_param
+        AND la.started_at >= NOW() - INTERVAL '8 weeks';
+
+    -- Calculate final readiness score
+    readiness_score := competency_score - gap_penalty + engagement_score + 40; -- Base 40 points
+    readiness_score := GREATEST(0, LEAST(100, readiness_score)); -- Clamp to 0-100
+
+    RETURN ROUND(readiness_score, 2);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to track student progress over time
+CREATE OR REPLACE FUNCTION analytics.track_student_progress(
+    student_id_param VARCHAR(100),
+    weeks_back INTEGER DEFAULT 12
+)
+RETURNS TABLE(
+    week_start DATE,
+    avg_competency_score NUMERIC(5,2),
+    knowledge_gaps_count INTEGER,
+    learning_activities_count INTEGER,
+    engagement_score NUMERIC(5,2)
+) AS $$
+BEGIN
+    RETURN QUERY
+    WITH weekly_data AS (
+        SELECT
+            DATE_TRUNC('week', generate_series(
+                CURRENT_DATE - (weeks_back * INTERVAL '1 week'),
+                CURRENT_DATE,
+                '1 week'::interval
+            ))::DATE as week_start
+    )
+    SELECT
+        wd.week_start,
+        COALESCE(AVG(ca.proficiency_score), 0)::NUMERIC(5,2) as avg_competency_score,
+        COUNT(DISTINCT kg.id)::INTEGER as knowledge_gaps_count,
+        COUNT(DISTINCT la.id)::INTEGER as learning_activities_count,
+        COALESCE(AVG(la.engagement_score), 0)::NUMERIC(5,2) as engagement_score
+    FROM weekly_data wd
+    LEFT JOIN analytics.competency_assessments ca ON
+        ca.student_id = student_id_param AND
+        DATE_TRUNC('week', ca.assessment_date) = wd.week_start
+    LEFT JOIN analytics.knowledge_gaps kg ON
+        kg.student_id = student_id_param AND
+        DATE_TRUNC('week', kg.identified_date) <= wd.week_start AND
+        (kg.resolved_date IS NULL OR DATE_TRUNC('week', kg.resolved_date) > wd.week_start)
+    LEFT JOIN analytics.learning_activities la ON
+        la.student_id = student_id_param AND
+        DATE_TRUNC('week', la.started_at) = wd.week_start
+    GROUP BY wd.week_start
+    ORDER BY wd.week_start;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to update student profile automatically
+CREATE OR REPLACE FUNCTION analytics.update_student_profile_metrics()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Update competency GPA and graduation readiness when assessments change
+    UPDATE analytics.student_profiles
+    SET
+        competency_gpa = analytics.calculate_student_competency_gpa(NEW.student_id),
+        graduation_readiness_score = analytics.calculate_graduation_readiness(NEW.student_id),
+        updated_at = NOW(),
+        at_risk_status = (
+            analytics.calculate_graduation_readiness(NEW.student_id) < 60 OR
+            EXISTS(
+                SELECT 1 FROM analytics.knowledge_gaps kg
+                WHERE kg.student_id = NEW.student_id
+                    AND kg.severity = 'critical'
+                    AND kg.status != 'resolved'
+            )
+        )
+    WHERE student_id = NEW.student_id;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create triggers to maintain student profile metrics
+DROP TRIGGER IF EXISTS update_profile_on_assessment ON analytics.competency_assessments;
+CREATE TRIGGER update_profile_on_assessment
+    AFTER INSERT OR UPDATE ON analytics.competency_assessments
+    FOR EACH ROW
+    EXECUTE FUNCTION analytics.update_student_profile_metrics();
+
+DROP TRIGGER IF EXISTS update_profile_on_gap_change ON analytics.knowledge_gaps;
+CREATE TRIGGER update_profile_on_gap_change
+    AFTER INSERT OR UPDATE ON analytics.knowledge_gaps
+    FOR EACH ROW
+    EXECUTE FUNCTION analytics.update_student_profile_metrics();
+
 -- Grant permissions
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA knowledge TO bsn_knowledge;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA analytics TO bsn_knowledge;
@@ -240,6 +739,7 @@ GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA audit TO bsn_knowledge;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA knowledge TO bsn_knowledge;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA analytics TO bsn_knowledge;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA audit TO bsn_knowledge;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA analytics TO bsn_knowledge;
 
 -- Final setup message
 DO $$
@@ -247,5 +747,9 @@ BEGIN
     RAISE NOTICE 'BSN Knowledge Base database initialization completed successfully';
     RAISE NOTICE 'Schemas created: knowledge, analytics, audit';
     RAISE NOTICE 'Core tables: medical_terms_metadata, medical_categories, relationship_types';
+    RAISE NOTICE 'B.4 Learning Analytics tables: student_profiles, competency_assessments, knowledge_gaps, learning_paths';
+    RAISE NOTICE 'Analytics views: student_competency_summary, domain_competency_performance, at_risk_students';
+    RAISE NOTICE 'Learning analytics functions: calculate_graduation_readiness, identify_knowledge_gaps';
     RAISE NOTICE 'Performance monitoring and audit logging enabled';
+    RAISE NOTICE 'B.4 Learning Analytics & Reporting system ready for deployment';
 END $$;

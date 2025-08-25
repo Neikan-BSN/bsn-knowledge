@@ -1,6 +1,7 @@
 """
 Dependency injection for BSN Knowledge services
 """
+
 from functools import lru_cache
 import logging
 
@@ -9,6 +10,7 @@ from .services.ragnostic_client import RAGnosticClient
 from .services.content_generation_service import ContentGenerationService
 from .services.clinical_decision_support import ClinicalDecisionSupportService
 from .services.analytics_service import AnalyticsService
+from .services.learning_analytics import LearningAnalytics
 from .assessment.competency_framework import AACNCompetencyFramework
 from .generators.nclex_generator import NCLEXGenerator
 from .generators.study_guide_generator import StudyGuideGenerator
@@ -25,9 +27,11 @@ def get_ragnostic_client() -> RAGnosticClient:
         api_key=settings.ragnostic_api_key,
         max_retries=settings.ragnostic_max_retries,
         cache_ttl=settings.ragnostic_cache_ttl,
-        connection_pool_size=settings.ragnostic_connection_pool_size
+        connection_pool_size=settings.ragnostic_connection_pool_size,
     )
-    logger.info(f"Enhanced RAGnostic client initialized with caching (TTL={settings.ragnostic_cache_ttl}s)")
+    logger.info(
+        f"Enhanced RAGnostic client initialized with caching (TTL={settings.ragnostic_cache_ttl}s)"
+    )
     return client
 
 
@@ -36,13 +40,13 @@ def get_content_generation_service() -> ContentGenerationService:
     """Get content generation service instance"""
     settings = get_settings()
     ragnostic_client = get_ragnostic_client()
-    
+
     return ContentGenerationService(
         openai_api_key=settings.openai_api_key,
         ragnostic_client=ragnostic_client,
         model_name=settings.openai_model,
         temperature=settings.openai_temperature,
-        max_tokens=settings.openai_max_tokens
+        max_tokens=settings.openai_max_tokens,
     )
 
 
@@ -72,10 +76,24 @@ def get_analytics_service() -> AnalyticsService:
     """Get analytics service instance with RAGnostic integration"""
     ragnostic_client = get_ragnostic_client()
     db_connection = None  # Would be injected in production
-    
+
     service = AnalyticsService(ragnostic_client, db_connection)
     logger.info("Analytics service initialized")
     return service
+
+
+@lru_cache()
+def get_learning_analytics() -> LearningAnalytics:
+    """Get learning analytics service instance with RAGnostic and Analytics integration"""
+    ragnostic_client = get_ragnostic_client()
+    analytics_service = get_analytics_service()
+    db_connection = None  # Would be injected in production
+
+    learning_analytics = LearningAnalytics(
+        ragnostic_client, analytics_service, db_connection
+    )
+    logger.info("Learning Analytics service initialized")
+    return learning_analytics
 
 
 @lru_cache()
@@ -125,21 +143,32 @@ def get_analytics_service_dep():
 def get_ragnostic_client_with_health():
     """Get RAGnostic client and perform health check"""
     client = get_ragnostic_client()
-    
+
     async def health_checked_client():
         try:
             health_status = await client.health_check()
             if health_status["status"] != "healthy":
-                logger.warning(f"RAGnostic service health check warning: {health_status}")
+                logger.warning(
+                    f"RAGnostic service health check warning: {health_status}"
+                )
             return client
         except Exception as e:
             logger.error(f"RAGnostic health check failed: {str(e)}")
             # Return client anyway for graceful degradation
             return client
-    
+
     return health_checked_client
 
 
 def get_competency_framework_dep():
     """FastAPI dependency for competency framework"""
     return get_competency_framework()
+
+
+def get_learning_analytics_dep():
+    """FastAPI dependency for learning analytics service"""
+    try:
+        return get_learning_analytics()
+    except Exception as e:
+        logger.error(f"Failed to initialize learning analytics service: {str(e)}")
+        raise

@@ -5,7 +5,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 
-from ...generators.nclex_generator import NCLEXGenerator, NCLEXQuestionSet, NCLEXQuestion
+from ...generators.nclex_generator import NCLEXGenerator
 from ...services.content_generation_service import ContentGenerationService
 from ...services.ragnostic_client import RAGnosticClient
 
@@ -17,8 +17,12 @@ router = APIRouter(prefix="/quizzes", tags=["quizzes"])
 class QuizRequest(BaseModel):
     topic: str
     question_count: int = Field(default=10, ge=1, le=50)
-    difficulty: str = Field(default="intermediate", pattern="^(beginner|intermediate|advanced)$")
-    quiz_type: str = Field(default="nclex", pattern="^(nclex|general|clinical_scenario)$")
+    difficulty: str = Field(
+        default="intermediate", pattern="^(beginner|intermediate|advanced)$"
+    )
+    quiz_type: str = Field(
+        default="nclex", pattern="^(nclex|general|clinical_scenario)$"
+    )
     category: Optional[str] = None
     include_rationales: bool = True
     medical_accuracy_threshold: float = Field(default=0.95, ge=0.8, le=1.0)
@@ -68,7 +72,7 @@ async def get_content_service():
     # OpenAI API key would come from environment/config
     content_service = ContentGenerationService(
         openai_api_key="your-openai-key",  # Would be injected
-        ragnostic_client=ragnostic_client
+        ragnostic_client=ragnostic_client,
     )
     return content_service
 
@@ -76,14 +80,14 @@ async def get_content_service():
 @router.post("/", response_model=QuizResponse)
 async def create_quiz(
     request: QuizRequest,
-    content_service: ContentGenerationService = Depends(get_content_service)
+    content_service: ContentGenerationService = Depends(get_content_service),
 ):
     """
     Create a new quiz using RAGnostic educational APIs
     """
     try:
         generator = NCLEXGenerator(content_service)
-        
+
         if request.quiz_type == "nclex":
             # Generate NCLEX-style questions
             question_set = await generator.generate_questions(
@@ -91,9 +95,9 @@ async def create_quiz(
                 count=request.question_count,
                 difficulty=request.difficulty,
                 category=request.category,
-                medical_accuracy_threshold=request.medical_accuracy_threshold
+                medical_accuracy_threshold=request.medical_accuracy_threshold,
             )
-            
+
             # Convert to API response format
             quiz_questions = [
                 QuizQuestion(
@@ -104,11 +108,11 @@ async def create_quiz(
                     rationale=q.rationale if request.include_rationales else None,
                     category=q.category,
                     clinical_scenario=q.clinical_scenario,
-                    evidence_citations=q.evidence_citations
+                    evidence_citations=q.evidence_citations,
                 )
                 for i, q in enumerate(question_set.questions)
             ]
-            
+
             return QuizResponse(
                 id=f"quiz_{datetime.utcnow().timestamp()}",
                 topic=request.topic,
@@ -117,12 +121,15 @@ async def create_quiz(
                 created_at=datetime.utcnow().isoformat(),
                 difficulty=request.difficulty,
                 validation_summary=question_set.validation_summary,
-                estimated_completion_time=len(quiz_questions) * 3  # ~3 min per question
+                estimated_completion_time=len(quiz_questions)
+                * 3,  # ~3 min per question
             )
-        
+
         else:
-            raise HTTPException(status_code=400, detail=f"Quiz type {request.quiz_type} not supported")
-            
+            raise HTTPException(
+                status_code=400, detail=f"Quiz type {request.quiz_type} not supported"
+            )
+
     except Exception as e:
         logger.error(f"Quiz creation failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Quiz generation failed: {str(e)}")
@@ -131,21 +138,21 @@ async def create_quiz(
 @router.post("/clinical-scenarios", response_model=QuizResponse)
 async def create_clinical_scenario_quiz(
     request: ClinicalScenarioRequest,
-    content_service: ContentGenerationService = Depends(get_content_service)
+    content_service: ContentGenerationService = Depends(get_content_service),
 ):
     """
     Create quiz with comprehensive clinical scenarios
     """
     try:
         generator = NCLEXGenerator(content_service)
-        
+
         question_set = await generator.generate_clinical_scenario_questions(
             patient_condition=request.patient_condition,
             nursing_focus=request.nursing_focus,
             count=request.question_count,
-            difficulty=request.difficulty
+            difficulty=request.difficulty,
         )
-        
+
         quiz_questions = [
             QuizQuestion(
                 id=f"cs_{i+1}",
@@ -155,11 +162,11 @@ async def create_clinical_scenario_quiz(
                 rationale=q.rationale,
                 category=q.category,
                 clinical_scenario=q.clinical_scenario,
-                evidence_citations=q.evidence_citations
+                evidence_citations=q.evidence_citations,
             )
             for i, q in enumerate(question_set.questions)
         ]
-        
+
         return QuizResponse(
             id=f"clinical_quiz_{datetime.utcnow().timestamp()}",
             topic=f"{request.patient_condition} - {request.nursing_focus}",
@@ -168,18 +175,21 @@ async def create_clinical_scenario_quiz(
             created_at=datetime.utcnow().isoformat(),
             difficulty=request.difficulty,
             validation_summary=question_set.validation_summary,
-            estimated_completion_time=len(quiz_questions) * 5  # Longer for complex scenarios
+            estimated_completion_time=len(quiz_questions)
+            * 5,  # Longer for complex scenarios
         )
-        
+
     except Exception as e:
         logger.error(f"Clinical scenario quiz creation failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Clinical quiz generation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Clinical quiz generation failed: {str(e)}"
+        )
 
 
 @router.post("/validate/{quiz_id}", response_model=QuizValidationResponse)
 async def validate_quiz(
     quiz_id: str,
-    content_service: ContentGenerationService = Depends(get_content_service)
+    content_service: ContentGenerationService = Depends(get_content_service),
 ):
     """
     Validate quiz questions for medical accuracy and format
@@ -193,14 +203,14 @@ async def validate_quiz(
             validation_details={
                 "medical_accuracy_score": 0.95,
                 "format_compliance": True,
-                "evidence_quality": "high"
+                "evidence_quality": "high",
             },
             suggestions=[
                 "Consider adding more diverse question types",
-                "Include additional evidence citations"
-            ]
+                "Include additional evidence citations",
+            ],
         )
-        
+
     except Exception as e:
         logger.error(f"Quiz validation failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Validation failed: {str(e)}")
@@ -208,7 +218,7 @@ async def validate_quiz(
 
 @router.get("/categories", response_model=list[str])
 async def get_quiz_categories(
-    content_service: ContentGenerationService = Depends(get_content_service)
+    content_service: ContentGenerationService = Depends(get_content_service),
 ):
     """
     Get available quiz categories (NCLEX categories)
@@ -239,6 +249,31 @@ async def get_quiz(quiz_id: str):
     raise HTTPException(status_code=404, detail="Quiz not found")
 
 
+@router.post("/nclex/generate", response_model=QuizResponse)
+async def generate_nclex_questions(
+    request: QuizRequest,
+    content_service: ContentGenerationService = Depends(get_content_service),
+):
+    """
+    REVISED_PHASE3_PLAN.md Required Endpoint: Generate NCLEX-style questions
+
+    This is the specific endpoint required by Phase 3 planning documents.
+    Delegates to the main quiz creation functionality with NCLEX type.
+    """
+    try:
+        # Force NCLEX type for this endpoint
+        request.quiz_type = "nclex"
+
+        # Use the existing quiz creation logic
+        return await create_quiz(request, content_service)
+
+    except Exception as e:
+        logger.error(f"NCLEX generation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"NCLEX question generation failed: {str(e)}"
+        )
+
+
 @router.get("/health")
 async def quiz_service_health():
     """
@@ -251,7 +286,7 @@ async def quiz_service_health():
             "nclex_questions",
             "clinical_scenarios",
             "medical_validation",
-            "evidence_based_content"
+            "evidence_based_content",
         ],
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.utcnow().isoformat(),
     }

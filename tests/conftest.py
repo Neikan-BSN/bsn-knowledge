@@ -1,231 +1,516 @@
-"""Pytest configuration for BSN Knowledge Base tests.
-
-Implements Task Group 3 testing patterns:
-- Neo4j test database isolation
-- Parallel test execution
-- Service coordination
-- 90% coverage enforcement
+"""
+Comprehensive test configuration for BSN Knowledge API testing suite.
+Provides fixtures for authentication, database setup, and mock services.
 """
 
 import asyncio
-import os
-from collections.abc import AsyncGenerator
+import time
+from datetime import datetime, timezone
+from typing import AsyncGenerator, Dict, Any
+from unittest.mock import AsyncMock
 
 import pytest
-import redis
-from neo4j import Driver, GraphDatabase
-from qdrant_client import QdrantClient
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.pool import StaticPool
 
-# Test database configurations
-TEST_NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7688")
-TEST_NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
-TEST_NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "testpass")
-TEST_DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql://testuser:testpass@localhost:5432/bsn_knowledge_test"
+from src.api.main import app
+from src.auth import (
+    UserInDB,
+    UserRole,
+    create_auth_tokens,
+    get_password_hash,
+    fake_users_db,
 )
-TEST_REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+from src.models.assessment_models import (
+    CompetencyAssessmentResult,
+    KnowledgeGap,
+    LearningPathRecommendation,
+    CompetencyProficiencyLevel,
+)
+
+# Test database URL
+TEST_DATABASE_URL = "sqlite+aiosqlite:///./test_bsn_knowledge.db"
+
+# Test configuration
+TEST_CONFIG = {
+    "JWT_SECRET_KEY": "test_secret_key_for_testing_only",
+    "TEST_MODE": True,
+    "RATE_LIMIT_DISABLED": True,
+    "EXTERNAL_SERVICE_MOCK": True,
+}
 
 
 @pytest.fixture(scope="session")
 def event_loop():
     """Create an instance of the default event loop for the test session."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     yield loop
     loop.close()
 
 
 @pytest.fixture(scope="session")
-async def neo4j_driver() -> AsyncGenerator[Driver, None]:
-    """Neo4j driver fixture with test database isolation."""
-    driver = GraphDatabase.driver(
-        TEST_NEO4J_URI, auth=(TEST_NEO4J_USER, TEST_NEO4J_PASSWORD)
-    )
-
-    # Verify connection
-    try:
-        driver.verify_connectivity()
-        yield driver
-    finally:
-        driver.close()
+def test_app() -> FastAPI:
+    """Test FastAPI application instance."""
+    return app
 
 
 @pytest.fixture(scope="function")
-async def neo4j_session(neo4j_driver):
-    """Neo4j session fixture with transaction isolation."""
-    with neo4j_driver.session() as session:
-        # Clear test data before each test
-        session.run("MATCH (n) DETACH DELETE n")
-        yield session
-        # Clean up after test
-        session.run("MATCH (n) DETACH DELETE n")
+def client(test_app: FastAPI) -> TestClient:
+    """Synchronous test client for FastAPI application."""
+    with TestClient(test_app) as test_client:
+        yield test_client
 
 
-@pytest.fixture(scope="session")
-async def postgres_engine():
-    """PostgreSQL async engine for testing."""
-    engine = create_async_engine(TEST_DATABASE_URL)
+@pytest.fixture(scope="function")
+async def async_client(test_app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
+    """Async test client for FastAPI application."""
+    async with AsyncClient(app=test_app, base_url="http://test") as ac:
+        yield ac
+
+
+# Authentication fixtures
+@pytest.fixture(scope="function")
+def test_users() -> Dict[str, UserInDB]:
+    """Test users for authentication testing."""
+    return {
+        "student1": UserInDB(
+            id=1,
+            username="student1",
+            email="student1@test.edu",
+            role=UserRole.STUDENT,
+            hashed_password=get_password_hash("test_password"),
+            is_active=True,
+            created_at=datetime.now(timezone.utc),
+        ),
+        "instructor1": UserInDB(
+            id=2,
+            username="instructor1",
+            email="instructor1@test.edu",
+            role=UserRole.INSTRUCTOR,
+            hashed_password=get_password_hash("test_password"),
+            is_active=True,
+            created_at=datetime.now(timezone.utc),
+        ),
+        "admin1": UserInDB(
+            id=3,
+            username="admin1",
+            email="admin1@test.edu",
+            role=UserRole.ADMIN,
+            hashed_password=get_password_hash("test_password"),
+            is_active=True,
+            created_at=datetime.now(timezone.utc),
+        ),
+        "inactive_user": UserInDB(
+            id=4,
+            username="inactive_user",
+            email="inactive@test.edu",
+            role=UserRole.STUDENT,
+            hashed_password=get_password_hash("test_password"),
+            is_active=False,
+            created_at=datetime.now(timezone.utc),
+        ),
+    }
+
+
+@pytest.fixture(scope="function")
+def auth_tokens(test_users: Dict[str, UserInDB]) -> Dict[str, str]:
+    """Generate authentication tokens for test users."""
+    tokens = {}
+    for username, user in test_users.items():
+        if user.is_active:
+            token_response = create_auth_tokens(user)
+            tokens[username] = token_response.access_token
+    return tokens
+
+
+@pytest.fixture(scope="function")
+def auth_headers(auth_tokens: Dict[str, str]) -> Dict[str, Dict[str, str]]:
+    """Generate authentication headers for test requests."""
+    return {
+        username: {"Authorization": f"Bearer {token}"}
+        for username, token in auth_tokens.items()
+    }
+
+
+# Mock data fixtures
+@pytest.fixture
+def sample_nursing_content() -> Dict[str, Any]:
+    """Sample nursing education content for testing."""
+    return {
+        "topics": [
+            {
+                "id": "cardiology_basics",
+                "name": "Basic Cardiology",
+                "category": "cardiovascular",
+                "description": "Fundamental cardiovascular assessment and care",
+                "difficulty": "beginner",
+            },
+            {
+                "id": "medication_administration",
+                "name": "Safe Medication Administration",
+                "category": "pharmacology",
+                "description": "Principles of safe medication administration",
+                "difficulty": "intermediate",
+            },
+            {
+                "id": "infection_control",
+                "name": "Infection Prevention and Control",
+                "category": "safety",
+                "description": "Evidence-based infection prevention strategies",
+                "difficulty": "intermediate",
+            },
+        ],
+        "competencies": [
+            {
+                "id": "AACN_KNOWLEDGE_1",
+                "domain": "knowledge_for_nursing_practice",
+                "name": "Pathophysiology Knowledge",
+                "description": "Understanding of human pathophysiology",
+            },
+            {
+                "id": "AACN_PERSON_CENTERED_1",
+                "domain": "person_centered_care",
+                "name": "Holistic Assessment",
+                "description": "Comprehensive patient assessment skills",
+            },
+        ],
+    }
+
+
+@pytest.fixture
+def mock_nclex_questions() -> Dict[str, Any]:
+    """Mock NCLEX-style questions for testing."""
+    return {
+        "questions": [
+            {
+                "id": "nclex_001",
+                "type": "multiple_choice",
+                "question": "A patient with heart failure is receiving digoxin. Which finding would indicate digoxin toxicity?",
+                "options": [
+                    "A. Heart rate of 88 bpm",
+                    "B. Nausea and visual disturbances",
+                    "C. Blood pressure of 130/80 mmHg",
+                    "D. Respiratory rate of 18",
+                ],
+                "correct_answer": "B",
+                "rationale": "Nausea and visual disturbances are classic signs of digoxin toxicity.",
+                "topic": "cardiology",
+                "difficulty": "medium",
+                "nclex_category": "Pharmacological and Parenteral Therapies",
+            },
+            {
+                "id": "nclex_002",
+                "type": "multiple_choice",
+                "question": "Which action should the nurse take first when administering medications?",
+                "options": [
+                    "A. Check the patient's armband",
+                    "B. Verify the physician's order",
+                    "C. Wash hands thoroughly",
+                    "D. Prepare the medication",
+                ],
+                "correct_answer": "C",
+                "rationale": "Hand hygiene is always the first step in any patient care activity.",
+                "topic": "infection_control",
+                "difficulty": "easy",
+                "nclex_category": "Safety and Infection Control",
+            },
+        ]
+    }
+
+
+@pytest.fixture
+def mock_assessment_data() -> Dict[str, Any]:
+    """Mock assessment data for competency testing."""
+    return {
+        "student_performance": {
+            "student_id": "student_001",
+            "quiz_scores": [85, 78, 92, 88],
+            "clinical_evaluations": {
+                "communication": 4.2,
+                "clinical_reasoning": 3.8,
+                "technical_skills": 4.0,
+                "professionalism": 4.5,
+            },
+            "simulation_scores": {"scenario_1": 88, "scenario_2": 92, "scenario_3": 85},
+        },
+        "competency_gaps": [
+            {
+                "competency_id": "AACN_KNOWLEDGE_1",
+                "severity": "medium",
+                "description": "Gaps in advanced pathophysiology concepts",
+                "recommendations": [
+                    "Review cardiovascular pathophysiology",
+                    "Complete practice exercises",
+                ],
+            }
+        ],
+    }
+
+
+@pytest.fixture
+def mock_analytics_data() -> Dict[str, Any]:
+    """Mock analytics data for testing."""
+    return {
+        "student_analytics": {
+            "student_id": "student_001",
+            "overall_progress": 78.5,
+            "competency_scores": {
+                "knowledge_for_nursing_practice": 82.0,
+                "person_centered_care": 88.0,
+                "population_health": 75.0,
+                "scholarship_for_nursing_discipline": 70.0,
+                "information_technology": 85.0,
+                "healthcare_systems": 72.0,
+                "interprofessional_partnerships": 90.0,
+                "personal_professional_development": 86.0,
+            },
+            "study_time_hours": 45.5,
+            "quiz_completion_rate": 92.0,
+            "areas_for_improvement": ["Population Health", "Healthcare Systems"],
+        }
+    }
+
+
+# Service mocks
+@pytest.fixture(scope="function")
+def mock_ragnostic_client():
+    """Mock RAGnostic client for testing."""
+    mock_client = AsyncMock()
+
+    # Mock question generation
+    mock_client.generate_questions.return_value = {
+        "questions": [
+            {
+                "id": "generated_001",
+                "question": "Mock generated question?",
+                "options": ["A. Option 1", "B. Option 2", "C. Option 3", "D. Option 4"],
+                "correct_answer": "B",
+                "rationale": "Mock rationale",
+                "difficulty": "medium",
+            }
+        ],
+        "metadata": {
+            "generation_time": 1.5,
+            "source": "ragnostic_ai",
+            "confidence": 0.92,
+        },
+    }
+
+    # Mock content enrichment
+    mock_client.enrich_content.return_value = {
+        "enriched_content": "Enhanced educational content with additional context",
+        "learning_objectives": ["Objective 1", "Objective 2"],
+        "assessment_suggestions": ["Quiz question 1", "Case study scenario"],
+    }
+
+    return mock_client
+
+
+@pytest.fixture(scope="function")
+def mock_competency_framework():
+    """Mock AACN competency framework for testing."""
+    mock_framework = AsyncMock()
+
+    # Mock competency assessment
+    mock_framework.assess_competency.return_value = CompetencyAssessmentResult(
+        student_id="student_001",
+        competency_id="AACN_KNOWLEDGE_1",
+        assessment_id="test_assessment_001",
+        current_level=CompetencyProficiencyLevel.COMPETENT,
+        score=78.5,
+        strengths=["Good understanding of basic concepts"],
+        areas_for_improvement=["Advanced pathophysiology"],
+        recommendations=["Review cardiovascular system", "Practice case studies"],
+        evidence_summary="Based on quiz scores and clinical evaluations",
+        assessor_id="instructor_001",
+        assessment_date=datetime.now(timezone.utc),
+        next_assessment_due=datetime.now(timezone.utc),
+        proficiency_trend="improving",
+    )
+
+    # Mock competency gaps
+    mock_framework.get_competency_gaps.return_value = {
+        "knowledge_for_nursing_practice": [
+            KnowledgeGap(
+                competency_id="AACN_KNOWLEDGE_1",
+                gap_description="Advanced pathophysiology concepts",
+                severity="medium",
+                recommended_resources=["Pathophysiology textbook Ch. 12-15"],
+                estimated_time_to_close_hours=8,
+                prerequisites=[],
+            )
+        ]
+    }
+
+    # Mock learning path
+    mock_framework.recommend_learning_path.return_value = LearningPathRecommendation(
+        student_id="student_001",
+        target_competencies=["AACN_KNOWLEDGE_1"],
+        recommended_sequence=[
+            {
+                "activity_type": "reading",
+                "content": "Pathophysiology review",
+                "estimated_duration_minutes": 60,
+            },
+            {
+                "activity_type": "quiz",
+                "content": "Practice quiz on cardiovascular system",
+                "estimated_duration_minutes": 30,
+            },
+        ],
+        estimated_duration_hours=12,
+        difficulty_progression="beginner_to_intermediate",
+        learning_style_adaptations=["visual", "kinesthetic"],
+    )
+
+    return mock_framework
+
+
+# Database fixtures
+@pytest.fixture(scope="function")
+async def test_db_engine():
+    """Test database engine with in-memory SQLite."""
+    engine = create_async_engine(
+        TEST_DATABASE_URL,
+        echo=False,
+        poolclass=StaticPool,
+        connect_args={
+            "check_same_thread": False,
+        },
+    )
     yield engine
     await engine.dispose()
 
 
 @pytest.fixture(scope="function")
-async def postgres_session(postgres_engine):
-    """PostgreSQL session with transaction rollback."""
-    async with postgres_engine.begin() as conn:
-        async with AsyncSession(conn) as session:
+async def test_db_session(test_db_engine):
+    """Test database session with automatic cleanup."""
+    async with test_db_engine.begin() as conn:
+        async with AsyncSession(conn, expire_on_commit=False) as session:
             yield session
-            # Rollback after test
             await session.rollback()
-
-
-@pytest.fixture(scope="session")
-def redis_client():
-    """Redis client for testing with test database."""
-    client = redis.from_url(TEST_REDIS_URL, db=15)  # Use test database
-    yield client
-    client.flushdb()  # Clean up
-    client.close()
-
-
-@pytest.fixture(scope="function")
-def clean_redis(redis_client):
-    """Clean Redis before each test."""
-    redis_client.flushdb()
-    yield redis_client
-    redis_client.flushdb()
-
-
-@pytest.fixture(scope="session")
-def qdrant_client():
-    """Qdrant client for vector storage testing."""
-    client = QdrantClient(host="localhost", port=6333)
-    yield client
-    # Clean up collections
-    try:
-        collections = client.get_collections()
-        for collection in collections.collections:
-            if collection.name.startswith("test_"):
-                client.delete_collection(collection.name)
-    except Exception:
-        pass  # Ignore cleanup errors
-
-
-@pytest.fixture
-def sample_knowledge_data():
-    """Sample medical terminology data for testing."""
-    return {
-        "medical_terms": [
-            {"id": "term_1", "name": "Hypertension", "category": "cardiovascular"},
-            {"id": "term_2", "name": "Diabetes", "category": "endocrine"},
-            {"id": "term_3", "name": "Pneumonia", "category": "respiratory"},
-        ],
-        "relationships": [
-            {"from": "term_1", "to": "term_2", "type": "COMORBID_WITH"},
-            {"from": "term_3", "to": "term_1", "type": "COMPLICATES"},
-        ],
-    }
-
-
-@pytest.fixture
-def knowledge_graph_schema():
-    """Knowledge graph schema for testing."""
-    return {
-        "constraints": [
-            "CREATE CONSTRAINT medical_term_id IF NOT EXISTS FOR (n:MedicalTerm) REQUIRE n.id IS UNIQUE",
-            "CREATE CONSTRAINT knowledge_category_name IF NOT EXISTS FOR (n:Category) REQUIRE n.name IS UNIQUE",
-        ],
-        "indexes": [
-            "CREATE INDEX medical_term_name IF NOT EXISTS FOR (n:MedicalTerm) ON (n.name)",
-            "CREATE INDEX medical_term_category IF NOT EXISTS FOR (n:MedicalTerm) ON (n.category)",
-        ],
-    }
-
-
-@pytest.fixture(scope="function")
-async def setup_knowledge_graph(
-    neo4j_session, knowledge_graph_schema, sample_knowledge_data
-):
-    """Setup knowledge graph with schema and sample data."""
-    # Create constraints and indexes
-    for constraint in knowledge_graph_schema["constraints"]:
-        neo4j_session.run(constraint)
-
-    for index in knowledge_graph_schema["indexes"]:
-        neo4j_session.run(index)
-
-    # Insert sample data
-    for term in sample_knowledge_data["medical_terms"]:
-        neo4j_session.run(
-            "CREATE (n:MedicalTerm {id: $id, name: $name, category: $category})", **term
-        )
-
-    for rel in sample_knowledge_data["relationships"]:
-        neo4j_session.run(
-            "MATCH (a:MedicalTerm {id: $from}), (b:MedicalTerm {id: $to}) "
-            "CREATE (a)-[r:" + rel["type"] + "]->(b)",
-            from_id=rel["from"],
-            to_id=rel["to"],
-        )
-
-    yield neo4j_session
 
 
 # Performance testing fixtures
 @pytest.fixture
-def performance_threshold():
-    """Performance thresholds for knowledge base operations."""
-    return {
-        "query_response_time": 0.5,  # 500ms max for queries
-        "graph_traversal_time": 1.0,  # 1s max for complex traversals
-        "bulk_insert_time": 2.0,  # 2s max for bulk operations
-    }
+def performance_monitor():
+    """Performance monitoring fixture for testing."""
+
+    class PerformanceMonitor:
+        def __init__(self):
+            self.start_time = None
+            self.end_time = None
+
+        def start(self):
+            self.start_time = time.time()
+
+        def stop(self):
+            self.end_time = time.time()
+
+        @property
+        def duration(self) -> float:
+            if self.start_time and self.end_time:
+                return self.end_time - self.start_time
+            return 0.0
+
+        def assert_within_threshold(self, threshold_seconds: float):
+            assert (
+                self.duration <= threshold_seconds
+            ), f"Operation took {self.duration:.3f}s, exceeds threshold of {threshold_seconds}s"
+
+    return PerformanceMonitor()
 
 
-@pytest.fixture
-def coverage_requirements():
-    """Coverage requirements following Task Group 3 standards."""
-    return {
-        "minimum_coverage": 90,  # 90% coverage requirement
-        "exclude_patterns": [
-            "*/tests/*",
-            "*/__pycache__/*",
-            "*/migrations/*",
-        ],
-    }
+# Rate limiting fixtures
+@pytest.fixture(scope="function")
+def reset_rate_limiter():
+    """Reset rate limiter state before each test."""
+    # Clear rate limiter state
+    from src.auth import rate_limiter
 
-
-# Async test helpers
-pytest_plugins = ["pytest_asyncio"]
-
-# Parallel test execution configuration
-pytest.main.Config.option.numprocesses = "auto"  # Use all available cores
-
-# Timeout configuration for long-running tests
-DEFAULT_TEST_TIMEOUT = 30  # 30 seconds
-
-
-def pytest_configure(config):
-    """Configure pytest for BSN Knowledge testing."""
-    config.addinivalue_line(
-        "markers", "slow: marks tests as slow (may take more than 1 second)"
-    )
-    config.addinivalue_line("markers", "integration: marks tests as integration tests")
-    config.addinivalue_line("markers", "neo4j: marks tests that require Neo4j database")
-    config.addinivalue_line(
-        "markers", "performance: marks tests for performance validation"
-    )
-
-
-@pytest.fixture(autouse=True)
-def timeout_all_tests():
-    """Auto-apply timeout to all tests."""
-    import signal
-
-    def timeout_handler(signum, frame):
-        raise TimeoutError(f"Test exceeded {DEFAULT_TEST_TIMEOUT} seconds")
-
-    signal.signal(signal.SIGALRM, timeout_handler)
-    signal.alarm(DEFAULT_TEST_TIMEOUT)
+    rate_limiter.requests.clear()
     yield
-    signal.alarm(0)  # Disable alarm
+    rate_limiter.requests.clear()
+
+
+# Helper functions
+@pytest.fixture
+def assert_valid_jwt_token():
+    """Helper to validate JWT token structure."""
+    import jwt
+
+    def _validate_token(token: str) -> Dict[str, Any]:
+        try:
+            # Decode without verification for testing
+            payload = jwt.decode(token, options={"verify_signature": False})
+
+            # Check required fields
+            assert "sub" in payload, "Token missing 'sub' field"
+            assert "user_id" in payload, "Token missing 'user_id' field"
+            assert "role" in payload, "Token missing 'role' field"
+            assert "exp" in payload, "Token missing 'exp' field"
+            assert "iat" in payload, "Token missing 'iat' field"
+            assert "type" in payload, "Token missing 'type' field"
+
+            return payload
+        except jwt.DecodeError as e:
+            pytest.fail(f"Invalid JWT token: {e}")
+
+    return _validate_token
+
+
+# Cleanup fixtures
+@pytest.fixture(autouse=True)
+def cleanup_test_environment():
+    """Cleanup test environment after each test."""
+    yield
+    # Reset any global state
+    fake_users_db.clear()
+    fake_users_db.update(
+        {
+            "student1": UserInDB(
+                id=1,
+                username="student1",
+                email="student1@nursing.edu",
+                role=UserRole.STUDENT,
+                hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
+                is_active=True,
+            ),
+            "instructor1": UserInDB(
+                id=2,
+                username="instructor1",
+                email="instructor1@nursing.edu",
+                role=UserRole.INSTRUCTOR,
+                hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
+                is_active=True,
+            ),
+            "admin1": UserInDB(
+                id=3,
+                username="admin1",
+                email="admin1@nursing.edu",
+                role=UserRole.ADMIN,
+                hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
+                is_active=True,
+            ),
+        }
+    )
+
+
+# Pytest configuration
+def pytest_configure(config):
+    """Configure pytest with custom markers."""
+    config.addinivalue_line("markers", "auth: Authentication and authorization tests")
+    config.addinivalue_line("markers", "endpoints: API endpoint tests")
+    config.addinivalue_line("markers", "rate_limiting: Rate limiting tests")
+    config.addinivalue_line("markers", "security: Security tests")
+    config.addinivalue_line("markers", "performance: Performance tests")
+    config.addinivalue_line("markers", "integration: Integration tests")
+    config.addinivalue_line("markers", "slow: Slow running tests")
+
+
+# Async pytest configuration
+pytest_plugins = ["pytest_asyncio"]

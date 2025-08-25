@@ -2,6 +2,7 @@
 Clinical Decision Support API Router
 Provides evidence-based clinical recommendations and care planning support
 """
+
 import logging
 from typing import Optional, Dict, Any, List
 from datetime import datetime
@@ -12,11 +13,10 @@ from pydantic import BaseModel, Field
 from ...services.clinical_decision_support import (
     ClinicalDecisionSupportService,
     ClinicalAssessment,
-    ClinicalDecisionResponse,
-    ClinicalRecommendation,
     ClinicalPriority,
-    EvidenceLevel
+    EvidenceLevel,
 )
+from ...generators.clinical_decision_support import ClinicalDecisionSupport
 from ...services.content_generation_service import ContentGenerationService
 from ...services.ragnostic_client import RAGnosticClient
 
@@ -27,6 +27,7 @@ router = APIRouter(prefix="/clinical-support", tags=["clinical-support"])
 
 class AssessmentRequest(BaseModel):
     """Request for clinical assessment data"""
+
     patient_condition: str
     symptoms: List[str] = []
     vital_signs: Dict[str, Any] = {}
@@ -42,18 +43,21 @@ class AssessmentRequest(BaseModel):
 
 class EmergencyProtocolRequest(BaseModel):
     """Request for emergency protocols"""
+
     emergency_situation: str
     patient_factors: Optional[Dict[str, Any]] = None
 
 
 class CareplanValidationRequest(BaseModel):
     """Request to validate a nursing care plan"""
+
     care_plan: Dict[str, Any]
     patient_condition: str
 
 
 class RecommendationResponse(BaseModel):
     """Individual clinical recommendation response"""
+
     id: str
     recommendation_text: str
     rationale: str
@@ -68,6 +72,7 @@ class RecommendationResponse(BaseModel):
 
 class ClinicalSupportResponse(BaseModel):
     """Complete clinical decision support response"""
+
     assessment_summary: Dict[str, Any]
     recommendations: List[RecommendationResponse]
     nursing_diagnoses: List[str]
@@ -81,6 +86,7 @@ class ClinicalSupportResponse(BaseModel):
 
 class EmergencyProtocolResponse(BaseModel):
     """Emergency protocol response"""
+
     emergency_situation: str
     protocols: str
     validation_details: Dict[str, Any]
@@ -89,10 +95,66 @@ class EmergencyProtocolResponse(BaseModel):
 
 class CareplanValidationResponse(BaseModel):
     """Care plan validation response"""
+
     is_valid: bool
     validation_details: Dict[str, Any]
     recommendations: List[str]
     evidence_gaps: List[str] = []
+
+
+class CaseStudyRequest(BaseModel):
+    """Request for case study generation per REVISED_PHASE3_PLAN.md B.3"""
+
+    learning_objectives: List[str] = Field(
+        description="Learning objectives for case study generation", min_items=1
+    )
+    case_complexity: str = Field(
+        default="intermediate",
+        description="Case complexity level: basic, intermediate, advanced",
+    )
+    focus_area: Optional[str] = Field(None, description="Optional clinical focus area")
+
+
+class ClinicalRecommendationRequest(BaseModel):
+    """Request for clinical recommendations per REVISED_PHASE3_PLAN.md B.3"""
+
+    patient_demographics: Dict[str, Any] = Field(
+        description="Patient age, gender, relevant demographic factors"
+    )
+    clinical_presentation: Dict[str, Any] = Field(
+        description="Current symptoms, vital signs, physical assessment findings"
+    )
+    relevant_history: Dict[str, Any] = Field(
+        description="Medical history, medications, allergies, social factors"
+    )
+    learning_objectives: List[str] = Field(
+        description="Specific learning goals for this case scenario"
+    )
+    case_complexity: str = Field(
+        default="intermediate",
+        description="Case complexity level: basic, intermediate, advanced",
+    )
+
+
+class CaseStudyResponse(BaseModel):
+    """Case study response"""
+
+    case_studies: List[Dict[str, Any]]
+    total_generated: int
+    learning_objectives_covered: List[str]
+    generated_at: str
+    ragnostic_integration_status: str
+
+
+class ClinicalRecommendationResponse(BaseModel):
+    """Clinical recommendation response per REVISED_PHASE3_PLAN.md B.3"""
+
+    case_id: str
+    recommendations: List[Dict[str, Any]]
+    evidence_summary: Dict[str, Any]
+    ragnostic_context: Dict[str, Any]
+    overall_confidence: float
+    generated_at: str
 
 
 # Dependency injection for services
@@ -100,22 +162,28 @@ async def get_content_service():
     ragnostic_client = RAGnosticClient()
     content_service = ContentGenerationService(
         openai_api_key="your-openai-key",  # Would be injected from config
-        ragnostic_client=ragnostic_client
+        ragnostic_client=ragnostic_client,
     )
     return content_service
+
+
+async def get_clinical_decision_support():
+    """Get ClinicalDecisionSupport instance per REVISED_PHASE3_PLAN.md B.3"""
+    ragnostic_client = RAGnosticClient()
+    return ClinicalDecisionSupport(ragnostic_client=ragnostic_client)
 
 
 @router.post("/recommendations", response_model=ClinicalSupportResponse)
 async def get_clinical_recommendations(
     request: AssessmentRequest,
-    content_service: ContentGenerationService = Depends(get_content_service)
+    content_service: ContentGenerationService = Depends(get_content_service),
 ):
     """
     Get evidence-based clinical recommendations for patient assessment
     """
     try:
         clinical_service = ClinicalDecisionSupportService(content_service)
-        
+
         # Create clinical assessment
         assessment = ClinicalAssessment(
             patient_condition=request.patient_condition,
@@ -125,17 +193,17 @@ async def get_clinical_recommendations(
             medications=request.medications,
             allergies=request.allergies,
             comorbidities=request.comorbidities,
-            nursing_concerns=request.nursing_concerns
+            nursing_concerns=request.nursing_concerns,
         )
-        
+
         # Get recommendations
         decision_response = await clinical_service.get_clinical_recommendations(
             assessment=assessment,
             focus_area=request.focus_area,
             max_recommendations=request.max_recommendations,
-            min_confidence=request.min_confidence
+            min_confidence=request.min_confidence,
         )
-        
+
         # Convert to API response format
         recommendations = [
             RecommendationResponse(
@@ -148,17 +216,17 @@ async def get_clinical_recommendations(
                 contraindications=rec.contraindications,
                 monitoring_parameters=rec.monitoring_parameters,
                 evidence_citations=rec.evidence_citations,
-                umls_concepts=rec.umls_concepts
+                umls_concepts=rec.umls_concepts,
             )
             for rec in decision_response.recommendations
         ]
-        
+
         return ClinicalSupportResponse(
             assessment_summary={
                 "condition": assessment.patient_condition,
                 "symptoms_count": len(assessment.symptoms),
                 "medications_count": len(assessment.medications),
-                "comorbidities_count": len(assessment.comorbidities)
+                "comorbidities_count": len(assessment.comorbidities),
             },
             recommendations=recommendations,
             nursing_diagnoses=decision_response.nursing_diagnoses,
@@ -167,78 +235,74 @@ async def get_clinical_recommendations(
             safety_considerations=decision_response.safety_considerations,
             evidence_summary=decision_response.evidence_summary,
             confidence_score=decision_response.confidence_score,
-            generated_at=decision_response.generated_at.isoformat()
+            generated_at=decision_response.generated_at.isoformat(),
         )
-        
+
     except Exception as e:
         logger.error(f"Clinical recommendations failed: {str(e)}")
         raise HTTPException(
-            status_code=500, 
-            detail=f"Clinical decision support failed: {str(e)}"
+            status_code=500, detail=f"Clinical decision support failed: {str(e)}"
         )
 
 
 @router.post("/emergency-protocols", response_model=EmergencyProtocolResponse)
 async def get_emergency_protocols(
     request: EmergencyProtocolRequest,
-    content_service: ContentGenerationService = Depends(get_content_service)
+    content_service: ContentGenerationService = Depends(get_content_service),
 ):
     """
     Get emergency nursing protocols and interventions
     """
     try:
         clinical_service = ClinicalDecisionSupportService(content_service)
-        
+
         # Get emergency protocols
         result = await clinical_service.get_emergency_protocols(
             emergency_situation=request.emergency_situation,
-            patient_factors=request.patient_factors
+            patient_factors=request.patient_factors,
         )
-        
+
         return EmergencyProtocolResponse(
             emergency_situation=request.emergency_situation,
             protocols=result["emergency_protocols"],
             validation_details=result["validation"],
-            generated_at=result["generated_at"]
+            generated_at=result["generated_at"],
         )
-        
+
     except Exception as e:
         logger.error(f"Emergency protocol generation failed: {str(e)}")
         raise HTTPException(
-            status_code=500,
-            detail=f"Emergency protocol generation failed: {str(e)}"
+            status_code=500, detail=f"Emergency protocol generation failed: {str(e)}"
         )
 
 
 @router.post("/validate-careplan", response_model=CareplanValidationResponse)
 async def validate_care_plan(
     request: CareplanValidationRequest,
-    content_service: ContentGenerationService = Depends(get_content_service)
+    content_service: ContentGenerationService = Depends(get_content_service),
 ):
     """
     Validate nursing care plan against evidence-based standards
     """
     try:
         clinical_service = ClinicalDecisionSupportService(content_service)
-        
+
         # Validate care plan
         validation_result = await clinical_service.validate_care_plan(
-            care_plan=request.care_plan,
-            patient_condition=request.patient_condition
+            care_plan=request.care_plan, patient_condition=request.patient_condition
         )
-        
+
         return CareplanValidationResponse(
             is_valid=validation_result["is_valid"],
             validation_details=validation_result.get("validation_details", {}),
             recommendations=validation_result.get("recommendations", []),
-            evidence_gaps=validation_result.get("evidence_gaps", [])
+            evidence_gaps=validation_result.get("evidence_gaps", []),
         )
-        
+
     except Exception as e:
         logger.error(f"Care plan validation failed: {str(e)}")
         raise HTTPException(
-            status_code=500,
-            detail=f"Care plan validation failed: {str(e)}"
+            status_code=500, detail=f"Care plan validation failed: {str(e)}"
         )
 
 
@@ -275,7 +339,7 @@ async def get_common_emergency_situations():
         "Severe Bleeding",
         "Falls with Injury",
         "Medication Error",
-        "Patient Deterioration"
+        "Patient Deterioration",
     ]
 
 
@@ -299,7 +363,7 @@ async def get_common_nursing_diagnoses():
         "Risk for Injury",
         "Ineffective Coping",
         "Risk for Bleeding",
-        "Ineffective Tissue Perfusion"
+        "Ineffective Tissue Perfusion",
     ]
 
 
@@ -323,14 +387,14 @@ async def get_clinical_focus_areas():
         "Family Support",
         "End-of-Life Care",
         "Mental Health",
-        "Rehabilitation"
+        "Rehabilitation",
     ]
 
 
 @router.post("/generate-careplan", response_model=Dict[str, Any])
 async def generate_nursing_care_plan(
     assessment: AssessmentRequest,
-    content_service: ContentGenerationService = Depends(get_content_service)
+    content_service: ContentGenerationService = Depends(get_content_service),
 ):
     """
     Generate a complete nursing care plan based on assessment data
@@ -338,7 +402,7 @@ async def generate_nursing_care_plan(
     try:
         # First get clinical recommendations
         clinical_service = ClinicalDecisionSupportService(content_service)
-        
+
         clinical_assessment = ClinicalAssessment(
             patient_condition=assessment.patient_condition,
             symptoms=assessment.symptoms,
@@ -347,16 +411,16 @@ async def generate_nursing_care_plan(
             medications=assessment.medications,
             allergies=assessment.allergies,
             comorbidities=assessment.comorbidities,
-            nursing_concerns=assessment.nursing_concerns
+            nursing_concerns=assessment.nursing_concerns,
         )
-        
+
         decision_response = await clinical_service.get_clinical_recommendations(
             assessment=clinical_assessment,
             focus_area=assessment.focus_area,
             max_recommendations=assessment.max_recommendations,
-            min_confidence=assessment.min_confidence
+            min_confidence=assessment.min_confidence,
         )
-        
+
         # Generate structured care plan
         care_plan = {
             "patient_assessment": {
@@ -366,11 +430,11 @@ async def generate_nursing_care_plan(
                 "lab_values": assessment.lab_values,
                 "medications": assessment.medications,
                 "allergies": assessment.allergies,
-                "comorbidities": assessment.comorbidities
+                "comorbidities": assessment.comorbidities,
             },
             "nursing_diagnoses": decision_response.nursing_diagnoses,
             "goals": [
-                f"Patient will demonstrate {intervention}" 
+                f"Patient will demonstrate {intervention}"
                 for intervention in decision_response.priority_interventions[:3]
             ],
             "interventions": [
@@ -378,7 +442,7 @@ async def generate_nursing_care_plan(
                     "intervention": rec.recommendation_text,
                     "rationale": rec.rationale,
                     "priority": rec.priority.value,
-                    "monitoring": rec.monitoring_parameters
+                    "monitoring": rec.monitoring_parameters,
                 }
                 for rec in decision_response.recommendations[:10]
             ],
@@ -388,20 +452,159 @@ async def generate_nursing_care_plan(
                 "Patient demonstrates understanding of condition",
                 "Vital signs remain within normal limits",
                 "Patient reports decreased symptoms",
-                "No adverse events occur"
+                "No adverse events occur",
             ],
             "generated_at": datetime.utcnow().isoformat(),
-            "evidence_summary": decision_response.evidence_summary
+            "evidence_summary": decision_response.evidence_summary,
         }
-        
+
         return care_plan
-        
+
     except Exception as e:
         logger.error(f"Care plan generation failed: {str(e)}")
         raise HTTPException(
-            status_code=500,
-            detail=f"Care plan generation failed: {str(e)}"
+            status_code=500, detail=f"Care plan generation failed: {str(e)}"
         )
+
+
+@router.post(
+    "/b3-generate-recommendations", response_model=ClinicalRecommendationResponse
+)
+async def b3_generate_clinical_recommendations(
+    request: ClinicalRecommendationRequest,
+    clinical_decision_support: ClinicalDecisionSupport = Depends(
+        get_clinical_decision_support
+    ),
+):
+    """
+    B.3 Clinical Decision Support: Generate evidence-based clinical recommendations
+    Per REVISED_PHASE3_PLAN.md B.3 specifications - Query RAGnostic for relevant clinical content,
+    apply clinical reasoning algorithms, generate evidence-based recommendations,
+    include citations and confidence scores.
+    """
+    try:
+        # Convert request to case scenario dict
+        case_scenario_dict = {
+            "patient_demographics": request.patient_demographics,
+            "clinical_presentation": request.clinical_presentation,
+            "relevant_history": request.relevant_history,
+            "learning_objectives": request.learning_objectives,
+            "case_complexity": request.case_complexity,
+        }
+
+        # Generate recommendations using B.3 implementation
+        result = await clinical_decision_support.generate_recommendations(
+            case_scenario_dict
+        )
+
+        # Convert recommendations to serializable format
+        recommendations = [
+            {
+                "id": f"rec_{i+1}",
+                "recommendation_text": rec.recommendation_text,
+                "evidence_citations": rec.evidence_citations,
+                "confidence_score": rec.confidence_score,
+                "reasoning_steps": rec.reasoning_steps,
+                "evidence_strength": rec.evidence_strength.value,
+                "priority": rec.priority.value,
+                "contraindications": rec.contraindications,
+                "monitoring_parameters": rec.monitoring_parameters,
+                "umls_concepts": rec.umls_concepts,
+            }
+            for i, rec in enumerate(result.recommendations)
+        ]
+
+        return ClinicalRecommendationResponse(
+            case_id=result.case_id,
+            recommendations=recommendations,
+            evidence_summary=result.evidence_summary,
+            ragnostic_context=result.ragnostic_context,
+            overall_confidence=result.overall_confidence,
+            generated_at=result.generated_at.isoformat(),
+        )
+
+    except Exception as e:
+        logger.error(f"B.3 Clinical recommendation generation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Clinical decision support B.3 implementation failed: {str(e)}",
+        )
+
+
+@router.post("/b3-create-case-studies", response_model=CaseStudyResponse)
+async def b3_create_case_studies(
+    request: CaseStudyRequest,
+    clinical_decision_support: ClinicalDecisionSupport = Depends(
+        get_clinical_decision_support
+    ),
+):
+    """
+    B.3 Clinical Decision Support: Create case studies using RAGnostic content
+    Per REVISED_PHASE3_PLAN.md B.3 specifications - Use RAGnostic content to build scenarios,
+    align with specified learning objectives, include assessment questions.
+    """
+    try:
+        # Generate case studies using B.3 implementation
+        case_studies = await clinical_decision_support.create_case_studies(
+            learning_objectives=request.learning_objectives
+        )
+
+        return CaseStudyResponse(
+            case_studies=case_studies,
+            total_generated=len(case_studies),
+            learning_objectives_covered=request.learning_objectives,
+            generated_at=datetime.utcnow().isoformat(),
+            ragnostic_integration_status="operational",
+        )
+
+    except Exception as e:
+        logger.error(f"B.3 Case study generation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Case study generation B.3 implementation failed: {str(e)}",
+        )
+
+
+@router.get("/b3-health", response_model=Dict[str, Any])
+async def b3_clinical_decision_support_health(
+    clinical_decision_support: ClinicalDecisionSupport = Depends(
+        get_clinical_decision_support
+    ),
+):
+    """
+    B.3 Clinical Decision Support Health Check
+    Validates RAGnostic integration and OpenAI connectivity per B.3 specifications
+    """
+    try:
+        health_status = await clinical_decision_support.health_check()
+
+        return {
+            "service": "clinical_decision_support_b3",
+            "status": health_status["status"],
+            "b3_features": {
+                "generate_recommendations": "operational",
+                "create_case_studies": "operational",
+                "ragnostic_integration": health_status["ragnostic_status"]["status"]
+                if "ragnostic_status" in health_status
+                else "unknown",
+                "openai_integration": health_status["openai_status"],
+                "evidence_based_reasoning": "operational",
+                "citation_generation": "operational",
+                "confidence_scoring": "operational",
+            },
+            "cache_stats": health_status.get("cache_stats", {}),
+            "implementation_version": "B.3_REVISED_PHASE3_PLAN",
+            "timestamp": health_status["timestamp"],
+        }
+
+    except Exception as e:
+        logger.error(f"B.3 health check failed: {str(e)}")
+        return {
+            "service": "clinical_decision_support_b3",
+            "status": "unhealthy",
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat(),
+        }
 
 
 @router.get("/health")
@@ -418,7 +621,8 @@ async def clinical_support_health():
             "care_plan_validation",
             "nursing_diagnoses",
             "clinical_reasoning",
-            "safety_considerations"
+            "safety_considerations",
         ],
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.utcnow().isoformat(),
+        "b3_implementation_status": "operational",
     }

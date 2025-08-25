@@ -14,8 +14,8 @@ allow-direct-references = true
 
 [project]
 name = "bsn-knowledge"
-version = "0.1.0"
-description = "BSN Knowledge Base - Educational resource management system"
+version = "1.0.0"
+description = "BSN Knowledge Platform - Comprehensive nursing education platform with adaptive learning, clinical decision support, and analytics"
 authors = [
     {name = "BSN Knowledge Team", email = "dev@bsn-knowledge.ai"}
 ]
@@ -36,8 +36,12 @@ dependencies = [
     # Core framework (standardized across workspace)
     "fastapi>=0.110.0",
     "uvicorn[standard]>=0.29.0",
-    "pydantic>=2.7.0",
+    "pydantic[email]>=2.7.0",
     "pydantic-settings>=2.2.0",
+    # Authentication & Security
+    "pyjwt>=2.8.0",
+    "passlib[bcrypt]>=1.7.4",
+    "python-multipart>=0.0.9",
     # Database & Storage
     "sqlalchemy>=2.0.0",
     "alembic>=1.13.0",
@@ -53,7 +57,7 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "structlog>=24.1.0",
     # HTTP clients
-    "httpx>=0.27.0",
+    "httpx[http2]>=0.27.0",
     "websockets>=12.0",
     # Minimal library dependencies
     "idna>=3.10",
@@ -134,7 +138,7 @@ Issues = "https://github.com/user/bsn-knowledge/issues"
 Documentation = "https://user.github.io/bsn-knowledge"
 
 [project.scripts]
-bsn-knowledge = "src.bsn-knowledge.cli:main"
+bsn-knowledge = "src.api.main:app"
 
 # ================================================================================
 # UV CONFIGURATION - CANONICAL VIRTUAL ENVIRONMENT
@@ -165,6 +169,7 @@ dev-dependencies = [
     "python-lsp-server>=1.13.0",
     "python-lsp-black>=2.0.0",
     "python-lsp-ruff>=2.2.2",
+    "httpx>=0.28.1",
 ]
 
 # ================================================================================

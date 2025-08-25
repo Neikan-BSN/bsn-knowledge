@@ -2,15 +2,15 @@
 Clinical Decision Support System for BSN Knowledge
 Provides evidence-based clinical recommendations using RAGnostic enriched content
 """
+
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel, Field
 
 from .content_generation_service import ContentGenerationService, GenerationRequest
-from .ragnostic_client import RAGnosticClient
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +34,7 @@ class EvidenceLevel(str, Enum):
 
 class ClinicalRecommendation(BaseModel):
     """Individual clinical recommendation with evidence"""
+
     id: str
     recommendation_text: str
     rationale: str
@@ -49,6 +50,7 @@ class ClinicalRecommendation(BaseModel):
 
 class ClinicalAssessment(BaseModel):
     """Patient assessment data for decision support"""
+
     patient_condition: str
     symptoms: List[str] = []
     vital_signs: Dict[str, Any] = {}
@@ -61,6 +63,7 @@ class ClinicalAssessment(BaseModel):
 
 class ClinicalDecisionResponse(BaseModel):
     """Complete clinical decision support response"""
+
     assessment: ClinicalAssessment
     recommendations: List[ClinicalRecommendation]
     nursing_diagnoses: List[str] = []
@@ -77,10 +80,10 @@ class ClinicalDecisionSupportService:
     Clinical Decision Support System using RAGnostic and OpenAI
     Provides evidence-based nursing recommendations and care plans
     """
-    
+
     def __init__(self, content_service: ContentGenerationService):
         self.content_service = content_service
-        
+
         self.system_prompt = """
 You are an expert clinical nurse specialist providing evidence-based decision support.
 You must:
@@ -96,7 +99,7 @@ You must:
 
 Response format: Valid JSON with structured clinical recommendations.
 """
-        
+
         self.decision_template = """
 Patient Clinical Assessment:
 Condition: {patient_condition}
@@ -154,17 +157,17 @@ Return as JSON with this structure:
         assessment: ClinicalAssessment,
         focus_area: Optional[str] = None,
         max_recommendations: int = 10,
-        min_confidence: float = 0.8
+        min_confidence: float = 0.8,
     ) -> ClinicalDecisionResponse:
         """
         Generate evidence-based clinical recommendations for patient assessment
-        
+
         Args:
             assessment: Patient clinical assessment data
             focus_area: Specific clinical focus (e.g., "pain management", "infection control")
             max_recommendations: Maximum number of recommendations
             min_confidence: Minimum confidence threshold
-            
+
         Returns:
             ClinicalDecisionResponse with prioritized recommendations
         """
@@ -173,7 +176,7 @@ Return as JSON with this structure:
             topic = f"{assessment.patient_condition}"
             if focus_area:
                 topic += f" - {focus_area}"
-                
+
             # Create generation request with clinical context
             request = GenerationRequest(
                 topic=topic,
@@ -183,11 +186,11 @@ Return as JSON with this structure:
                     "content_type": "clinical_guidelines",
                     "condition": assessment.patient_condition,
                     "focus_area": focus_area,
-                    "evidence_based": True
+                    "evidence_based": True,
                 },
-                medical_accuracy_threshold=min_confidence
+                medical_accuracy_threshold=min_confidence,
             )
-            
+
             # Format assessment data for prompt
             user_prompt = self.decision_template.format(
                 patient_condition=assessment.patient_condition,
@@ -197,25 +200,29 @@ Return as JSON with this structure:
                 medications=", ".join(assessment.medications) or "None",
                 allergies=", ".join(assessment.allergies) or "NKDA",
                 comorbidities=", ".join(assessment.comorbidities) or "None",
-                nursing_concerns=", ".join(assessment.nursing_concerns) or "None specified",
-                medical_context="{medical_context}"  # Will be filled by content service
+                nursing_concerns=", ".join(assessment.nursing_concerns)
+                or "None specified",
+                medical_context="{medical_context}",  # Will be filled by content service
             )
-            
+
             # Generate recommendations with validation
             result = await self.content_service.generate_content_with_validation(
                 request=request,
                 system_prompt=self.system_prompt,
                 user_prompt_template=user_prompt,
-                response_format="json_object"
+                response_format="json_object",
             )
-            
+
             # Parse and validate response
             import json
+
             response_data = json.loads(result["content"])
-            
+
             # Create recommendation objects
             recommendations = []
-            for i, rec_data in enumerate(response_data.get("recommendations", [])[:max_recommendations]):
+            for i, rec_data in enumerate(
+                response_data.get("recommendations", [])[:max_recommendations]
+            ):
                 try:
                     # Set defaults for missing fields
                     rec_data.setdefault("id", f"rec_{i+1}")
@@ -223,39 +230,52 @@ Return as JSON with this structure:
                     rec_data.setdefault("monitoring_parameters", [])
                     rec_data.setdefault("evidence_citations", [])
                     rec_data.setdefault("umls_concepts", [])
-                    
+
                     # Validate evidence level
-                    if rec_data.get("evidence_level") not in [e.value for e in EvidenceLevel]:
+                    if rec_data.get("evidence_level") not in [
+                        e.value for e in EvidenceLevel
+                    ]:
                         rec_data["evidence_level"] = EvidenceLevel.LEVEL_7.value
-                    
+
                     # Validate priority
-                    if rec_data.get("priority") not in [p.value for p in ClinicalPriority]:
+                    if rec_data.get("priority") not in [
+                        p.value for p in ClinicalPriority
+                    ]:
                         rec_data["priority"] = ClinicalPriority.MODERATE.value
-                    
+
                     # Ensure confidence score is valid
                     confidence = rec_data.get("confidence_score", 0.5)
-                    if not isinstance(confidence, (int, float)) or not (0 <= confidence <= 1):
+                    if not isinstance(confidence, (int, float)) or not (
+                        0 <= confidence <= 1
+                    ):
                         rec_data["confidence_score"] = 0.5
-                    
+
                     recommendation = ClinicalRecommendation(**rec_data)
                     recommendations.append(recommendation)
-                    
+
                 except Exception as e:
                     logger.warning(f"Failed to parse recommendation {i}: {str(e)}")
                     continue
-            
+
             # Calculate evidence summary
             evidence_summary = {
                 "total_recommendations": len(recommendations),
-                "high_evidence_count": sum(1 for r in recommendations 
-                                         if r.evidence_level in [EvidenceLevel.LEVEL_1, EvidenceLevel.LEVEL_2]),
-                "average_confidence": sum(r.confidence_score for r in recommendations) / max(len(recommendations), 1),
+                "high_evidence_count": sum(
+                    1
+                    for r in recommendations
+                    if r.evidence_level
+                    in [EvidenceLevel.LEVEL_1, EvidenceLevel.LEVEL_2]
+                ),
+                "average_confidence": sum(r.confidence_score for r in recommendations)
+                / max(len(recommendations), 1),
                 "priority_distribution": {
-                    priority.value: sum(1 for r in recommendations if r.priority == priority)
+                    priority.value: sum(
+                        1 for r in recommendations if r.priority == priority
+                    )
                     for priority in ClinicalPriority
-                }
+                },
             }
-            
+
             # Create decision response
             decision_response = ClinicalDecisionResponse(
                 assessment=assessment,
@@ -265,24 +285,26 @@ Return as JSON with this structure:
                 educational_needs=response_data.get("educational_needs", []),
                 safety_considerations=response_data.get("safety_considerations", []),
                 evidence_summary=evidence_summary,
-                confidence_score=response_data.get("confidence_score", evidence_summary["average_confidence"])
+                confidence_score=response_data.get(
+                    "confidence_score", evidence_summary["average_confidence"]
+                ),
             )
-            
+
             logger.info(
                 f"Generated {len(recommendations)} clinical recommendations "
                 f"for {assessment.patient_condition} with {decision_response.confidence_score:.2f} confidence"
             )
-            
+
             return decision_response
-            
+
         except Exception as e:
-            logger.error(f"Clinical decision support failed for {assessment.patient_condition}: {str(e)}")
+            logger.error(
+                f"Clinical decision support failed for {assessment.patient_condition}: {str(e)}"
+            )
             raise
 
     async def get_emergency_protocols(
-        self,
-        emergency_situation: str,
-        patient_factors: Dict[str, Any] = None
+        self, emergency_situation: str, patient_factors: Dict[str, Any] = None
     ) -> Dict[str, Any]:
         """
         Get emergency nursing protocols and interventions
@@ -295,15 +317,15 @@ Return as JSON with this structure:
                 context_filters={
                     "content_type": "emergency_protocol",
                     "situation": emergency_situation,
-                    "priority": "critical"
+                    "priority": "critical",
                 },
-                medical_accuracy_threshold=0.95
+                medical_accuracy_threshold=0.95,
             )
-            
+
             emergency_prompt = f"""
             Emergency Situation: {emergency_situation}
             Patient Factors: {patient_factors or 'None specified'}
-            
+
             Provide immediate emergency nursing protocols including:
             1. Initial assessment priorities (ABCDE approach)
             2. Immediate interventions (time-critical)
@@ -311,32 +333,33 @@ Return as JSON with this structure:
             4. Monitoring parameters
             5. Communication/notification requirements
             6. Documentation priorities
-            
+
             Medical Context: {{medical_context}}
-            
+
             Focus on time-critical, evidence-based nursing actions.
             """
-            
+
             result = await self.content_service.generate_content_with_validation(
                 request=request,
-                system_prompt=self.system_prompt + "\\n\\nFOCUS: Emergency protocols require immediate, evidence-based actions.",
-                user_prompt_template=emergency_prompt
+                system_prompt=self.system_prompt
+                + "\\n\\nFOCUS: Emergency protocols require immediate, evidence-based actions.",
+                user_prompt_template=emergency_prompt,
             )
-            
+
             return {
                 "emergency_protocols": result["content"],
                 "validation": result["validation"],
-                "generated_at": datetime.utcnow().isoformat()
+                "generated_at": datetime.utcnow().isoformat(),
             }
-            
+
         except Exception as e:
-            logger.error(f"Emergency protocol generation failed for {emergency_situation}: {str(e)}")
+            logger.error(
+                f"Emergency protocol generation failed for {emergency_situation}: {str(e)}"
+            )
             raise
 
     async def validate_care_plan(
-        self,
-        care_plan: Dict[str, Any],
-        patient_condition: str
+        self, care_plan: Dict[str, Any], patient_condition: str
     ) -> Dict[str, Any]:
         """
         Validate a nursing care plan against evidence-based standards
@@ -347,13 +370,11 @@ Return as JSON with this structure:
             Nursing Care Plan for {patient_condition}:
             {json.dumps(care_plan, indent=2)}
             """
-            
+
             validation = await self.content_service._validate_medical_accuracy(
-                content=care_plan_text,
-                topic=patient_condition,
-                threshold=0.9
+                content=care_plan_text, topic=patient_condition, threshold=0.9
             )
-            
+
             return {
                 "is_valid": validation.is_accurate,
                 "validation_details": validation.dict(),
@@ -361,10 +382,10 @@ Return as JSON with this structure:
                     "Consider evidence-based interventions",
                     "Ensure SMART goals for patient outcomes",
                     "Include patient/family education components",
-                    "Validate against current nursing standards"
-                ]
+                    "Validate against current nursing standards",
+                ],
             }
-            
+
         except Exception as e:
             logger.error(f"Care plan validation failed: {str(e)}")
             return {"is_valid": False, "error": str(e)}

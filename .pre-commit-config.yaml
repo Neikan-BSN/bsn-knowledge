@@ -3,15 +3,15 @@
 # Optimized for Knowledge Base System with Python 3.12.10 + UV package management
 
 # Performance and behavior settings
-fail_fast: false  # Check all hooks even if one fails
-default_stages: [commit]
-minimum_pre_commit_version: '3.0.0'
+fail_fast: false # Check all hooks even if one fails
+default_stages: [pre-commit]
+minimum_pre_commit_version: "3.0.0"
 
 # CI optimization - skip slow hooks in CI environments
 ci:
-  skip: 
-    - hadolint-docker     # Slow container linting (handled in CI pipeline)
-    - bandit-security     # Handled in CI pipeline
+  skip:
+    - hadolint-docker # Slow container linting (handled in CI pipeline)
+    - bandit-security # Handled in CI pipeline
   autofix_prs: true
   autofix_commit_msg: "style: auto-fix pre-commit hooks 🤖"
 
@@ -32,18 +32,18 @@ repos:
             PYTHON_VERSION=$(python --version 2>&1 | cut -d' ' -f2)
             MAJOR_MINOR=$(echo $PYTHON_VERSION | cut -d'.' -f1,2)
             PATCH=$(echo $PYTHON_VERSION | cut -d'.' -f3)
-            
+
             if [[ "$MAJOR_MINOR" != "3.12" ]]; then
               echo "❌ Python 3.12.x required, found $PYTHON_VERSION"
               echo "💡 Install: uv python install 3.12"
               exit 1
             fi
-            
+
             if [[ "$PATCH" < "4" ]]; then
               echo "⚠️  Python 3.12.4+ recommended, found $PYTHON_VERSION"
               echo "💡 Upgrade: uv python install 3.12.10"
             fi
-            
+
             echo "✅ Python $PYTHON_VERSION (3.12.x series) validated"
 
   # UV Package Management Validation
@@ -63,14 +63,14 @@ repos:
               echo "💡 Run: make install or uv sync --all-groups"
               exit 1
             fi
-            
+
             # Check for UV installation
             if ! command -v uv &> /dev/null; then
               echo "❌ UV package manager not found"
               echo "💡 Install: curl -LsSf https://astral.sh/uv/install.sh | sh"
               exit 1
             fi
-            
+
             # Validate pyproject.toml compatibility
             if [[ -f "pyproject.toml" ]]; then
               uv check > /dev/null 2>&1 || {
@@ -78,7 +78,7 @@ repos:
                 echo "💡 Run: uv sync to resolve dependencies"
               }
             fi
-            
+
             echo "✅ UV environment validated"
 
   # =============================================================================
@@ -90,9 +90,9 @@ repos:
       # Critical linting issues (blocking)
       - id: ruff
         name: "🔍 Ruff Linting (Critical Issues)"
-        args: 
-          - --select=E9,F,B,S  # Error, pyflakes, bugbear, security
-          - --ignore=B008,S314,S324,B017  # Allow common FastAPI patterns
+        args:
+          - --select=E9,F,B,S # Error, pyflakes, bugbear, security
+          - --ignore=B008,S314,S324,B017 # Allow common FastAPI patterns
           - --fix
         types: [python]
 
@@ -111,10 +111,10 @@ repos:
       - id: ruff
         name: "🔍 Ruff Type Checking (Knowledge Base)"
         args:
-          - --select=PYI,TCH,UP  # Type checking rules
+          - --select=PYI,TCH,UP # Type checking rules
           - --target-version=py312
         types: [python]
-        stages: [manual]  # Run manually with: pre-commit run --hook-stage manual
+        stages: [manual] # Run manually with: pre-commit run --hook-stage manual
 
   # =============================================================================
   # TYPE CHECKING - MyPy Integration
@@ -124,7 +124,8 @@ repos:
     hooks:
       - id: mypy
         name: "🏷️ MyPy Type Checking"
-        additional_dependencies: [types-all, types-requests, types-pyyaml, types-redis]
+        additional_dependencies:
+          [types-requests>=2.32.0, types-pyyaml>=6.0.12, types-redis>=4.6.0]
         args: [--ignore-missing-imports, --show-error-codes]
 
   # =============================================================================
@@ -143,11 +144,11 @@ repos:
     hooks:
       - id: detect-secrets
         name: "🕵️ Secrets Detection"
-        args: 
+        args:
           - --baseline
           - .secrets.baseline
           - --disable-plugin
-          - KeywordDetector  # Reduce false positives
+          - KeywordDetector # Reduce false positives
         exclude: |
           (?x)^(
               .*\.lock$|
@@ -217,7 +218,7 @@ repos:
   # =============================================================================
   # KNOWLEDGE BASE SPECIFIC HOOKS
   # =============================================================================
-  
+
   # Dockerfile linting for knowledge base containers
   - repo: https://github.com/hadolint/hadolint
     rev: v2.12.0
@@ -258,14 +259,14 @@ repos:
           - -c
           - |
             echo "📚 Validating knowledge base content structure..."
-            
+
             # Check for sensitive data patterns in content
             if grep -r -i -E "(ssn|social.*security|credit.*card|medical.*record)" src/ data/ 2>/dev/null | grep -v "test\|example"; then
               echo "🚨 Potential sensitive data found in knowledge base content"
               echo "💡 Remove or encrypt sensitive information"
               exit 1
             fi
-            
+
             # Check for proper API endpoint security
             if [ -d "src/bsn_knowledge/api" ]; then
               if grep -r -E "@app\.(get|post|put|delete)" src/bsn_knowledge/api/ | grep -v -E "auth|secure|permission"; then
@@ -273,7 +274,7 @@ repos:
                 echo "💡 Ensure proper authentication and authorization"
               fi
             fi
-            
+
             echo "✅ Knowledge base content validation completed"
 
   # =============================================================================
@@ -304,7 +305,7 @@ repos:
               fi
             done
             echo "✅ MCP configurations validated"
-        stages: [manual]  # Enable for MCP-integrated projects
+        stages: [manual] # Enable for MCP-integrated projects
 
   # =============================================================================
   # WORKSPACE INTEGRATION HOOKS
@@ -328,4 +329,4 @@ repos:
               }
               echo "✅ Quality Gate 1 passed"
             fi
-        stages: [manual]  # Enable for projects with quality gates
+        stages: [manual] # Enable for projects with quality gates

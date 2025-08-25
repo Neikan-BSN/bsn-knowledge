@@ -7,9 +7,8 @@ from pydantic import BaseModel, Field
 
 from ...generators.study_guide_generator import (
     StudyGuideGenerator,
-    StudyGuide,
     CompetencyFramework,
-    LearningObjectiveType
+    LearningObjectiveType,
 )
 from ...services.content_generation_service import ContentGenerationService
 from ...services.ragnostic_client import RAGnosticClient
@@ -21,7 +20,9 @@ router = APIRouter(prefix="/study-guides", tags=["study-guides"])
 
 class StudyGuideRequest(BaseModel):
     topic: str
-    difficulty_level: str = Field(default="intermediate", pattern="^(beginner|intermediate|advanced)$")
+    difficulty_level: str = Field(
+        default="intermediate", pattern="^(beginner|intermediate|advanced)$"
+    )
     target_audience: str = "BSN students"
     section_count: int = Field(default=5, ge=2, le=10)
     competency_frameworks: List[str] = Field(default=["qsen", "nclex_categories"])
@@ -37,7 +38,9 @@ class PersonalizedGuideRequest(BaseModel):
 
 class CompetencyFocusedRequest(BaseModel):
     topic: str
-    competency: str = Field(pattern="^(aacn_essentials|qsen|nclex_categories|nursing_process)$")
+    competency: str = Field(
+        pattern="^(aacn_essentials|qsen|nclex_categories|nursing_process)$"
+    )
     specific_standards: Optional[List[str]] = None
 
 
@@ -72,7 +75,7 @@ async def get_content_service():
     ragnostic_client = RAGnosticClient()
     content_service = ContentGenerationService(
         openai_api_key="your-openai-key",  # Would be injected from config
-        ragnostic_client=ragnostic_client
+        ragnostic_client=ragnostic_client,
     )
     return content_service
 
@@ -80,14 +83,14 @@ async def get_content_service():
 @router.post("/", response_model=StudyGuideResponse)
 async def create_study_guide(
     request: StudyGuideRequest,
-    content_service: ContentGenerationService = Depends(get_content_service)
+    content_service: ContentGenerationService = Depends(get_content_service),
 ):
     """
     Create a comprehensive study guide using RAGnostic UMLS-enriched content
     """
     try:
         generator = StudyGuideGenerator(content_service)
-        
+
         # Parse competency frameworks
         frameworks = []
         for fw in request.competency_frameworks:
@@ -96,19 +99,22 @@ async def create_study_guide(
             except ValueError:
                 logger.warning(f"Unknown competency framework: {fw}")
                 continue
-        
+
         if not frameworks:
-            frameworks = [CompetencyFramework.QSEN, CompetencyFramework.NCLEX_CATEGORIES]
-        
+            frameworks = [
+                CompetencyFramework.QSEN,
+                CompetencyFramework.NCLEX_CATEGORIES,
+            ]
+
         # Generate study guide
         study_guide = await generator.generate_guide(
             topic=request.topic,
             difficulty_level=request.difficulty_level,
             target_audience=request.target_audience,
             section_count=request.section_count,
-            competency_frameworks=frameworks
+            competency_frameworks=frameworks,
         )
-        
+
         # Convert to API response format
         sections = [
             StudyGuideSection(
@@ -118,11 +124,11 @@ async def create_study_guide(
                 key_concepts=section.key_concepts,
                 clinical_applications=section.clinical_applications,
                 study_questions=section.study_questions,
-                estimated_study_time=section.estimated_study_time
+                estimated_study_time=section.estimated_study_time,
             )
             for section in study_guide.sections
         ]
-        
+
         return StudyGuideResponse(
             id=study_guide.id,
             title=study_guide.title,
@@ -136,32 +142,34 @@ async def create_study_guide(
             competency_alignment=study_guide.competency_alignment,
             evidence_citations=study_guide.evidence_citations,
             created_at=study_guide.created_at.isoformat(),
-            generation_metadata=study_guide.generation_metadata
+            generation_metadata=study_guide.generation_metadata,
         )
-        
+
     except Exception as e:
         logger.error(f"Study guide creation failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Study guide generation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Study guide generation failed: {str(e)}"
+        )
 
 
 @router.post("/personalized", response_model=StudyGuideResponse)
 async def create_personalized_study_guide(
     request: PersonalizedGuideRequest,
-    content_service: ContentGenerationService = Depends(get_content_service)
+    content_service: ContentGenerationService = Depends(get_content_service),
 ):
     """
     Create a personalized study guide based on student profile
     """
     try:
         generator = StudyGuideGenerator(content_service)
-        
+
         # Generate personalized guide
         study_guide = await generator.generate_personalized_guide(
             topic=request.topic,
             student_profile=request.student_profile,
-            learning_path=request.learning_path
+            learning_path=request.learning_path,
         )
-        
+
         # Convert to response format (same as above)
         sections = [
             StudyGuideSection(
@@ -171,11 +179,11 @@ async def create_personalized_study_guide(
                 key_concepts=section.key_concepts,
                 clinical_applications=section.clinical_applications,
                 study_questions=section.study_questions,
-                estimated_study_time=section.estimated_study_time
+                estimated_study_time=section.estimated_study_time,
             )
             for section in study_guide.sections
         ]
-        
+
         return StudyGuideResponse(
             id=study_guide.id,
             title=study_guide.title,
@@ -189,38 +197,43 @@ async def create_personalized_study_guide(
             competency_alignment=study_guide.competency_alignment,
             evidence_citations=study_guide.evidence_citations,
             created_at=study_guide.created_at.isoformat(),
-            generation_metadata=study_guide.generation_metadata
+            generation_metadata=study_guide.generation_metadata,
         )
-        
+
     except Exception as e:
         logger.error(f"Personalized study guide creation failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Personalized guide generation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Personalized guide generation failed: {str(e)}"
+        )
 
 
 @router.post("/competency-focused", response_model=StudyGuideResponse)
 async def create_competency_focused_guide(
     request: CompetencyFocusedRequest,
-    content_service: ContentGenerationService = Depends(get_content_service)
+    content_service: ContentGenerationService = Depends(get_content_service),
 ):
     """
     Create study guide focused on specific nursing competency standards
     """
     try:
         generator = StudyGuideGenerator(content_service)
-        
+
         # Parse competency framework
         try:
             competency = CompetencyFramework(request.competency)
         except ValueError:
-            raise HTTPException(status_code=400, detail=f"Unknown competency framework: {request.competency}")
-        
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unknown competency framework: {request.competency}",
+            )
+
         # Generate competency-focused guide
         study_guide = await generator.generate_competency_focused_guide(
             topic=request.topic,
             competency=competency,
-            specific_standards=request.specific_standards
+            specific_standards=request.specific_standards,
         )
-        
+
         # Convert to response format
         sections = [
             StudyGuideSection(
@@ -230,11 +243,11 @@ async def create_competency_focused_guide(
                 key_concepts=section.key_concepts,
                 clinical_applications=section.clinical_applications,
                 study_questions=section.study_questions,
-                estimated_study_time=section.estimated_study_time
+                estimated_study_time=section.estimated_study_time,
             )
             for section in study_guide.sections
         ]
-        
+
         return StudyGuideResponse(
             id=study_guide.id,
             title=study_guide.title,
@@ -248,19 +261,21 @@ async def create_competency_focused_guide(
             competency_alignment=study_guide.competency_alignment,
             evidence_citations=study_guide.evidence_citations,
             created_at=study_guide.created_at.isoformat(),
-            generation_metadata=study_guide.generation_metadata
+            generation_metadata=study_guide.generation_metadata,
         )
-        
+
     except Exception as e:
         logger.error(f"Competency-focused guide creation failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Competency guide generation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Competency guide generation failed: {str(e)}"
+        )
 
 
 @router.post("/customize/{guide_id}", response_model=StudyGuideResponse)
 async def customize_study_guide(
     guide_id: str,
     student_profile: Dict[str, Any],
-    content_service: ContentGenerationService = Depends(get_content_service)
+    content_service: ContentGenerationService = Depends(get_content_service),
 ):
     """
     Customize an existing study guide based on student profile
@@ -269,10 +284,9 @@ async def customize_study_guide(
         # This would retrieve the original guide from storage
         # For now, return a placeholder response indicating customization capability
         raise HTTPException(
-            status_code=501, 
-            detail="Guide customization requires storage integration"
+            status_code=501, detail="Guide customization requires storage integration"
         )
-        
+
     except Exception as e:
         logger.error(f"Study guide customization failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Customization failed: {str(e)}")
@@ -280,7 +294,7 @@ async def customize_study_guide(
 
 @router.get("/topics", response_model=List[str])
 async def get_available_topics(
-    content_service: ContentGenerationService = Depends(get_content_service)
+    content_service: ContentGenerationService = Depends(get_content_service),
 ):
     """
     Get available study guide topics
@@ -327,6 +341,28 @@ async def get_study_guide(guide_id: str):
     raise HTTPException(status_code=404, detail="Study guide not found")
 
 
+@router.post("/create", response_model=StudyGuideResponse)
+async def create_study_guide_endpoint(
+    request: StudyGuideRequest,
+    content_service: ContentGenerationService = Depends(get_content_service),
+):
+    """
+    REVISED_PHASE3_PLAN.md Required Endpoint: Create personalized study guide
+
+    This is the specific endpoint required by Phase 3 planning documents.
+    Delegates to the main study guide creation functionality.
+    """
+    try:
+        # Use the existing study guide creation logic
+        return await create_study_guide(request, content_service)
+
+    except Exception as e:
+        logger.error(f"Study guide creation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Study guide creation failed: {str(e)}"
+        )
+
+
 @router.get("/health")
 async def study_guide_service_health():
     """
@@ -340,7 +376,7 @@ async def study_guide_service_health():
             "personalized_content",
             "competency_alignment",
             "umls_enriched_content",
-            "evidence_based_learning"
+            "evidence_based_learning",
         ],
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.utcnow().isoformat(),
     }
