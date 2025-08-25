@@ -290,7 +290,7 @@ class ResponseValidator:
                     return False
 
             return True
-        except:
+        except Exception:
             return False
 
     @staticmethod
@@ -385,9 +385,9 @@ class PerformanceHelper:
         """Assert that latest measurement is within threshold."""
         if self.measurements:
             latest = self.measurements[-1]
-            assert (
-                latest <= max_duration
-            ), f"Performance threshold exceeded: {latest:.3f}s > {max_duration}s"
+            assert latest <= max_duration, (
+                f"Performance threshold exceeded: {latest:.3f}s > {max_duration}s"
+            )
 
     @staticmethod
     def time_function(func: Callable, *args, **kwargs) -> tuple[Any, float]:

@@ -266,7 +266,7 @@ async def generate_personalized_content(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error generating personalized content: {str(e)}"
-        )
+        ) from e
 
 
 @router.post(
@@ -302,7 +302,7 @@ async def optimize_learning_path(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error optimizing learning path: {str(e)}"
-        )
+        ) from e
 
 
 @router.post("/b5-adjust-difficulty", response_model=DifficultyAdjustmentResponse)
@@ -345,7 +345,7 @@ async def adjust_difficulty_dynamically(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error calculating difficulty adjustment: {str(e)}"
-        )
+        ) from e
 
 
 @router.post("/b5-adapt-path-realtime", response_model=RealtimePathAdaptationResponse)
@@ -394,7 +394,7 @@ async def adapt_learning_path_realtime(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error adapting learning path: {str(e)}"
-        )
+        ) from e
 
 
 @router.post(
@@ -430,7 +430,7 @@ async def generate_adaptive_study_plan(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error generating adaptive study plan: {str(e)}"
-        )
+        ) from e
 
 
 @router.get("/b5-health")

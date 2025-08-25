@@ -9,6 +9,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
+from ..auth import rate_limit_middleware
 from .error_handlers import (
     APIError,
     create_error_response,
@@ -16,7 +17,6 @@ from .error_handlers import (
     http_exception_handler,
     validation_error_handler,
 )
-from ..auth import rate_limit_middleware
 from .routers import (
     adaptive_learning,
     analytics,
