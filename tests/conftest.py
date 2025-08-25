@@ -503,7 +503,7 @@ def cleanup_test_environment():
 
 # Pytest configuration
 def pytest_configure(config):
-    """Configure pytest with custom markers."""
+    """Configure pytest with custom markers for E2E testing."""
     config.addinivalue_line("markers", "auth: Authentication and authorization tests")
     config.addinivalue_line("markers", "endpoints: API endpoint tests")
     config.addinivalue_line("markers", "rate_limiting: Rate limiting tests")
@@ -511,6 +511,281 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "performance: Performance tests")
     config.addinivalue_line("markers", "integration: Integration tests")
     config.addinivalue_line("markers", "slow: Slow running tests")
+
+    # E2E Testing Markers
+    config.addinivalue_line("markers", "e2e: End-to-end pipeline tests")
+    config.addinivalue_line("markers", "load: Load testing scenarios")
+    config.addinivalue_line("markers", "resilience: Resilience and failure mode tests")
+    config.addinivalue_line(
+        "markers", "pipeline: Complete RAGnostic -> BSN Knowledge pipeline tests"
+    )
+    config.addinivalue_line("markers", "cross_service: Cross-service integration tests")
+    config.addinivalue_line(
+        "markers", "medical_accuracy: Medical content accuracy validation"
+    )
+    config.addinivalue_line("markers", "concurrent: Concurrent operation testing")
+
+
+# E2E Testing Framework Fixtures
+@pytest.fixture(scope="session")
+def e2e_services_config():
+    """Configuration for E2E test services."""
+    return {
+        "bsn_knowledge": {
+            "url": "http://bsn-knowledge-test:8000",
+            "health_endpoint": "/health",
+            "api_key": "test_bsn_api_key",
+        },
+        "ragnostic": {
+            "url": "http://ragnostic-mock:8000",
+            "health_endpoint": "/health",
+            "api_key": "test_ragnostic_api_key",
+        },
+        "openai_mock": {"url": "http://openai-mock:8000", "health_endpoint": "/health"},
+        "umls_mock": {"url": "http://umls-mock:8000", "health_endpoint": "/health"},
+    }
+
+
+@pytest.fixture(scope="session")
+async def e2e_test_orchestrator(e2e_services_config):
+    """E2E test orchestrator with service coordination."""
+    from tests.framework.orchestrator import E2ETestOrchestrator
+
+    config = {
+        "services": {
+            name: service["url"] for name, service in e2e_services_config.items()
+        },
+        "test_suites": [],  # Will be populated by individual tests
+        "output_dir": "./test_results",
+        "max_workers": 4,
+    }
+
+    orchestrator = E2ETestOrchestrator(config)
+    yield orchestrator
+
+    # Cleanup
+    await orchestrator.health_checker.close()
+
+
+@pytest.fixture(scope="function")
+async def pipeline_test_client():
+    """HTTP client for pipeline integration testing."""
+    import httpx
+
+    client = httpx.AsyncClient(
+        timeout=httpx.Timeout(30.0),
+        headers={"User-Agent": "BSN-Knowledge-E2E-Tests/1.0"},
+    )
+
+    yield client
+    await client.aclose()
+
+
+@pytest.fixture
+def load_test_config():
+    """Configuration for load testing scenarios."""
+    return {
+        "concurrent_users": [10, 25, 50, 100],
+        "test_duration_seconds": 60,
+        "ramp_up_seconds": 30,
+        "scenarios": {
+            "nclex_generation": {
+                "weight": 40,
+                "endpoint": "/api/v1/nclex/generate",
+                "method": "POST",
+                "payload": {
+                    "topic": "cardiovascular_nursing",
+                    "difficulty": "medium",
+                    "question_count": 5,
+                },
+            },
+            "study_guide_creation": {
+                "weight": 30,
+                "endpoint": "/api/v1/study-guides/generate",
+                "method": "POST",
+                "payload": {
+                    "competencies": ["AACN_KNOWLEDGE_1"],
+                    "student_level": "undergraduate",
+                },
+            },
+            "assessment_analytics": {
+                "weight": 20,
+                "endpoint": "/api/v1/analytics/assessment",
+                "method": "GET",
+                "params": {"student_id": "test_student_001"},
+            },
+            "content_search": {
+                "weight": 10,
+                "endpoint": "/api/v1/search",
+                "method": "GET",
+                "params": {"q": "nursing pathophysiology"},
+            },
+        },
+    }
+
+
+@pytest.fixture
+def medical_test_data():
+    """Comprehensive medical test data for pipeline validation."""
+    return {
+        "nursing_topics": [
+            {
+                "id": "cardiovascular_assessment",
+                "name": "Cardiovascular Assessment",
+                "umls_concepts": ["C0007226", "C0232337", "C0018787"],
+                "expected_nclex_categories": [
+                    "Health Promotion and Maintenance",
+                    "Physiological Integrity",
+                ],
+            },
+            {
+                "id": "medication_administration",
+                "name": "Safe Medication Administration",
+                "umls_concepts": ["C0013227", "C0150270", "C0013230"],
+                "expected_nclex_categories": ["Safe and Effective Care Environment"],
+            },
+            {
+                "id": "infection_control",
+                "name": "Infection Prevention and Control",
+                "umls_concepts": ["C0085557", "C1292711", "C0009482"],
+                "expected_nclex_categories": ["Safe and Effective Care Environment"],
+            },
+        ],
+        "sample_questions": [
+            {
+                "question": "A patient with heart failure is prescribed digoxin 0.25 mg daily. Which assessment finding would indicate possible digoxin toxicity?",
+                "options": [
+                    "A. Heart rate of 88 beats per minute",
+                    "B. Nausea and visual disturbances",
+                    "C. Blood pressure of 130/80 mmHg",
+                    "D. Respiratory rate of 20 breaths per minute",
+                ],
+                "correct_answer": "B",
+                "rationale": "Nausea and visual disturbances are classic early signs of digoxin toxicity.",
+                "nclex_category": "Pharmacological and Parenteral Therapies",
+                "difficulty": "medium",
+            }
+        ],
+        "performance_benchmarks": {
+            "response_time_ms": {"p50": 100, "p95": 200, "p99": 500},
+            "accuracy_thresholds": {
+                "medical_terminology": 0.98,
+                "educational_relevance": 0.95,
+                "nclex_alignment": 0.92,
+            },
+        },
+    }
+
+
+@pytest.fixture
+def resilience_test_scenarios():
+    """Test scenarios for resilience and failure mode testing."""
+    return {
+        "service_failure": {
+            "ragnostic_down": {
+                "description": "RAGnostic service unavailable",
+                "simulation": "stop_service",
+                "expected_behavior": "graceful_degradation",
+                "recovery_time_max_seconds": 30,
+            },
+            "database_connection_loss": {
+                "description": "Database connection pool exhaustion",
+                "simulation": "exhaust_connections",
+                "expected_behavior": "queue_requests",
+                "recovery_time_max_seconds": 60,
+            },
+        },
+        "load_scenarios": {
+            "memory_pressure": {
+                "description": "High memory utilization",
+                "target_memory_percentage": 85,
+                "duration_seconds": 300,
+            },
+            "cpu_saturation": {
+                "description": "CPU intensive operations",
+                "target_cpu_percentage": 90,
+                "duration_seconds": 180,
+            },
+        },
+    }
+
+
+@pytest.fixture
+def security_test_vectors():
+    """Security test vectors for cross-service validation."""
+    return {
+        "authentication_tests": {
+            "invalid_jwt": {"token": "invalid.jwt.token", "expected_status": 401},
+            "expired_jwt": {
+                "token": "expired.jwt.token",  # Generate expired token
+                "expected_status": 401,
+            },
+            "malformed_api_key": {"api_key": "malformed_key", "expected_status": 401},
+        },
+        "injection_tests": {
+            "sql_injection": [
+                "'; DROP TABLE users; --",
+                "' OR '1'='1",
+                "'; SELECT * FROM medical_data; --",
+            ],
+            "xss_payloads": [
+                "<script>alert('xss')</script>",
+                "javascript:alert('xss')",
+                "<img src=x onerror=alert('xss')>",
+            ],
+        },
+        "rate_limiting": {
+            "burst_requests": 100,
+            "time_window_seconds": 60,
+            "expected_status": 429,
+        },
+    }
+
+
+@pytest.fixture
+def performance_monitoring():
+    """Performance monitoring utilities for E2E tests."""
+    import psutil
+    import time
+    from collections import defaultdict
+
+    class PerformanceMonitor:
+        def __init__(self):
+            self.metrics = defaultdict(list)
+            self.start_time = None
+
+        def start_monitoring(self):
+            self.start_time = time.time()
+            self.metrics.clear()
+
+        def record_metric(self, name: str, value: float):
+            timestamp = time.time() - (self.start_time or time.time())
+            self.metrics[name].append({"timestamp": timestamp, "value": value})
+
+        def get_system_metrics(self):
+            return {
+                "cpu_percent": psutil.cpu_percent(),
+                "memory_percent": psutil.virtual_memory().percent,
+                "disk_usage": psutil.disk_usage("/").percent,
+            }
+
+        def calculate_statistics(self, metric_name: str):
+            values = [m["value"] for m in self.metrics.get(metric_name, [])]
+            if not values:
+                return {}
+
+            values.sort()
+            n = len(values)
+            return {
+                "min": min(values),
+                "max": max(values),
+                "avg": sum(values) / n,
+                "p50": values[n // 2],
+                "p95": values[int(0.95 * n)] if n > 20 else values[-1],
+                "p99": values[int(0.99 * n)] if n > 100 else values[-1],
+            }
+
+    return PerformanceMonitor()
 
 
 # Async pytest configuration

@@ -1,4 +1,4 @@
-```xml
+<?xml version="1.0" encoding="UTF-8"?>
 <prompt>
 
     <persona>
@@ -37,7 +37,6 @@
                 <criterion>Problem scope is unclear or may evolve during analysis</criterion>
                 <criterion>Solution requires hypothesis generation and verification</criterion>
                 <criterion>Multiple solution paths need exploration</criterion>
-                </criterion>
             </activation_criteria>
             <usage_requirements>
                 <requirement id="ST.1">Use sequential_thinking tool BEFORE generating final output</requirement>
@@ -51,8 +50,8 @@
                     verified</requirement>
             </usage_requirements>
             <integration_with_output>
-                <note>Sequential thinking results inform the &lt;thinking&gt; block content</note>
-                <note>Final verified solution becomes basis for &lt;plan&gt; or implementation</note>
+                <note>Sequential thinking results inform the <![CDATA[<thinking>]]> block content</note>
+                <note>Final verified solution becomes basis for <![CDATA[<plan>]]> or implementation</note>
             </integration_with_output>
         </tool_protocol>
 
@@ -283,8 +282,8 @@
     <output_structure>
         <description>You must follow this multi-stage process. First, use the sequential_thinking
             tool to decompose and analyze the problem iteratively until you reach a verified
-            solution. Then, synthesize your sequential thinking results in the &lt;thinking&gt;
-            block. Finally, provide the verified solution in the &lt;plan&gt; block.</description>
+            solution. Then, synthesize your sequential thinking results in the <![CDATA[<thinking>]]>
+            block. Finally, provide the verified solution in the <![CDATA[<plan>]]> block.</description>
         <sequential_thinking_phase>
         </sequential_thinking_phase>
         <thinking>
@@ -294,4 +293,3 @@
     </output_structure>
 
 </prompt>
-```

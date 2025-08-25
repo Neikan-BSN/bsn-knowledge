@@ -6,7 +6,10 @@
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
     "python.formatting.provider": "black",
-    "python.sortImports.args": ["--profile", "black"],
+    "python.sortImports.args": [
+        "--profile",
+        "black"
+    ],
     "python.terminal.activateEnvironment": true,
     "python.defaultInterpreterPath": ".venv/bin/python",
     "files.exclude": {
@@ -19,7 +22,7 @@
     },
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-        "source.organizeImports": true
+        "source.organizeImports": "explicit"
     },
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,

@@ -1,0 +1,387 @@
+# BSN Knowledge E2E Testing Framework - Multi-Service Environment
+# Comprehensive pipeline validation: RAGnostic → BSN Knowledge integration
+# Designed for automated testing, load testing, and performance validation
+
+services:
+  # Core Database Services for Testing
+  postgres-test:
+    image: postgres:15-alpine
+    ports:
+      - "5439:5432" # Non-conflicting test port
+    environment:
+      - POSTGRES_DB=bsn_knowledge_test
+      - POSTGRES_USER=test_user
+      - POSTGRES_PASSWORD=test_pass_secure
+      - POSTGRES_HOST_AUTH_METHOD=md5
+      - POSTGRES_INITDB_ARGS=--auth-host=md5
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ./tests/fixtures/test-db-init.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    restart: "no" # Test containers don't auto-restart
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U test_user -d bsn_knowledge_test -h localhost",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
+    command: >
+      postgres
+        -c max_connections=300
+        -c shared_buffers=256MB
+        -c fsync=off
+        -c synchronous_commit=off
+        -c checkpoint_segments=32
+        -c checkpoint_completion_target=0.9
+        -c wal_buffers=16MB
+        -c log_min_duration_statement=1000
+
+  redis-test:
+    image: redis:7-alpine
+    ports:
+      - "6381:6379" # Non-conflicting test port
+    command: redis-server --appendonly no --maxmemory 256mb --maxmemory-policy allkeys-lru
+    restart: "no"
+    tmpfs:
+      - /data
+      - /tmp
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 2s
+      retries: 5
+
+  # Neo4j for Knowledge Graph Testing
+  neo4j-test:
+    image: neo4j:5.15-community
+    ports:
+      - "7478:7474" # HTTP
+      - "7689:7687" # Bolt
+    environment:
+      NEO4J_AUTH: neo4j/test_neo4j_pass
+      NEO4J_dbms_memory_heap_initial__size: 256M
+      NEO4J_dbms_memory_heap_max__size: 512M
+      NEO4J_dbms_memory_pagecache_size: 256M
+      NEO4J_dbms_default__listen__address: 0.0.0.0
+      NEO4J_dbms_connector_bolt_listen__address: 0.0.0.0:7687
+      NEO4J_dbms_connector_http_listen__address: 0.0.0.0:7474
+      NEO4J_dbms_logs_debug_level: WARN
+    volumes:
+      - neo4j_test_data:/data
+      - neo4j_test_logs:/logs
+      - ./tests/fixtures/neo4j:/import
+    restart: "no"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "cypher-shell",
+          "-u",
+          "neo4j",
+          "-p",
+          "test_neo4j_pass",
+          "RETURN 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # Qdrant for Vector Storage Testing
+  qdrant-test:
+    image: qdrant/qdrant:v1.8.4
+    ports:
+      - "6336:6333" # HTTP API
+      - "6337:6334" # gRPC
+    environment:
+      QDRANT__SERVICE__HTTP_PORT: 6333
+      QDRANT__SERVICE__GRPC_PORT: 6334
+      QDRANT__LOG_LEVEL: WARN
+      QDRANT__SERVICE__MAX_REQUEST_SIZE_MB: 16
+    restart: "no"
+    tmpfs:
+      - /qdrant/storage
+      - /tmp
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/readyz"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  # Mock RAGnostic Service for Testing
+  ragnostic-mock:
+    build:
+      context: ./tests/framework/services/ragnostic
+      dockerfile: Dockerfile
+    ports:
+      - "8020:8000" # RAGnostic mock API
+    environment:
+      - SERVICE_NAME=ragnostic-mock
+      - LOG_LEVEL=INFO
+      - MOCK_MODE=true
+      - RESPONSE_DELAY_MS=50 # Simulate realistic response times
+      - ERROR_RATE=0.02 # 2% error rate for resilience testing
+      - DATABASE_URL=postgresql://test_user:test_pass_secure@postgres-test:5432/bsn_knowledge_test
+      - NEO4J_URI=bolt://neo4j-test:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=test_neo4j_pass
+      - QDRANT_URL=http://qdrant-test:6333
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      neo4j-test:
+        condition: service_healthy
+      qdrant-test:
+        condition: service_healthy
+    restart: "no"
+    volumes:
+      - ./tests/fixtures/ragnostic:/app/fixtures:ro
+      - ragnostic_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+  # BSN Knowledge Service Under Test
+  bsn-knowledge-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    ports:
+      - "8021:8000" # BSN Knowledge test API
+    environment:
+      # Test database connections
+      - DATABASE_URL=postgresql://test_user:test_pass_secure@postgres-test:5432/bsn_knowledge_test
+      - NEO4J_URI=bolt://neo4j-test:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=test_neo4j_pass
+      - REDIS_URL=redis://redis-test:6379/0
+      - QDRANT_URL=http://qdrant-test:6333
+
+      # RAGnostic integration
+      - RAGNOSTIC_API_URL=http://ragnostic-mock:8000
+      - RAGNOSTIC_API_KEY=test_ragnostic_api_key
+
+      # Test environment configuration
+      - ENVIRONMENT=test
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      - TEST_MODE=true
+
+      # Security settings for testing
+      - JWT_SECRET_KEY=test_jwt_secret_key_for_testing_only
+      - API_KEY_ENABLED=true
+      - RATE_LIMITING_ENABLED=true
+
+      # Performance settings
+      - MAX_WORKERS=2
+      - KEEP_ALIVE_TIMEOUT=30
+      - MAX_REQUESTS=500
+
+      # External service mocks
+      - OPENAI_API_KEY=mock_openai_api_key
+      - UMLS_API_KEY=mock_umls_api_key
+      - MOCK_EXTERNAL_SERVICES=true
+
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+      neo4j-test:
+        condition: service_healthy
+      qdrant-test:
+        condition: service_healthy
+      ragnostic-mock:
+        condition: service_healthy
+    restart: "no"
+    volumes:
+      - ./src:/app/src:ro
+      - ./tests/fixtures:/app/fixtures:ro
+      - bsn_test_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  # Mock External Services
+  openai-mock:
+    build:
+      context: ./tests/framework/mocks/openai
+      dockerfile: Dockerfile
+    ports:
+      - "8022:8000" # Mock OpenAI API
+    environment:
+      - SERVICE_NAME=openai-mock
+      - LOG_LEVEL=INFO
+      - MOCK_RESPONSE_DELAY_MS=200
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  umls-mock:
+    build:
+      context: ./tests/framework/mocks/umls
+      dockerfile: Dockerfile
+    ports:
+      - "8023:8000" # Mock UMLS API
+    environment:
+      - SERVICE_NAME=umls-mock
+      - LOG_LEVEL=INFO
+      - MOCK_RESPONSE_DELAY_MS=150
+    volumes:
+      - ./tests/fixtures/umls:/app/fixtures:ro
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Load Testing Infrastructure
+  locust-master:
+    build:
+      context: ./tests/framework/load
+      dockerfile: Dockerfile
+    ports:
+      - "8089:8089" # Locust web UI
+    environment:
+      - LOCUST_MODE=master
+      - LOCUST_MASTER_BIND_HOST=0.0.0.0
+      - LOCUST_MASTER_BIND_PORT=5557
+      - TARGET_HOST=http://bsn-knowledge-test:8000
+      - RAGNOSTIC_HOST=http://ragnostic-mock:8000
+    depends_on:
+      - bsn-knowledge-test
+      - ragnostic-mock
+    restart: "no"
+    volumes:
+      - ./tests/framework/load/locustfiles:/app/locustfiles:ro
+      - ./tests/fixtures:/app/fixtures:ro
+      - locust_reports:/app/reports
+    profiles:
+      - load-test
+
+  locust-worker:
+    build:
+      context: ./tests/framework/load
+      dockerfile: Dockerfile
+    environment:
+      - LOCUST_MODE=worker
+      - LOCUST_MASTER_HOST=locust-master
+      - LOCUST_MASTER_PORT=5557
+      - TARGET_HOST=http://bsn-knowledge-test:8000
+      - RAGNOSTIC_HOST=http://ragnostic-mock:8000
+    depends_on:
+      - locust-master
+      - bsn-knowledge-test
+      - ragnostic-mock
+    restart: "no"
+    volumes:
+      - ./tests/framework/load/locustfiles:/app/locustfiles:ro
+      - ./tests/fixtures:/app/fixtures:ro
+    profiles:
+      - load-test
+    deploy:
+      replicas: 3
+
+  # Test Orchestrator Service
+  test-orchestrator:
+    build:
+      context: ./tests/framework/orchestrator
+      dockerfile: Dockerfile
+    environment:
+      - BSN_KNOWLEDGE_URL=http://bsn-knowledge-test:8000
+      - RAGNOSTIC_URL=http://ragnostic-mock:8000
+      - POSTGRES_URL=postgresql://test_user:test_pass_secure@postgres-test:5432/bsn_knowledge_test
+      - REDIS_URL=redis://redis-test:6379/0
+      - NEO4J_URL=bolt://neo4j-test:7687
+      - QDRANT_URL=http://qdrant-test:6333
+      - TEST_RESULTS_PATH=/app/results
+      - PARALLEL_WORKERS=4
+    depends_on:
+      bsn-knowledge-test:
+        condition: service_healthy
+      ragnostic-mock:
+        condition: service_healthy
+    restart: "no"
+    volumes:
+      - ./tests:/app/tests:ro
+      - ./tests/fixtures:/app/fixtures:ro
+      - test_results:/app/results
+      - test_logs:/app/logs
+    profiles:
+      - test-run
+
+  # Monitoring and Observability
+  prometheus-test:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./tests/framework/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    restart: "no"
+    profiles:
+      - monitoring
+
+  grafana-test:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./tests/framework/monitoring/grafana:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus-test
+    restart: "no"
+    profiles:
+      - monitoring
+
+# Test-specific volumes for data persistence and results
+volumes:
+  # Database volumes
+  postgres_test_data:
+    driver: local
+  neo4j_test_data:
+    driver: local
+  neo4j_test_logs:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+  # Application volumes
+  ragnostic_logs:
+    driver: local
+  bsn_test_logs:
+    driver: local
+  test_results:
+    driver: local
+  test_logs:
+    driver: local
+  locust_reports:
+    driver: local
+
+networks:
+  default:
+    name: bsn-e2e-test-network
+    driver: bridge
