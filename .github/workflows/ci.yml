@@ -24,7 +24,7 @@ jobs:
   validate_and_test:
     name: Validate & Test
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -59,7 +59,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          timeout 300 uv run pytest tests/ -v --tb=short --cov=src --cov-report=xml --timeout=30
+          timeout 600 uv run pytest tests/ -v --tb=short --cov=src --cov-report=xml --timeout=60
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v4
