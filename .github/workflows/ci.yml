@@ -52,7 +52,7 @@ jobs:
       - name: Code Quality Check
         run: |
           # Basic formatting and linting
-          uv run black --check src/ tests/ || echo "Format issues detected"
+          uv run ruff format --check src/ tests/ || echo "Format issues detected"
           uv run ruff check src/ tests/ || echo "Lint issues detected"
 
       - name: Type Checking
