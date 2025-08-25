@@ -1,23 +1,31 @@
-import time
 import logging
-from typing import Callable
+import time
 from contextlib import asynccontextmanager
+from collections.abc import Callable
 
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import ValidationError
 
+from .error_handlers import (
+    APIError,
+    create_error_response,
+    generic_exception_handler,
+    http_exception_handler,
+    validation_error_handler,
+)
 from .routers import (
     adaptive_learning,
-    quizzes,
-    study_guides,
-    clinical_support,
-    assessment,
     analytics,
+    assessment,
     auth,
+    clinical_support,
     nclex,
+    quizzes,
     study_guide,
+    study_guides,
 )
 
 # Performance monitoring
@@ -132,16 +140,6 @@ app = FastAPI(
         },
     ],
 )
-
-# Import comprehensive error handlers
-from .error_handlers import (
-    APIError,
-    create_error_response,
-    validation_error_handler,
-    http_exception_handler,
-    generic_exception_handler,
-)
-from pydantic import ValidationError
 
 
 # Comprehensive exception handlers

@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from dataclasses import dataclass
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 import openai
 
 from ..services.ragnostic_client import RAGnosticClient
@@ -62,7 +62,8 @@ class CaseScenario(BaseModel):
         description="Case complexity level: basic, intermediate, advanced",
     )
 
-    @validator("learning_objectives")
+    @field_validator("learning_objectives")
+    @classmethod
     def validate_learning_objectives(cls, v):
         if not v or len(v) == 0:
             raise ValueError("At least one learning objective must be provided")
@@ -102,11 +103,10 @@ class Recommendation(BaseModel):
         default=[], description="Relevant UMLS medical concepts"
     )
 
-    @validator("confidence_score")
-    def validate_confidence_score(cls, v, values):
+    @model_validator(mode="after")
+    def validate_confidence_score(self):
         # Adjust confidence based on evidence strength
-        evidence_strength = values.get("evidence_strength")
-        if evidence_strength:
+        if self.evidence_strength:
             max_confidence_by_evidence = {
                 EvidenceStrength.SYSTEMATIC_REVIEW: 0.95,
                 EvidenceStrength.RANDOMIZED_TRIAL: 0.90,
@@ -115,14 +115,14 @@ class Recommendation(BaseModel):
                 EvidenceStrength.DESCRIPTIVE: 0.60,
                 EvidenceStrength.EXPERT_OPINION: 0.50,
             }
-            max_allowed = max_confidence_by_evidence.get(evidence_strength, 0.50)
-            if v > max_allowed:
+            max_allowed = max_confidence_by_evidence.get(self.evidence_strength, 0.50)
+            if self.confidence_score > max_allowed:
                 logger.warning(
-                    f"Confidence score {v} exceeds maximum {max_allowed} "
-                    f"for evidence strength {evidence_strength}. Adjusting."
+                    f"Confidence score {self.confidence_score} exceeds maximum {max_allowed} "
+                    f"for evidence strength {self.evidence_strength}. Adjusting."
                 )
-                v = max_allowed
-        return v
+                self.confidence_score = max_allowed
+        return self
 
 
 class RecommendationResult(BaseModel):
@@ -146,10 +146,9 @@ class RecommendationResult(BaseModel):
         default={}, description="Context and metadata from RAGnostic queries"
     )
 
-    @validator("overall_confidence")
-    def calculate_overall_confidence(cls, v, values):
-        recommendations = values.get("recommendations", [])
-        if recommendations:
+    @model_validator(mode="after")
+    def calculate_overall_confidence(self):
+        if self.recommendations:
             # Weighted average based on priority
             priority_weights = {
                 ClinicalPriority.CRITICAL: 4,
@@ -159,13 +158,13 @@ class RecommendationResult(BaseModel):
             }
             total_weighted_score = sum(
                 rec.confidence_score * priority_weights.get(rec.priority, 1)
-                for rec in recommendations
+                for rec in self.recommendations
             )
             total_weights = sum(
-                priority_weights.get(rec.priority, 1) for rec in recommendations
+                priority_weights.get(rec.priority, 1) for rec in self.recommendations
             )
-            return total_weighted_score / max(total_weights, 1)
-        return v
+            self.overall_confidence = total_weighted_score / max(total_weights, 1)
+        return self
 
 
 @dataclass
