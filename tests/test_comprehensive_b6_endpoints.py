@@ -1334,16 +1334,16 @@ class TestB6EndpointsIntegration:
                 max_time = max(times)
 
                 if endpoint == "analytics":
-                    assert avg_time < 1.0, (
-                        f"{endpoint} average time {avg_time:.3f}s too slow"
-                    )
-                    assert max_time < 2.0, (
-                        f"{endpoint} max time {max_time:.3f}s too slow"
-                    )
+                    assert (
+                        avg_time < 1.0
+                    ), f"{endpoint} average time {avg_time:.3f}s too slow"
+                    assert (
+                        max_time < 2.0
+                    ), f"{endpoint} max time {max_time:.3f}s too slow"
                 else:  # nclex and study_guide
-                    assert avg_time < 3.0, (
-                        f"{endpoint} average time {avg_time:.3f}s too slow"
-                    )
-                    assert max_time < 5.0, (
-                        f"{endpoint} max time {max_time:.3f}s too slow"
-                    )
+                    assert (
+                        avg_time < 3.0
+                    ), f"{endpoint} average time {avg_time:.3f}s too slow"
+                    assert (
+                        max_time < 5.0
+                    ), f"{endpoint} max time {max_time:.3f}s too slow"

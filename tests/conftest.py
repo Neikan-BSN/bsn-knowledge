@@ -419,9 +419,9 @@ def performance_monitor():
             return 0.0
 
         def assert_within_threshold(self, threshold_seconds: float):
-            assert self.duration <= threshold_seconds, (
-                f"Operation took {self.duration:.3f}s, exceeds threshold of {threshold_seconds}s"
-            )
+            assert (
+                self.duration <= threshold_seconds
+            ), f"Operation took {self.duration:.3f}s, exceeds threshold of {threshold_seconds}s"
 
     return PerformanceMonitor()
 
