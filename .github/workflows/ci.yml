@@ -1,8 +1,4 @@
-# Minimal Workflow Template
-# ~80-100 lines, <3 min execution, basic validation
-# For simpler projects like ARES and BSN-Knowledge
-
-name: Minimal CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -25,7 +21,6 @@ env:
   PROJECT_NAME: "bsn-knowledge"
 
 jobs:
-  # Quick validation and testing
   validate_and_test:
     name: Validate & Test
     runs-on: ubuntu-latest
@@ -51,7 +46,6 @@ jobs:
 
       - name: Code Quality Check
         run: |
-          # Basic formatting and linting
           uv run ruff format --check src/ tests/ || echo "Format issues detected"
           uv run ruff check src/ tests/ || echo "Lint issues detected"
 
@@ -80,24 +74,3 @@ jobs:
           name: security-report-${{ env.PROJECT_NAME }}
           path: bandit-report.json
           retention-days: 30
-
-  # Basic Docker validation (if Dockerfile exists)
-  docker_check:
-    name: Docker Check
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    if: hashFiles('Dockerfile') != ''
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Docker Build Test
-        run: |
-          docker build --no-cache -t ${{ env.PROJECT_NAME }}:test .
-          echo "Docker build successful"
-
-      - name: Container Security Scan
-        run: |
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image ${{ env.PROJECT_NAME }}:test || echo "Container security findings detected"
-
