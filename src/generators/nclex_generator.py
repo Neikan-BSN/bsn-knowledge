@@ -1,7 +1,7 @@
-from typing import Any, Dict, List, Optional
 import json
 import logging
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -21,17 +21,17 @@ class NCLEXQuestion(BaseModel):
     category: str
     difficulty: str
     nclex_standard: str
-    clinical_scenario: Optional[str] = None
-    evidence_citations: List[str] = []
-    umls_concepts: List[str] = []
+    clinical_scenario: str | None = None
+    evidence_citations: list[str] = []
+    umls_concepts: list[str] = []
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
 class NCLEXQuestionSet(BaseModel):
     topic: str
-    questions: List[NCLEXQuestion]
-    generation_metadata: Dict[str, Any]
-    validation_summary: Dict[str, Any]
+    questions: list[NCLEXQuestion]
+    generation_metadata: dict[str, Any]
+    validation_summary: dict[str, Any]
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -99,7 +99,7 @@ Return as JSON array with this structure for each question:
         topic: str,
         count: int = 10,
         difficulty: str = "intermediate",
-        category: Optional[str] = None,
+        category: str | None = None,
         include_scenarios: bool = True,
         medical_accuracy_threshold: float = 0.95,
     ) -> NCLEXQuestionSet:
@@ -194,7 +194,7 @@ Return as JSON array with this structure for each question:
             )
             raise
 
-    async def validate_question(self, question: NCLEXQuestion) -> Dict[str, Any]:
+    async def validate_question(self, question: NCLEXQuestion) -> dict[str, Any]:
         """
         Validate a single NCLEX question for medical accuracy and format
         """
@@ -202,7 +202,7 @@ Return as JSON array with this structure for each question:
             # Convert question to text for validation
             question_text = f"""
             Question: {question.question}
-            Options: {', '.join(question.options)}
+            Options: {", ".join(question.options)}
             Correct Answer: {question.options[question.correct_answer]}
             Rationale: {question.rationale}
             """
@@ -245,7 +245,7 @@ Return as JSON array with this structure for each question:
             logger.error(f"Question validation failed: {str(e)}")
             return {"is_valid": False, "error": str(e), "overall_score": 0.0}
 
-    async def get_available_categories(self) -> List[str]:
+    async def get_available_categories(self) -> list[str]:
         """
         Get available NCLEX-RN test plan categories
         """

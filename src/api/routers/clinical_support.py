@@ -4,19 +4,19 @@ Provides evidence-based clinical recommendations and care planning support
 """
 
 import logging
-from typing import Optional, Dict, Any, List
 from datetime import datetime
+from typing import Any
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from ...generators.clinical_decision_support import ClinicalDecisionSupport
 from ...services.clinical_decision_support import (
-    ClinicalDecisionSupportService,
     ClinicalAssessment,
+    ClinicalDecisionSupportService,
     ClinicalPriority,
     EvidenceLevel,
 )
-from ...generators.clinical_decision_support import ClinicalDecisionSupport
 from ...services.content_generation_service import ContentGenerationService
 from ...services.ragnostic_client import RAGnosticClient
 
@@ -29,14 +29,14 @@ class AssessmentRequest(BaseModel):
     """Request for clinical assessment data"""
 
     patient_condition: str
-    symptoms: List[str] = []
-    vital_signs: Dict[str, Any] = {}
-    lab_values: Dict[str, Any] = {}
-    medications: List[str] = []
-    allergies: List[str] = []
-    comorbidities: List[str] = []
-    nursing_concerns: List[str] = []
-    focus_area: Optional[str] = None
+    symptoms: list[str] = []
+    vital_signs: dict[str, Any] = {}
+    lab_values: dict[str, Any] = {}
+    medications: list[str] = []
+    allergies: list[str] = []
+    comorbidities: list[str] = []
+    nursing_concerns: list[str] = []
+    focus_area: str | None = None
     max_recommendations: int = Field(default=10, ge=1, le=20)
     min_confidence: float = Field(default=0.8, ge=0.5, le=1.0)
 
@@ -45,13 +45,13 @@ class EmergencyProtocolRequest(BaseModel):
     """Request for emergency protocols"""
 
     emergency_situation: str
-    patient_factors: Optional[Dict[str, Any]] = None
+    patient_factors: dict[str, Any] | None = None
 
 
 class CareplanValidationRequest(BaseModel):
     """Request to validate a nursing care plan"""
 
-    care_plan: Dict[str, Any]
+    care_plan: dict[str, Any]
     patient_condition: str
 
 
@@ -64,22 +64,22 @@ class RecommendationResponse(BaseModel):
     evidence_level: str
     confidence_score: float
     priority: str
-    contraindications: List[str]
-    monitoring_parameters: List[str]
-    evidence_citations: List[str]
-    umls_concepts: List[str]
+    contraindications: list[str]
+    monitoring_parameters: list[str]
+    evidence_citations: list[str]
+    umls_concepts: list[str]
 
 
 class ClinicalSupportResponse(BaseModel):
     """Complete clinical decision support response"""
 
-    assessment_summary: Dict[str, Any]
-    recommendations: List[RecommendationResponse]
-    nursing_diagnoses: List[str]
-    priority_interventions: List[str]
-    educational_needs: List[str]
-    safety_considerations: List[str]
-    evidence_summary: Dict[str, Any]
+    assessment_summary: dict[str, Any]
+    recommendations: list[RecommendationResponse]
+    nursing_diagnoses: list[str]
+    priority_interventions: list[str]
+    educational_needs: list[str]
+    safety_considerations: list[str]
+    evidence_summary: dict[str, Any]
     confidence_score: float
     generated_at: str
 
@@ -89,7 +89,7 @@ class EmergencyProtocolResponse(BaseModel):
 
     emergency_situation: str
     protocols: str
-    validation_details: Dict[str, Any]
+    validation_details: dict[str, Any]
     generated_at: str
 
 
@@ -97,37 +97,37 @@ class CareplanValidationResponse(BaseModel):
     """Care plan validation response"""
 
     is_valid: bool
-    validation_details: Dict[str, Any]
-    recommendations: List[str]
-    evidence_gaps: List[str] = []
+    validation_details: dict[str, Any]
+    recommendations: list[str]
+    evidence_gaps: list[str] = []
 
 
 class CaseStudyRequest(BaseModel):
     """Request for case study generation per REVISED_PHASE3_PLAN.md B.3"""
 
-    learning_objectives: List[str] = Field(
+    learning_objectives: list[str] = Field(
         description="Learning objectives for case study generation", min_items=1
     )
     case_complexity: str = Field(
         default="intermediate",
         description="Case complexity level: basic, intermediate, advanced",
     )
-    focus_area: Optional[str] = Field(None, description="Optional clinical focus area")
+    focus_area: str | None = Field(None, description="Optional clinical focus area")
 
 
 class ClinicalRecommendationRequest(BaseModel):
     """Request for clinical recommendations per REVISED_PHASE3_PLAN.md B.3"""
 
-    patient_demographics: Dict[str, Any] = Field(
+    patient_demographics: dict[str, Any] = Field(
         description="Patient age, gender, relevant demographic factors"
     )
-    clinical_presentation: Dict[str, Any] = Field(
+    clinical_presentation: dict[str, Any] = Field(
         description="Current symptoms, vital signs, physical assessment findings"
     )
-    relevant_history: Dict[str, Any] = Field(
+    relevant_history: dict[str, Any] = Field(
         description="Medical history, medications, allergies, social factors"
     )
-    learning_objectives: List[str] = Field(
+    learning_objectives: list[str] = Field(
         description="Specific learning goals for this case scenario"
     )
     case_complexity: str = Field(
@@ -139,9 +139,9 @@ class ClinicalRecommendationRequest(BaseModel):
 class CaseStudyResponse(BaseModel):
     """Case study response"""
 
-    case_studies: List[Dict[str, Any]]
+    case_studies: list[dict[str, Any]]
     total_generated: int
-    learning_objectives_covered: List[str]
+    learning_objectives_covered: list[str]
     generated_at: str
     ragnostic_integration_status: str
 
@@ -150,9 +150,9 @@ class ClinicalRecommendationResponse(BaseModel):
     """Clinical recommendation response per REVISED_PHASE3_PLAN.md B.3"""
 
     case_id: str
-    recommendations: List[Dict[str, Any]]
-    evidence_summary: Dict[str, Any]
-    ragnostic_context: Dict[str, Any]
+    recommendations: list[dict[str, Any]]
+    evidence_summary: dict[str, Any]
+    ragnostic_context: dict[str, Any]
     overall_confidence: float
     generated_at: str
 
@@ -306,7 +306,7 @@ async def validate_care_plan(
         )
 
 
-@router.get("/evidence-levels", response_model=List[str])
+@router.get("/evidence-levels", response_model=list[str])
 async def get_evidence_levels():
     """
     Get available evidence levels for clinical recommendations
@@ -314,7 +314,7 @@ async def get_evidence_levels():
     return [level.value for level in EvidenceLevel]
 
 
-@router.get("/priority-levels", response_model=List[str])
+@router.get("/priority-levels", response_model=list[str])
 async def get_priority_levels():
     """
     Get available priority levels for clinical recommendations
@@ -322,7 +322,7 @@ async def get_priority_levels():
     return [priority.value for priority in ClinicalPriority]
 
 
-@router.get("/emergency-situations", response_model=List[str])
+@router.get("/emergency-situations", response_model=list[str])
 async def get_common_emergency_situations():
     """
     Get list of common emergency situations for protocol generation
@@ -343,7 +343,7 @@ async def get_common_emergency_situations():
     ]
 
 
-@router.get("/nursing-diagnoses", response_model=List[str])
+@router.get("/nursing-diagnoses", response_model=list[str])
 async def get_common_nursing_diagnoses():
     """
     Get list of common NANDA-I nursing diagnoses
@@ -367,7 +367,7 @@ async def get_common_nursing_diagnoses():
     ]
 
 
-@router.get("/clinical-focus-areas", response_model=List[str])
+@router.get("/clinical-focus-areas", response_model=list[str])
 async def get_clinical_focus_areas():
     """
     Get available clinical focus areas for targeted recommendations
@@ -391,7 +391,7 @@ async def get_clinical_focus_areas():
     ]
 
 
-@router.post("/generate-careplan", response_model=Dict[str, Any])
+@router.post("/generate-careplan", response_model=dict[str, Any])
 async def generate_nursing_care_plan(
     assessment: AssessmentRequest,
     content_service: ContentGenerationService = Depends(get_content_service),
@@ -500,7 +500,7 @@ async def b3_generate_clinical_recommendations(
         # Convert recommendations to serializable format
         recommendations = [
             {
-                "id": f"rec_{i+1}",
+                "id": f"rec_{i + 1}",
                 "recommendation_text": rec.recommendation_text,
                 "evidence_citations": rec.evidence_citations,
                 "confidence_score": rec.confidence_score,
@@ -565,7 +565,7 @@ async def b3_create_case_studies(
         )
 
 
-@router.get("/b3-health", response_model=Dict[str, Any])
+@router.get("/b3-health", response_model=dict[str, Any])
 async def b3_clinical_decision_support_health(
     clinical_decision_support: ClinicalDecisionSupport = Depends(
         get_clinical_decision_support

@@ -4,19 +4,19 @@ Generates evidence-based clinical recommendations using RAGnostic's enriched med
 """
 
 import asyncio
+import hashlib
 import json
 import logging
-import hashlib
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from dataclasses import dataclass
+from typing import Any
 
-from pydantic import BaseModel, Field, field_validator, model_validator
 import openai
+from pydantic import BaseModel, Field, field_validator, model_validator
 
-from ..services.ragnostic_client import RAGnosticClient
 from ..config import get_settings
+from ..services.ragnostic_client import RAGnosticClient
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -45,16 +45,16 @@ class ClinicalPriority(str, Enum):
 class CaseScenario(BaseModel):
     """Patient case scenario for clinical recommendation generation"""
 
-    patient_demographics: Dict[str, Any] = Field(
+    patient_demographics: dict[str, Any] = Field(
         description="Patient age, gender, relevant demographic factors"
     )
-    clinical_presentation: Dict[str, Any] = Field(
+    clinical_presentation: dict[str, Any] = Field(
         description="Current symptoms, vital signs, physical assessment findings"
     )
-    relevant_history: Dict[str, Any] = Field(
+    relevant_history: dict[str, Any] = Field(
         description="Medical history, medications, allergies, social factors"
     )
-    learning_objectives: List[str] = Field(
+    learning_objectives: list[str] = Field(
         description="Specific learning goals for this case scenario"
     )
     case_complexity: str = Field(
@@ -74,7 +74,7 @@ class Recommendation(BaseModel):
     """Individual evidence-based clinical recommendation"""
 
     recommendation_text: str = Field(description="Clear, actionable recommendation")
-    evidence_citations: List[str] = Field(
+    evidence_citations: list[str] = Field(
         description="Source citations supporting this recommendation"
     )
     confidence_score: float = Field(
@@ -82,7 +82,7 @@ class Recommendation(BaseModel):
         le=1.0,
         description="Confidence score based on evidence strength (0.0-1.0)",
     )
-    reasoning_steps: List[str] = Field(
+    reasoning_steps: list[str] = Field(
         description="Step-by-step clinical reasoning process"
     )
     evidence_strength: EvidenceStrength = Field(
@@ -91,15 +91,15 @@ class Recommendation(BaseModel):
     priority: ClinicalPriority = Field(
         description="Clinical priority of this recommendation"
     )
-    contraindications: List[str] = Field(
+    contraindications: list[str] = Field(
         default=[],
         description="Situations where this recommendation should not be applied",
     )
-    monitoring_parameters: List[str] = Field(
+    monitoring_parameters: list[str] = Field(
         default=[],
         description="Parameters to monitor when implementing this recommendation",
     )
-    umls_concepts: List[str] = Field(
+    umls_concepts: list[str] = Field(
         default=[], description="Relevant UMLS medical concepts"
     )
 
@@ -128,7 +128,7 @@ class Recommendation(BaseModel):
 class RecommendationResult(BaseModel):
     """Complete result with multiple recommendations and metadata"""
 
-    recommendations: List[Recommendation] = Field(
+    recommendations: list[Recommendation] = Field(
         description="List of evidence-based recommendations"
     )
     case_id: str = Field(description="Unique identifier for this case")
@@ -139,10 +139,10 @@ class RecommendationResult(BaseModel):
     overall_confidence: float = Field(
         ge=0.0, le=1.0, description="Overall confidence across all recommendations"
     )
-    evidence_summary: Dict[str, Any] = Field(
+    evidence_summary: dict[str, Any] = Field(
         description="Summary of evidence used in generating recommendations"
     )
-    ragnostic_context: Dict[str, Any] = Field(
+    ragnostic_context: dict[str, Any] = Field(
         default={}, description="Context and metadata from RAGnostic queries"
     )
 
@@ -172,16 +172,16 @@ class ContentChunk:
     """Represents a piece of medical content from RAGnostic"""
 
     content: str
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
     relevance_score: float
-    umls_concepts: List[str]
-    evidence_level: Optional[str] = None
+    umls_concepts: list[str]
+    evidence_level: str | None = None
 
 
 class ClinicalDecisionSupport:
     """Provides evidence-based clinical recommendations per REVISED_PHASE3_PLAN.md B.3 specifications"""
 
-    def __init__(self, ragnostic_client: Optional[RAGnosticClient] = None):
+    def __init__(self, ragnostic_client: RAGnosticClient | None = None):
         """Initialize the clinical recommendation engine"""
         self.ragnostic_client = ragnostic_client or RAGnosticClient(
             **settings.get_ragnostic_client_config()
@@ -220,8 +220,8 @@ Response Format: Always respond in valid JSON format.
 """
 
         # Initialize recommendation cache
-        self._recommendation_cache: Dict[str, RecommendationResult] = {}
-        self._cache_expiry: Dict[str, datetime] = {}
+        self._recommendation_cache: dict[str, RecommendationResult] = {}
+        self._cache_expiry: dict[str, datetime] = {}
         self._cache_ttl = timedelta(hours=2)  # Cache recommendations for 2 hours
 
         logger.info("Clinical Recommendation Engine initialized")
@@ -235,7 +235,7 @@ Response Format: Always respond in valid JSON format.
 
     async def _query_ragnostic_context(
         self, case_scenario: CaseScenario
-    ) -> Tuple[List[ContentChunk], Dict[str, Any]]:
+    ) -> tuple[list[ContentChunk], dict[str, Any]]:
         """Query RAGnostic for relevant medical content and context"""
         try:
             # Construct comprehensive search query
@@ -349,7 +349,7 @@ Response Format: Always respond in valid JSON format.
             # Return minimal context to allow degraded functionality
             return [], {"error": str(e), "fallback_mode": True}
 
-    def _evidence_level_score(self, evidence_level: Optional[str]) -> float:
+    def _evidence_level_score(self, evidence_level: str | None) -> float:
         """Convert evidence level to numeric score for sorting"""
         level_scores = {
             "systematic_review_meta_analysis": 6.0,
@@ -362,8 +362,8 @@ Response Format: Always respond in valid JSON format.
         return level_scores.get(evidence_level, 0.0)
 
     def _apply_clinical_reasoning(
-        self, content: List[ContentChunk], scenario: CaseScenario
-    ) -> List[Dict[str, Any]]:
+        self, content: list[ContentChunk], scenario: CaseScenario
+    ) -> list[dict[str, Any]]:
         """Apply clinical reasoning algorithms to generate recommendations"""
         reasoning_results = []
 
@@ -379,7 +379,6 @@ Response Format: Always respond in valid JSON format.
         # Categorize content chunks
         for chunk in content:
             content_lower = chunk.content.lower()
-            metadata = chunk.metadata
 
             # Use metadata and content analysis to categorize
             if any(
@@ -474,8 +473,8 @@ Response Format: Always respond in valid JSON format.
         return domain_priorities.get(domain, ClinicalPriority.MODERATE)
 
     def _extract_clinical_indicators(
-        self, chunks: List[ContentChunk], scenario: CaseScenario
-    ) -> List[str]:
+        self, chunks: list[ContentChunk], scenario: CaseScenario
+    ) -> list[str]:
         """Extract relevant clinical indicators from content chunks"""
         indicators = []
 
@@ -493,7 +492,7 @@ Response Format: Always respond in valid JSON format.
         return unique_indicators[:10]  # Limit to top 10 indicators
 
     def _calculate_confidence_score(
-        self, recommendation: str, evidence: List[ContentChunk]
+        self, recommendation: str, evidence: list[ContentChunk]
     ) -> float:
         """Calculate confidence score based on evidence strength and consistency"""
         if not evidence:
@@ -594,7 +593,7 @@ Response Format: Always respond in valid JSON format.
                 # Prepare evidence context for OpenAI
                 evidence_context = "\n\n".join(
                     [
-                        f"Evidence {i+1} (Relevance: {chunk.relevance_score:.2f}, "
+                        f"Evidence {i + 1} (Relevance: {chunk.relevance_score:.2f}, "
                         f"Level: {chunk.evidence_level or 'unspecified'}):\n{chunk.content}"
                         for i, chunk in enumerate(
                             chunks[:3]
@@ -608,7 +607,7 @@ Case Scenario:
 - Patient Demographics: {json.dumps(case_scenario.patient_demographics, indent=2)}
 - Clinical Presentation: {json.dumps(case_scenario.clinical_presentation, indent=2)}
 - Relevant History: {json.dumps(case_scenario.relevant_history, indent=2)}
-- Learning Objectives: {', '.join(case_scenario.learning_objectives)}
+- Learning Objectives: {", ".join(case_scenario.learning_objectives)}
 
 Clinical Domain: {domain.title()}
 Priority Level: {priority.value}
@@ -744,8 +743,8 @@ Respond in JSON format:
             )
 
     async def create_case_studies(
-        self, learning_objectives: List[str]
-    ) -> List[Dict[str, Any]]:
+        self, learning_objectives: list[str]
+    ) -> list[dict[str, Any]]:
         """
         Create case studies using RAGnostic content aligned with learning objectives
         Per REVISED_PHASE3_PLAN.md B.3: Use RAGnostic content to build scenarios,
@@ -883,7 +882,7 @@ Respond in JSON format:
                     )
                     # Create minimal fallback case study
                     fallback_case = {
-                        "case_id": f"fallback_{len(case_studies)+1}",
+                        "case_id": f"fallback_{len(case_studies) + 1}",
                         "learning_objective": objective,
                         "error": f"Generation failed: {str(e)}",
                         "generated_at": datetime.utcnow().isoformat(),
@@ -900,7 +899,7 @@ Respond in JSON format:
             logger.error(f"Case study generation failed: {str(e)}")
             raise
 
-    def _format_content_for_prompt(self, content_chunks: List[ContentChunk]) -> str:
+    def _format_content_for_prompt(self, content_chunks: list[ContentChunk]) -> str:
         """Format content chunks for inclusion in prompts"""
         formatted_content = []
         for i, chunk in enumerate(content_chunks, 1):
@@ -914,8 +913,8 @@ Respond in JSON format:
     async def validate_recommendation(
         self,
         recommendation: Recommendation,
-        case_context: Optional[CaseScenario] = None,
-    ) -> Dict[str, Any]:
+        case_context: CaseScenario | None = None,
+    ) -> dict[str, Any]:
         """
         Validate a clinical recommendation for safety and evidence base
 
@@ -1005,7 +1004,7 @@ Respond in JSON format:
             }
 
     async def get_emergency_protocols(
-        self, emergency_type: str, patient_factors: Optional[Dict[str, Any]] = None
+        self, emergency_type: str, patient_factors: dict[str, Any] | None = None
     ) -> RecommendationResult:
         """
         Generate emergency clinical protocols and recommendations
@@ -1055,8 +1054,8 @@ Respond in JSON format:
         return recommendations
 
     async def batch_generate_recommendations(
-        self, case_scenarios: List[CaseScenario], max_concurrent: int = 5
-    ) -> List[RecommendationResult]:
+        self, case_scenarios: list[CaseScenario], max_concurrent: int = 5
+    ) -> list[RecommendationResult]:
         """
         Generate recommendations for multiple case scenarios concurrently
 
@@ -1102,7 +1101,7 @@ Respond in JSON format:
         )
         return valid_results
 
-    def get_cache_stats(self) -> Dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, Any]:
         """Get recommendation cache statistics"""
         now = datetime.utcnow()
         active_cache_entries = sum(
@@ -1123,7 +1122,7 @@ Respond in JSON format:
         self._cache_expiry.clear()
         logger.info("Clinical recommendation cache cleared")
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """Check health of the clinical recommendation engine"""
         try:
             # Test RAGnostic connectivity
@@ -1131,7 +1130,7 @@ Respond in JSON format:
 
             # Test OpenAI connectivity with minimal request
             try:
-                test_response = await openai.ChatCompletion.acreate(
+                await openai.ChatCompletion.acreate(
                     model=self.openai_model,
                     messages=[{"role": "user", "content": "Test"}],
                     max_tokens=5,

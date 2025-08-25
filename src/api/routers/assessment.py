@@ -3,22 +3,23 @@ Assessment API endpoints for BSN Knowledge
 Provides AACN competency assessment and management functionality
 """
 
-from datetime import datetime
-from typing import Dict, List, Optional, Any
-from fastapi import APIRouter, HTTPException, Depends, Query
-from pydantic import BaseModel, Field
 import logging
+from datetime import datetime
+from typing import Any
 
-from ...models.assessment_models import (
-    CompetencyAssessmentResult,
-    StudentCompetencyProfile,
-    KnowledgeGap,
-    LearningPathRecommendation,
-    AACNDomain,
-    CompetencyProficiencyLevel,
-)
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
+
 from ...assessment.competency_framework import AACNCompetencyFramework
 from ...dependencies import get_competency_framework_dep
+from ...models.assessment_models import (
+    AACNDomain,
+    CompetencyAssessmentResult,
+    CompetencyProficiencyLevel,
+    KnowledgeGap,
+    LearningPathRecommendation,
+    StudentCompetencyProfile,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/assessment", tags=["assessment"])
@@ -29,7 +30,7 @@ class CompetencyAssessmentRequest(BaseModel):
 
     student_id: str
     competency_id: str
-    performance_data: Dict[str, Any] = Field(
+    performance_data: dict[str, Any] = Field(
         description="Assessment results, quiz scores, clinical evaluations"
     )
     assessment_type: str = "comprehensive"
@@ -40,26 +41,26 @@ class CompetencyGapAnalysisRequest(BaseModel):
     """Request model for competency gap analysis"""
 
     student_id: str
-    target_competencies: List[str]
+    target_competencies: list[str]
     include_prerequisites: bool = True
-    severity_filter: Optional[str] = None  # "low", "medium", "high", "critical"
+    severity_filter: str | None = None  # "low", "medium", "high", "critical"
 
 
 class LearningPathRequest(BaseModel):
     """Request model for learning path generation"""
 
     student_id: str
-    target_competencies: List[str]
-    current_proficiency: Optional[Dict[str, float]] = None
-    learning_preferences: Optional[Dict[str, Any]] = None
-    timeline_weeks: Optional[int] = 16
+    target_competencies: list[str]
+    current_proficiency: dict[str, float] | None = None
+    learning_preferences: dict[str, Any] | None = None
+    timeline_weeks: int | None = 16
 
 
 class BulkCompetencyAssessmentRequest(BaseModel):
     """Request model for bulk competency assessment"""
 
-    assessments: List[CompetencyAssessmentRequest]
-    batch_id: Optional[str] = None
+    assessments: list[CompetencyAssessmentRequest]
+    batch_id: str | None = None
 
 
 @router.post("/competency", response_model=CompetencyAssessmentResult)
@@ -231,7 +232,7 @@ async def get_student_competency_profile(
         )
 
 
-@router.post("/gaps/analyze", response_model=Dict[str, List[KnowledgeGap]])
+@router.post("/gaps/analyze", response_model=dict[str, list[KnowledgeGap]])
 async def analyze_competency_gaps(
     request: CompetencyGapAnalysisRequest,
     framework: AACNCompetencyFramework = Depends(get_competency_framework_dep),
@@ -314,7 +315,7 @@ async def generate_learning_path(
 
 @router.get("/competencies/available")
 async def get_available_competencies(
-    domain: Optional[AACNDomain] = Query(None, description="Filter by AACN domain"),
+    domain: AACNDomain | None = Query(None, description="Filter by AACN domain"),
     framework: AACNCompetencyFramework = Depends(get_competency_framework_dep),
 ):
     """

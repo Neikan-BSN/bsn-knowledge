@@ -2,7 +2,6 @@
 Configuration management for BSN Knowledge application
 """
 
-from typing import Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
@@ -16,7 +15,7 @@ class Settings(BaseSettings):
     debug: bool = Field(default=False)
 
     # OpenAI Configuration
-    openai_api_key: Optional[str] = Field(default=None)
+    openai_api_key: str | None = Field(default=None)
     openai_model: str = Field(default="gpt-4")
     openai_temperature: float = Field(default=0.7, ge=0.0, le=2.0)
     openai_max_tokens: int = Field(default=2000, ge=1, le=8000)
@@ -25,7 +24,7 @@ class Settings(BaseSettings):
     ragnostic_base_url: str = Field(
         default="http://localhost:8000", env="RAGNOSTIC_BASE_URL"
     )
-    ragnostic_api_key: Optional[str] = Field(default=None, env="RAGNOSTIC_API_KEY")
+    ragnostic_api_key: str | None = Field(default=None, env="RAGNOSTIC_API_KEY")
     ragnostic_timeout: int = Field(default=30, env="RAGNOSTIC_TIMEOUT")
 
     # RAGnostic Client Performance Settings

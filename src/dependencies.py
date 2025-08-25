@@ -2,23 +2,23 @@
 Dependency injection for BSN Knowledge services
 """
 
-from functools import lru_cache
 import logging
+from functools import lru_cache
 
-from .config import get_settings
-from .services.ragnostic_client import RAGnosticClient
-from .services.content_generation_service import ContentGenerationService
-from .services.clinical_decision_support import ClinicalDecisionSupportService
-from .services.analytics_service import AnalyticsService
-from .services.learning_analytics import LearningAnalytics
 from .assessment.competency_framework import AACNCompetencyFramework
+from .config import get_settings
 from .generators.nclex_generator import NCLEXGenerator
 from .generators.study_guide_generator import StudyGuideGenerator
+from .services.analytics_service import AnalyticsService
+from .services.clinical_decision_support import ClinicalDecisionSupportService
+from .services.content_generation_service import ContentGenerationService
+from .services.learning_analytics import LearningAnalytics
+from .services.ragnostic_client import RAGnosticClient
 
 logger = logging.getLogger(__name__)
 
 
-@lru_cache()
+@lru_cache
 def get_ragnostic_client() -> RAGnosticClient:
     """Get enhanced RAGnostic client instance with performance optimizations"""
     settings = get_settings()
@@ -35,7 +35,7 @@ def get_ragnostic_client() -> RAGnosticClient:
     return client
 
 
-@lru_cache()
+@lru_cache
 def get_content_generation_service() -> ContentGenerationService:
     """Get content generation service instance"""
     settings = get_settings()
@@ -50,28 +50,28 @@ def get_content_generation_service() -> ContentGenerationService:
     )
 
 
-@lru_cache()
+@lru_cache
 def get_clinical_decision_service() -> ClinicalDecisionSupportService:
     """Get clinical decision support service instance"""
     content_service = get_content_generation_service()
     return ClinicalDecisionSupportService(content_service)
 
 
-@lru_cache()
+@lru_cache
 def get_nclex_generator() -> NCLEXGenerator:
     """Get NCLEX question generator instance"""
     content_service = get_content_generation_service()
     return NCLEXGenerator(content_service)
 
 
-@lru_cache()
+@lru_cache
 def get_study_guide_generator() -> StudyGuideGenerator:
     """Get study guide generator instance"""
     content_service = get_content_generation_service()
     return StudyGuideGenerator(content_service)
 
 
-@lru_cache()
+@lru_cache
 def get_analytics_service() -> AnalyticsService:
     """Get analytics service instance with RAGnostic integration"""
     ragnostic_client = get_ragnostic_client()
@@ -82,7 +82,7 @@ def get_analytics_service() -> AnalyticsService:
     return service
 
 
-@lru_cache()
+@lru_cache
 def get_learning_analytics() -> LearningAnalytics:
     """Get learning analytics service instance with RAGnostic and Analytics integration"""
     ragnostic_client = get_ragnostic_client()
@@ -96,7 +96,7 @@ def get_learning_analytics() -> LearningAnalytics:
     return learning_analytics
 
 
-@lru_cache()
+@lru_cache
 def get_competency_framework() -> AACNCompetencyFramework:
     """Get AACN Competency Framework instance with RAGnostic integration"""
     ragnostic_client = get_ragnostic_client()

@@ -4,14 +4,16 @@ Test helper utilities for BSN Knowledge API tests.
 Provides common test utilities, validation helpers, and test data generators.
 """
 
-import time
 import random
-from datetime import datetime, timezone, timedelta
-from typing import Dict, List, Any, Optional, Callable
+import time
+from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
+from typing import Any
+
 from fastapi.testclient import TestClient
 
-from src.auth import UserRole, create_auth_tokens, UserInDB
-from src.models.assessment_models import CompetencyProficiencyLevel, AACNDomain
+from src.auth import UserInDB, UserRole, create_auth_tokens
+from src.models.assessment_models import AACNDomain, CompetencyProficiencyLevel
 
 
 class TestDataGenerator:
@@ -27,7 +29,7 @@ class TestDataGenerator:
         return f"{prefix}{year}{random_num}"
 
     @staticmethod
-    def generate_competency_id(domain: Optional[AACNDomain] = None) -> str:
+    def generate_competency_id(domain: AACNDomain | None = None) -> str:
         """Generate a realistic competency ID."""
         if domain is None:
             domain = random.choice(list(AACNDomain))
@@ -39,12 +41,12 @@ class TestDataGenerator:
     @staticmethod
     def generate_quiz_scores(
         count: int = 5, min_score: int = 60, max_score: int = 100
-    ) -> List[int]:
+    ) -> list[int]:
         """Generate realistic quiz scores."""
         return [random.randint(min_score, max_score) for _ in range(count)]
 
     @staticmethod
-    def generate_clinical_evaluation() -> Dict[str, float]:
+    def generate_clinical_evaluation() -> dict[str, float]:
         """Generate realistic clinical evaluation scores."""
         categories = [
             "communication",
@@ -86,7 +88,7 @@ class TestDataGenerator:
     @staticmethod
     def generate_nclex_question(
         topic: str = None, difficulty: str = "medium"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate a realistic NCLEX-style question."""
         if topic is None:
             topic = TestDataGenerator.generate_nursing_topic()
@@ -165,7 +167,7 @@ class TestDataGenerator:
         }
 
     @staticmethod
-    def generate_performance_data(student_level: str = "junior") -> Dict[str, Any]:
+    def generate_performance_data(student_level: str = "junior") -> dict[str, Any]:
         """Generate realistic student performance data."""
         base_scores = {
             "freshman": (65, 80),
@@ -211,11 +213,11 @@ class AuthenticationHelper:
             role=role,
             hashed_password=get_password_hash("test_password"),
             is_active=is_active,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
         )
 
     @staticmethod
-    def get_auth_headers(user: UserInDB) -> Dict[str, str]:
+    def get_auth_headers(user: UserInDB) -> dict[str, str]:
         """Get authentication headers for a user."""
         token_response = create_auth_tokens(user)
         return {"Authorization": f"Bearer {token_response.access_token}"}
@@ -223,7 +225,7 @@ class AuthenticationHelper:
     @staticmethod
     def login_user(
         client: TestClient, username: str, password: str = "test_password"
-    ) -> Optional[str]:
+    ) -> str | None:
         """Login a user and return the access token."""
         response = client.post(
             "/api/v1/auth/login", json={"username": username, "password": password}
@@ -238,7 +240,7 @@ class ResponseValidator:
     """Helper class for validating API responses."""
 
     @staticmethod
-    def validate_error_response(response_data: Dict[str, Any]) -> bool:
+    def validate_error_response(response_data: dict[str, Any]) -> bool:
         """Validate that error response has correct structure."""
         required_fields = ["error", "error_code", "message", "timestamp"]
 
@@ -258,7 +260,7 @@ class ResponseValidator:
         return True
 
     @staticmethod
-    def validate_pagination_response(response_data: Dict[str, Any]) -> bool:
+    def validate_pagination_response(response_data: dict[str, Any]) -> bool:
         """Validate paginated response structure."""
         if not isinstance(response_data, dict):
             return False
@@ -292,7 +294,7 @@ class ResponseValidator:
             return False
 
     @staticmethod
-    def validate_nclex_question_structure(question: Dict[str, Any]) -> bool:
+    def validate_nclex_question_structure(question: dict[str, Any]) -> bool:
         """Validate NCLEX question has correct structure."""
         required_fields = ["id", "question", "options", "correct_answer", "rationale"]
 
@@ -314,7 +316,7 @@ class ResponseValidator:
         return True
 
     @staticmethod
-    def validate_competency_assessment_structure(assessment: Dict[str, Any]) -> bool:
+    def validate_competency_assessment_structure(assessment: dict[str, Any]) -> bool:
         """Validate competency assessment has correct structure."""
         required_fields = [
             "student_id",
@@ -338,7 +340,7 @@ class ResponseValidator:
                 return False
 
         # Validate score is numeric
-        if not isinstance(assessment.get("score"), (int, float)):
+        if not isinstance(assessment.get("score"), int | float):
             return False
 
         return True
@@ -398,7 +400,7 @@ class PerformanceHelper:
     @staticmethod
     def create_load_test(
         test_function: Callable, num_requests: int, concurrent_users: int = 1
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a basic load test scenario."""
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -476,11 +478,11 @@ class MockServiceHelper:
         question_count: int = 5,
         topic: str = "nursing_fundamentals",
         difficulty: str = "medium",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a mock RAGnostic service response."""
         questions = []
 
-        for i in range(question_count):
+        for _i in range(question_count):
             questions.append(
                 TestDataGenerator.generate_nclex_question(topic, difficulty)
             )
@@ -499,7 +501,7 @@ class MockServiceHelper:
     @staticmethod
     def create_mock_competency_assessment_result(
         student_id: str, competency_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a mock competency assessment result."""
         proficiency_levels = list(CompetencyProficiencyLevel)
         current_level = random.choice(proficiency_levels)
@@ -527,10 +529,8 @@ class MockServiceHelper:
             ][: random.randint(1, 3)],
             "evidence_summary": "Based on quiz scores, clinical evaluations, and simulation performance",
             "assessor_id": "mock_assessor_001",
-            "assessment_date": datetime.now(timezone.utc).isoformat(),
-            "next_assessment_due": (
-                datetime.now(timezone.utc) + timedelta(days=30)
-            ).isoformat(),
+            "assessment_date": datetime.now(UTC).isoformat(),
+            "next_assessment_due": (datetime.now(UTC) + timedelta(days=30)).isoformat(),
             "proficiency_trend": random.choice(["improving", "stable", "declining"]),
         }
 
@@ -539,7 +539,7 @@ class SecurityTestHelper:
     """Helper for security testing scenarios."""
 
     @staticmethod
-    def generate_sql_injection_payloads() -> List[str]:
+    def generate_sql_injection_payloads() -> list[str]:
         """Generate common SQL injection test payloads."""
         return [
             "'; DROP TABLE users; --",
@@ -555,7 +555,7 @@ class SecurityTestHelper:
         ]
 
     @staticmethod
-    def generate_xss_payloads() -> List[str]:
+    def generate_xss_payloads() -> list[str]:
         """Generate common XSS test payloads."""
         return [
             "<script>alert('xss')</script>",
@@ -571,7 +571,7 @@ class SecurityTestHelper:
         ]
 
     @staticmethod
-    def generate_path_traversal_payloads() -> List[str]:
+    def generate_path_traversal_payloads() -> list[str]:
         """Generate path traversal test payloads."""
         return [
             "../../../etc/passwd",

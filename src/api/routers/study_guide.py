@@ -4,11 +4,12 @@ Provides an alias router for study guide creation endpoint
 """
 
 from fastapi import APIRouter, Depends
+
 from .study_guides import (
     StudyGuideRequest,
     StudyGuideResponse,
-    get_content_service,
     create_study_guide_endpoint,
+    get_content_service,
 )
 
 router = APIRouter(prefix="/study-guide", tags=["study-guide"])

@@ -5,25 +5,28 @@ Tests comprehensive error handling, custom error responses,
 input validation, and error logging.
 """
 
-import pytest
 import json
 from datetime import datetime
+from unittest.mock import MagicMock, patch
+
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
 
 from src.api.error_handlers import (
     APIError,
-    ValidationError as APIValidationError,
+    AssessmentError,
     AuthenticationError,
     AuthorizationError,
-    ResourceNotFoundError,
     BusinessLogicError,
+    ContentGenerationError,
     ExternalServiceError,
     RateLimitExceededError,
-    ContentGenerationError,
-    AssessmentError,
+    ResourceNotFoundError,
     create_error_response,
+)
+from src.api.error_handlers import (
+    ValidationError as APIValidationError,
 )
 
 
@@ -141,8 +144,9 @@ class TestErrorResponseGeneration:
 
     def test_create_error_response_structure(self):
         """Test that error responses have correct structure."""
-        from fastapi import Request
         from unittest.mock import MagicMock
+
+        from fastapi import Request
 
         # Mock request object
         mock_request = MagicMock(spec=Request)
@@ -173,8 +177,9 @@ class TestErrorResponseGeneration:
 
     def test_error_response_timestamp_format(self):
         """Test that error response timestamps are ISO formatted."""
-        from fastapi import Request
         from unittest.mock import MagicMock
+
+        from fastapi import Request
 
         mock_request = MagicMock(spec=Request)
         mock_request.url.path = "/test"
@@ -190,8 +195,9 @@ class TestErrorResponseGeneration:
 
     def test_error_response_without_details(self):
         """Test error response when no details are provided."""
-        from fastapi import Request
         from unittest.mock import MagicMock
+
+        from fastapi import Request
 
         mock_request = MagicMock(spec=Request)
         mock_request.url.path = "/test"
@@ -532,13 +538,10 @@ class TestExternalServiceErrorHandling:
         self, mock_ragnostic, client: TestClient, auth_headers
     ):
         """Test handling of external service timeouts."""
-        import asyncio
 
         # Mock timeout
         mock_client = MagicMock()
-        mock_client.generate_questions.side_effect = asyncio.TimeoutError(
-            "Request timeout"
-        )
+        mock_client.generate_questions.side_effect = TimeoutError("Request timeout")
         mock_ragnostic.return_value = mock_client
 
         response = client.post(
@@ -567,9 +570,11 @@ class TestErrorLogging:
         """Test that 5xx errors are logged as errors."""
         # This would require triggering a 500 error
         # For now, test the logging function directly
-        from src.api.error_handlers import log_error
-        from fastapi import Request
         from unittest.mock import MagicMock
+
+        from fastapi import Request
+
+        from src.api.error_handlers import log_error
 
         mock_request = MagicMock(spec=Request)
         mock_request.url.path = "/test"
@@ -589,9 +594,11 @@ class TestErrorLogging:
     @patch("src.api.error_handlers.logger")
     def test_client_errors_are_logged_as_warnings(self, mock_logger):
         """Test that 4xx errors are logged as warnings."""
-        from src.api.error_handlers import log_error
-        from fastapi import Request
         from unittest.mock import MagicMock
+
+        from fastapi import Request
+
+        from src.api.error_handlers import log_error
 
         mock_request = MagicMock(spec=Request)
         mock_request.url.path = "/test"

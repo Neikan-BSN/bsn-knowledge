@@ -3,20 +3,21 @@ Analytics API endpoints for BSN Knowledge
 Provides comprehensive learning analytics and institutional reporting
 """
 
-from datetime import datetime
-from typing import Dict, List, Optional, Any
-from fastapi import APIRouter, HTTPException, Depends, Query
-from pydantic import BaseModel, Field
 import logging
+from datetime import datetime
+from typing import Any
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
+
+from ...dependencies import get_analytics_service_dep, get_learning_analytics_dep
 from ...models.assessment_models import (
-    StudentProgressMetrics,
     CohortAnalytics,
     InstitutionalReport,
+    StudentProgressMetrics,
 )
 from ...services.analytics_service import AnalyticsService
 from ...services.learning_analytics import LearningAnalytics
-from ...dependencies import get_analytics_service_dep, get_learning_analytics_dep
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/analytics", tags=["analytics"])
@@ -26,7 +27,7 @@ class EngagementTrackingRequest(BaseModel):
     """Request model for tracking student engagement"""
 
     student_id: str
-    activity_data: Dict[str, Any] = Field(
+    activity_data: dict[str, Any] = Field(
         description="Activity data including type, duration, timestamp"
     )
 
@@ -49,7 +50,7 @@ class LearningReportRequest(BaseModel):
         description="Type of report: comprehensive, progress, competency, predictive",
     )
     include_cohort_comparison: bool = True
-    time_period: Optional[str] = None
+    time_period: str | None = None
 
 
 class CohortAnalysisRequest(BaseModel):
@@ -77,7 +78,7 @@ class InstitutionalReportRequest(BaseModel):
 @router.get("/student/{student_id}/progress", response_model=StudentProgressMetrics)
 async def get_student_progress(
     student_id: str,
-    time_period: Optional[str] = Query(None, description="Time period to analyze"),
+    time_period: str | None = Query(None, description="Time period to analyze"),
     analytics_service: AnalyticsService = Depends(get_analytics_service_dep),
 ):
     """
@@ -395,8 +396,8 @@ async def generate_institutional_report(
 
 @router.get("/dashboard/summary")
 async def get_dashboard_summary(
-    institution_id: Optional[str] = Query(None, description="Institution filter"),
-    program: Optional[str] = Query(None, description="Program filter"),
+    institution_id: str | None = Query(None, description="Institution filter"),
+    program: str | None = Query(None, description="Program filter"),
     time_period: str = Query("current_semester", description="Time period for summary"),
     analytics_service: AnalyticsService = Depends(get_analytics_service_dep),
 ):
@@ -467,8 +468,8 @@ async def export_analytics_data(
         description="Type of data to export: student_progress, cohort_analytics, institutional_metrics"
     ),
     format: str = Query("json", description="Export format: json, csv, xlsx"),
-    date_range: Optional[str] = Query(None, description="Date range filter"),
-    filters: Optional[str] = Query(None, description="Additional filters as JSON"),
+    date_range: str | None = Query(None, description="Date range filter"),
+    filters: str | None = Query(None, description="Additional filters as JSON"),
     analytics_service: AnalyticsService = Depends(get_analytics_service_dep),
 ):
     """
@@ -661,10 +662,10 @@ async def get_competency_progression(
 @router.get("/student/{student_id}/knowledge-gaps")
 async def get_knowledge_gap_analysis(
     student_id: str,
-    severity_filter: Optional[str] = Query(
+    severity_filter: str | None = Query(
         None, description="Filter by severity: critical, major, moderate, minor"
     ),
-    domain_filter: Optional[str] = Query(None, description="Filter by AACN domain"),
+    domain_filter: str | None = Query(None, description="Filter by AACN domain"),
     include_interventions: bool = Query(
         True, description="Include recommended interventions"
     ),
@@ -807,8 +808,8 @@ async def get_learning_path_recommendations(
 
 @router.get("/dashboard/learning-analytics-summary")
 async def get_learning_analytics_dashboard(
-    institution_id: Optional[str] = Query(None, description="Institution filter"),
-    program: Optional[str] = Query(None, description="Program filter"),
+    institution_id: str | None = Query(None, description="Institution filter"),
+    program: str | None = Query(None, description="Program filter"),
     time_period: str = Query("current_semester", description="Time period for summary"),
     learning_analytics: LearningAnalytics = Depends(get_learning_analytics_dep),
 ):
@@ -899,10 +900,10 @@ async def get_learning_analytics_dashboard(
 @router.get("/benchmarks/national")
 async def get_national_benchmarks(
     program_type: str = Query("BSN", description="Program type for benchmarking"),
-    metrics: List[str] = Query(
+    metrics: list[str] = Query(
         ["nclex_pass_rate", "employment_rate"], description="Metrics to benchmark"
     ),
-    year: Optional[int] = Query(None, description="Benchmark year"),
+    year: int | None = Query(None, description="Benchmark year"),
 ):
     """
     Get national benchmark data for comparison

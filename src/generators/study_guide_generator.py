@@ -1,8 +1,8 @@
-from typing import Any, Dict, List, Optional
 import json
 import logging
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -36,8 +36,8 @@ class LearningObjective(BaseModel):
     objective: str
     objective_type: LearningObjectiveType
     competency_framework: CompetencyFramework
-    assessment_criteria: List[str] = []
-    prerequisite_concepts: List[str] = []
+    assessment_criteria: list[str] = []
+    prerequisite_concepts: list[str] = []
 
 
 class StudySection(BaseModel):
@@ -45,12 +45,12 @@ class StudySection(BaseModel):
 
     title: str
     content: str
-    learning_objectives: List[LearningObjective]
-    key_concepts: List[str] = []
-    clinical_applications: List[str] = []
-    study_questions: List[str] = []
-    additional_resources: List[str] = []
-    umls_concepts: List[str] = []
+    learning_objectives: list[LearningObjective]
+    key_concepts: list[str] = []
+    clinical_applications: list[str] = []
+    study_questions: list[str] = []
+    additional_resources: list[str] = []
+    umls_concepts: list[str] = []
     estimated_study_time: int  # in minutes
 
 
@@ -62,14 +62,14 @@ class StudyGuide(BaseModel):
     topic: str
     difficulty_level: str
     target_audience: str = "BSN students"
-    sections: List[StudySection]
-    overall_objectives: List[LearningObjective]
-    prerequisites: List[str] = []
+    sections: list[StudySection]
+    overall_objectives: list[LearningObjective]
+    prerequisites: list[str] = []
     estimated_completion_time: int  # in minutes
-    competency_alignment: Dict[str, List[str]] = {}
-    evidence_citations: List[str] = []
+    competency_alignment: dict[str, list[str]] = {}
+    evidence_citations: list[str] = []
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    generation_metadata: Dict[str, Any] = {}
+    generation_metadata: dict[str, Any] = {}
 
 
 class StudyGuideGenerator:
@@ -171,8 +171,8 @@ Return as JSON with this structure:
         difficulty_level: str = "intermediate",
         target_audience: str = "BSN students",
         section_count: int = 5,
-        competency_frameworks: List[CompetencyFramework] = None,
-        personalization_data: Optional[Dict[str, Any]] = None,
+        competency_frameworks: list[CompetencyFramework] = None,
+        personalization_data: dict[str, Any] | None = None,
     ) -> StudyGuide:
         """
         Generate a comprehensive, personalized study guide
@@ -331,7 +331,7 @@ Return as JSON with this structure:
             raise
 
     async def customize_guide(
-        self, base_guide: StudyGuide, student_profile: Dict[str, Any]
+        self, base_guide: StudyGuide, student_profile: dict[str, Any]
     ) -> StudyGuide:
         """
         Customize existing study guide based on student profile
@@ -341,9 +341,7 @@ Return as JSON with this structure:
             learning_style = student_profile.get("learning_style", "mixed")
             weak_areas = student_profile.get("knowledge_gaps", [])
             strong_areas = student_profile.get("strengths", [])
-            time_available = student_profile.get(
-                "study_time", base_guide.estimated_completion_time
-            )
+            student_profile.get("study_time", base_guide.estimated_completion_time)
 
             # Filter and prioritize sections based on weak areas
             customized_sections = []
@@ -414,7 +412,7 @@ Return as JSON with this structure:
             logger.error(f"Study guide customization failed: {str(e)}")
             raise
 
-    async def get_available_topics(self) -> List[str]:
+    async def get_available_topics(self) -> list[str]:
         """
         Get available study guide topics
         """

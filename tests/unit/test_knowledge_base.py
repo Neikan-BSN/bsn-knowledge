@@ -3,7 +3,6 @@
 Implements Task Group 3 testing patterns with 90% coverage target.
 """
 
-
 import pytest
 
 # Mock imports since we're creating the structure
@@ -220,8 +219,6 @@ class TestVectorOperations:
 
     async def test_vector_similarity(self):
         """Test vector similarity calculations."""
-        vector1 = [0.1, 0.2, 0.3, 0.4, 0.5]
-        vector2 = [0.2, 0.3, 0.4, 0.5, 0.6]
 
         # Mock similarity calculation (cosine similarity)
         similarity_score = 0.98  # High similarity
@@ -255,7 +252,6 @@ class TestCacheOperations:
 
     async def test_cache_retrieval(self):
         """Test retrieving data from cache."""
-        cache_key = "medical_term:term_1"
 
         # Mock cache retrieval
         cached_data = {
@@ -370,9 +366,9 @@ def test_coverage_requirements(coverage_requirements):
     # Mock coverage data
     current_coverage = 92  # Should be > 90%
 
-    assert current_coverage >= minimum_coverage, (
-        f"Coverage {current_coverage}% below minimum {minimum_coverage}%"
-    )
+    assert (
+        current_coverage >= minimum_coverage
+    ), f"Coverage {current_coverage}% below minimum {minimum_coverage}%"
 
 
 # Test data consistency

@@ -4,11 +4,12 @@ Provides NCLEX-specific question generation and assessment
 """
 
 from fastapi import APIRouter, Depends
+
 from .quizzes import (
     QuizRequest,
     QuizResponse,
-    get_content_service,
     generate_nclex_questions,
+    get_content_service,
 )
 
 router = APIRouter(prefix="/nclex", tags=["nclex"])

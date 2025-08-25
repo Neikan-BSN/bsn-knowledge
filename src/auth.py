@@ -4,17 +4,16 @@ Implements JWT-based authentication with role-based access control.
 """
 
 import os
+import secrets
 import time
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 from functools import wraps
 
 import jwt
-from fastapi import HTTPException, status, Depends, Request
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel, Field, EmailStr
+from fastapi import Depends, HTTPException, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from passlib.context import CryptContext
-import secrets
+from pydantic import BaseModel, EmailStr, Field
 
 # Configuration
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", secrets.token_urlsafe(32))
@@ -40,9 +39,9 @@ class UserRole:
 class TokenData(BaseModel):
     """JWT Token payload data"""
 
-    username: Optional[str] = None
-    user_id: Optional[int] = None
-    role: Optional[str] = None
+    username: str | None = None
+    user_id: int | None = None
+    role: str | None = None
     scopes: list[str] = Field(default_factory=list)
 
 
@@ -54,7 +53,7 @@ class User(BaseModel):
     email: EmailStr
     role: str
     is_active: bool = True
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class UserInDB(User):
@@ -118,12 +117,12 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def get_user(username: str) -> Optional[UserInDB]:
+def get_user(username: str) -> UserInDB | None:
     """Get user from database"""
     return fake_users_db.get(username)
 
 
-def authenticate_user(username: str, password: str) -> Optional[UserInDB]:
+def authenticate_user(username: str, password: str) -> UserInDB | None:
     """Authenticate user credentials"""
     user = get_user(username)
     if not user:
@@ -133,34 +132,28 @@ def authenticate_user(username: str, password: str) -> Optional[UserInDB]:
     return user
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """Create JWT access token"""
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(
-            minutes=ACCESS_TOKEN_EXPIRE_MINUTES
-        )
+        expire = datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
-    to_encode.update(
-        {"exp": expire, "iat": datetime.now(timezone.utc), "type": "access"}
-    )
+    to_encode.update({"exp": expire, "iat": datetime.now(UTC), "type": "access"})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
-def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_refresh_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """Create JWT refresh token"""
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+        expire = datetime.now(UTC) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
 
-    to_encode.update(
-        {"exp": expire, "iat": datetime.now(timezone.utc), "type": "refresh"}
-    )
+    to_encode.update({"exp": expire, "iat": datetime.now(UTC), "type": "refresh"})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
@@ -199,7 +192,7 @@ def verify_token(token: str, token_type: str = "access") -> TokenData:
 
 
 async def get_current_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
 ) -> User:
     """Get current authenticated user"""
     if not credentials:

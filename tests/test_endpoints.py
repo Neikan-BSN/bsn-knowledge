@@ -5,10 +5,11 @@ Tests all Phase 3 critical endpoints and core API functionality
 including NCLEX generation, competency assessment, study guides, and analytics.
 """
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, patch
 
 
 @pytest.mark.endpoints
@@ -303,7 +304,7 @@ class TestCompetencyAssessmentEndpoint:
 
         assert isinstance(data, dict)
         # Should contain domain-based gaps
-        for domain, gaps in data.items():
+        for _domain, gaps in data.items():
             assert isinstance(gaps, list)
 
     @patch("src.dependencies.get_competency_framework_dep")

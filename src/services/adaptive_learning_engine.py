@@ -11,21 +11,21 @@ Personalizes learning experiences based on student performance, leveraging:
 Built per REVISED_PHASE3_PLAN.md B.5 specifications
 """
 
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
-from statistics import mean, stdev
 import logging
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from statistics import mean, stdev
+from typing import Any
 
-from ..models.assessment_models import AACNDomain
-from .learning_analytics import LearningAnalytics
-from .ragnostic_client import RAGnosticClient
-from .analytics_service import AnalyticsService
-from ..assessment.knowledge_gap_analyzer import KnowledgeGapAnalyzer, GapAnalysisResult
+from ..assessment.knowledge_gap_analyzer import GapAnalysisResult, KnowledgeGapAnalyzer
 from ..assessment.learning_path_optimizer import (
     LearningPathOptimizer,
     OptimizedLearningPath,
 )
+from ..models.assessment_models import AACNDomain
+from .analytics_service import AnalyticsService
+from .learning_analytics import LearningAnalytics
+from .ragnostic_client import RAGnosticClient
 
 logger = logging.getLogger(__name__)
 
@@ -37,11 +37,11 @@ class PersonalizationFactors:
     learning_style: str
     difficulty_preference: str
     pace_preference: str  # "slow", "moderate", "fast"
-    content_type_preferences: List[str] = field(default_factory=list)
-    performance_patterns: Dict[str, float] = field(default_factory=dict)
-    engagement_patterns: Dict[str, Any] = field(default_factory=dict)
-    confidence_levels: Dict[str, float] = field(default_factory=dict)
-    time_constraints: Dict[str, int] = field(default_factory=dict)
+    content_type_preferences: list[str] = field(default_factory=list)
+    performance_patterns: dict[str, float] = field(default_factory=dict)
+    engagement_patterns: dict[str, Any] = field(default_factory=dict)
+    confidence_levels: dict[str, float] = field(default_factory=dict)
+    time_constraints: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass
@@ -55,8 +55,8 @@ class AdaptiveContentRecommendation:
     estimated_duration: int
     personalization_score: float
     adaptive_reason: str
-    learning_objectives: List[str] = field(default_factory=list)
-    prerequisite_concepts: List[str] = field(default_factory=list)
+    learning_objectives: list[str] = field(default_factory=list)
+    prerequisite_concepts: list[str] = field(default_factory=list)
     success_probability: float = 0.0
     engagement_prediction: float = 0.0
 
@@ -69,7 +69,7 @@ class DifficultyAdjustment:
     recommended_difficulty: str
     adjustment_reason: str
     confidence_score: float
-    supporting_metrics: Dict[str, Any] = field(default_factory=dict)
+    supporting_metrics: dict[str, Any] = field(default_factory=dict)
     adjustment_magnitude: float = 0.0  # -1.0 to 1.0 scale
 
 
@@ -79,8 +79,8 @@ class LearningPathAdaptation:
 
     original_path_id: str
     adapted_path_id: str
-    adaptations_made: List[str] = field(default_factory=list)
-    performance_triggers: List[str] = field(default_factory=list)
+    adaptations_made: list[str] = field(default_factory=list)
+    performance_triggers: list[str] = field(default_factory=list)
     estimated_improvement: float = 0.0
     adaptation_confidence: float = 0.0
 
@@ -151,10 +151,10 @@ class AdaptiveLearningEngine:
 
     async def generate_personalized_content(
         self,
-        student_profile: Dict[str, Any],
-        target_competencies: Optional[List[str]] = None,
-        content_filters: Optional[Dict[str, Any]] = None,
-    ) -> List[AdaptiveContentRecommendation]:
+        student_profile: dict[str, Any],
+        target_competencies: list[str] | None = None,
+        content_filters: dict[str, Any] | None = None,
+    ) -> list[AdaptiveContentRecommendation]:
         """
         Generate personalized content based on student performance and preferences.
 
@@ -229,10 +229,10 @@ class AdaptiveLearningEngine:
     async def optimize_learning_path(
         self,
         student_id: str,
-        target_competencies: List[str],
-        time_constraints: Optional[Dict[str, int]] = None,
-        performance_context: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        target_competencies: list[str],
+        time_constraints: dict[str, int] | None = None,
+        performance_context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """
         Optimize learning path using RAGnostic prerequisite graphs and B.4 analytics.
 
@@ -264,7 +264,7 @@ class AdaptiveLearningEngine:
             knowledge_gaps = student_analysis.get("knowledge_gaps", [])
 
             # Use B.4 KnowledgeGapAnalyzer to identify priority learning areas
-            gap_analysis = await self.gap_analyzer.analyze_gaps(
+            await self.gap_analyzer.analyze_gaps(
                 student_id, competency_progression, target_competencies
             )
 
@@ -345,9 +345,9 @@ class AdaptiveLearningEngine:
     async def adjust_difficulty_dynamically(
         self,
         student_id: str,
-        current_content: Dict[str, Any],
-        recent_performance: Dict[str, Any],
-        competency_context: Dict[str, Any],
+        current_content: dict[str, Any],
+        recent_performance: dict[str, Any],
+        competency_context: dict[str, Any],
     ) -> DifficultyAdjustment:
         """
         Dynamically adjust content difficulty based on real-time performance.
@@ -437,8 +437,8 @@ class AdaptiveLearningEngine:
         self,
         student_id: str,
         current_path_id: str,
-        performance_update: Dict[str, Any],
-        competency_changes: Dict[str, Any],
+        performance_update: dict[str, Any],
+        competency_changes: dict[str, Any],
     ) -> LearningPathAdaptation:
         """
         Adapt learning path in real-time based on performance updates.
@@ -536,8 +536,8 @@ class AdaptiveLearningEngine:
         student_id: str,
         study_duration_weeks: int,
         weekly_time_budget: int,
-        priority_competencies: List[str],
-    ) -> Dict[str, Any]:
+        priority_competencies: list[str],
+    ) -> dict[str, Any]:
         """
         Generate comprehensive adaptive study plan with performance tracking.
 
@@ -645,7 +645,7 @@ class AdaptiveLearningEngine:
     # Private helper methods for adaptive algorithms
 
     async def _extract_personalization_factors(
-        self, student_profile: Dict[str, Any], performance_analysis: Dict[str, Any]
+        self, student_profile: dict[str, Any], performance_analysis: dict[str, Any]
     ) -> PersonalizationFactors:
         """Extract personalization factors from student data"""
         try:
@@ -680,7 +680,7 @@ class AdaptiveLearningEngine:
                 pace_preference="moderate",
             )
 
-    def _infer_pace_preference(self, progress_metrics: Dict[str, Any]) -> str:
+    def _infer_pace_preference(self, progress_metrics: dict[str, Any]) -> str:
         """Infer learning pace preference from performance metrics"""
         learning_velocity = progress_metrics.get("learning_velocity", 0.5)
 
@@ -692,8 +692,8 @@ class AdaptiveLearningEngine:
             return "moderate"
 
     def _extract_confidence_levels(
-        self, performance_analysis: Dict[str, Any]
-    ) -> Dict[str, float]:
+        self, performance_analysis: dict[str, Any]
+    ) -> dict[str, float]:
         """Extract confidence levels by competency domain"""
         competency_progression = performance_analysis.get("competency_progression", {})
         domain_progressions = competency_progression.get("domain_progressions", {})
@@ -709,10 +709,10 @@ class AdaptiveLearningEngine:
     async def _generate_adaptive_recommendations(
         self,
         student_id: str,
-        knowledge_gaps: List[Dict[str, Any]],
+        knowledge_gaps: list[dict[str, Any]],
         personalization_factors: PersonalizationFactors,
-        target_competencies: Optional[List[str]],
-    ) -> List[AdaptiveContentRecommendation]:
+        target_competencies: list[str] | None,
+    ) -> list[AdaptiveContentRecommendation]:
         """Generate adaptive content recommendations based on gaps and personalization"""
         try:
             recommendations = []
@@ -745,9 +745,9 @@ class AdaptiveLearningEngine:
 
     def _prioritize_gaps_for_personalization(
         self,
-        knowledge_gaps: List[Dict[str, Any]],
+        knowledge_gaps: list[dict[str, Any]],
         personalization_factors: PersonalizationFactors,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Prioritize knowledge gaps considering personalization factors"""
 
         def personalization_score(gap):
@@ -771,10 +771,10 @@ class AdaptiveLearningEngine:
 
     async def _generate_gap_recommendations(
         self,
-        gap: Dict[str, Any],
+        gap: dict[str, Any],
         personalization_factors: PersonalizationFactors,
-        target_competencies: Optional[List[str]],
-    ) -> List[AdaptiveContentRecommendation]:
+        target_competencies: list[str] | None,
+    ) -> list[AdaptiveContentRecommendation]:
         """Generate content recommendations for a specific knowledge gap"""
         try:
             # Use RAGnostic to find relevant content
@@ -824,7 +824,7 @@ class AdaptiveLearningEngine:
             return []
 
     def _construct_gap_search_query(
-        self, gap: Dict[str, Any], target_competencies: Optional[List[str]]
+        self, gap: dict[str, Any], target_competencies: list[str] | None
     ) -> str:
         """Construct search query for RAGnostic based on knowledge gap"""
         base_query = gap.get("topic", "nursing knowledge")
@@ -837,8 +837,8 @@ class AdaptiveLearningEngine:
 
     def _calculate_content_personalization_score(
         self,
-        content: Dict[str, Any],
-        gap: Dict[str, Any],
+        content: dict[str, Any],
+        gap: dict[str, Any],
         personalization_factors: PersonalizationFactors,
     ) -> float:
         """Calculate personalization score for content recommendation"""
@@ -912,8 +912,8 @@ class AdaptiveLearningEngine:
 
     def _calculate_success_probability(
         self,
-        content: Dict[str, Any],
-        gap: Dict[str, Any],
+        content: dict[str, Any],
+        gap: dict[str, Any],
         personalization_factors: PersonalizationFactors,
     ) -> float:
         """Calculate probability of successful content completion"""
@@ -939,7 +939,7 @@ class AdaptiveLearningEngine:
         return max(0.3, min(0.95, base_probability))
 
     def _predict_engagement(
-        self, content: Dict[str, Any], personalization_factors: PersonalizationFactors
+        self, content: dict[str, Any], personalization_factors: PersonalizationFactors
     ) -> float:
         """Predict student engagement with content"""
         base_engagement = 0.6
@@ -967,7 +967,7 @@ class AdaptiveLearningEngine:
 
     async def _generate_strength_based_recommendations(
         self, student_id: str, personalization_factors: PersonalizationFactors
-    ) -> List[AdaptiveContentRecommendation]:
+    ) -> list[AdaptiveContentRecommendation]:
         """Generate recommendations based on student strengths for exploration"""
         try:
             # Identify domains with high confidence (strengths)
@@ -1017,10 +1017,10 @@ class AdaptiveLearningEngine:
 
     async def _apply_difficulty_adjustments(
         self,
-        recommendations: List[AdaptiveContentRecommendation],
-        performance_analysis: Dict[str, Any],
+        recommendations: list[AdaptiveContentRecommendation],
+        performance_analysis: dict[str, Any],
         personalization_factors: PersonalizationFactors,
-    ) -> List[AdaptiveContentRecommendation]:
+    ) -> list[AdaptiveContentRecommendation]:
         """Apply difficulty adjustments to content recommendations"""
         adjusted_recommendations = []
 
@@ -1048,9 +1048,9 @@ class AdaptiveLearningEngine:
 
     async def _enhance_with_ragnostic_content(
         self,
-        recommendations: List[AdaptiveContentRecommendation],
-        performance_analysis: Dict[str, Any],
-    ) -> List[AdaptiveContentRecommendation]:
+        recommendations: list[AdaptiveContentRecommendation],
+        performance_analysis: dict[str, Any],
+    ) -> list[AdaptiveContentRecommendation]:
         """Enhance recommendations with additional RAGnostic content analysis"""
         enhanced_recommendations = []
 
@@ -1080,15 +1080,15 @@ class AdaptiveLearningEngine:
         return enhanced_recommendations
 
     def _rank_by_personalization_score(
-        self, recommendations: List[AdaptiveContentRecommendation]
-    ) -> List[AdaptiveContentRecommendation]:
+        self, recommendations: list[AdaptiveContentRecommendation]
+    ) -> list[AdaptiveContentRecommendation]:
         """Rank recommendations by personalization score"""
         return sorted(
             recommendations, key=lambda x: x.personalization_score, reverse=True
         )
 
     async def _enhance_path_with_ragnostic_prerequisites(
-        self, optimized_path: OptimizedLearningPath, target_competencies: List[str]
+        self, optimized_path: OptimizedLearningPath, target_competencies: list[str]
     ) -> OptimizedLearningPath:
         """Enhance learning path with RAGnostic prerequisite information"""
         try:
@@ -1125,8 +1125,8 @@ class AdaptiveLearningEngine:
     async def _apply_adaptive_path_adjustments(
         self,
         enhanced_path: OptimizedLearningPath,
-        student_analysis: Dict[str, Any],
-        performance_context: Optional[Dict[str, Any]],
+        student_analysis: dict[str, Any],
+        performance_context: dict[str, Any] | None,
     ) -> OptimizedLearningPath:
         """Apply adaptive adjustments to learning path based on student analysis"""
         try:
@@ -1166,8 +1166,8 @@ class AdaptiveLearningEngine:
             return enhanced_path
 
     async def _calculate_path_success_metrics(
-        self, adaptive_path: OptimizedLearningPath, student_analysis: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, adaptive_path: OptimizedLearningPath, student_analysis: dict[str, Any]
+    ) -> dict[str, Any]:
         """Calculate success metrics and predictions for learning path"""
         try:
             performance_metrics = student_analysis.get("progress_metrics", {})
@@ -1217,8 +1217,8 @@ class AdaptiveLearningEngine:
             }
 
     def _extract_learning_preferences(
-        self, student_profile: Dict[str, Any], student_analysis: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, student_profile: dict[str, Any], student_analysis: dict[str, Any]
+    ) -> dict[str, Any]:
         """Extract learning preferences for path optimization"""
         try:
             preferences = student_profile.get("preferences", {})
@@ -1261,8 +1261,8 @@ class AdaptiveLearningEngine:
     # Performance trend analysis methods
 
     def _analyze_performance_trend(
-        self, recent_performance: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, recent_performance: dict[str, Any]
+    ) -> dict[str, Any]:
         """Analyze recent performance trends"""
         try:
             scores = recent_performance.get(
@@ -1310,8 +1310,8 @@ class AdaptiveLearningEngine:
     def _calculate_difficulty_appropriateness(
         self,
         current_difficulty: str,
-        performance_trend: Dict[str, Any],
-        competency_levels: Dict[str, Any],
+        performance_trend: dict[str, Any],
+        competency_levels: dict[str, Any],
     ) -> float:
         """Calculate how appropriate current difficulty is for student"""
         difficulty_scores = {
@@ -1361,8 +1361,8 @@ class AdaptiveLearningEngine:
     def _calculate_optimal_difficulty(
         self,
         difficulty_score: float,
-        performance_trend: Dict[str, Any],
-        competency_levels: Dict[str, Any],
+        performance_trend: dict[str, Any],
+        competency_levels: dict[str, Any],
     ) -> str:
         """Calculate optimal difficulty level for student"""
         difficulty_levels = ["beginner", "intermediate", "advanced", "expert"]
@@ -1400,9 +1400,9 @@ class AdaptiveLearningEngine:
 
     def _calculate_adjustment_confidence(
         self,
-        performance_trend: Dict[str, Any],
-        competency_levels: Dict[str, Any],
-        recent_performance: Dict[str, Any],
+        performance_trend: dict[str, Any],
+        competency_levels: dict[str, Any],
+        recent_performance: dict[str, Any],
     ) -> float:
         """Calculate confidence in difficulty adjustment recommendation"""
         base_confidence = 0.7
@@ -1439,7 +1439,7 @@ class AdaptiveLearningEngine:
         self,
         current_difficulty: str,
         recommended_difficulty: str,
-        performance_trend: Dict[str, Any],
+        performance_trend: dict[str, Any],
     ) -> str:
         """Generate human-readable rationale for difficulty adjustment"""
         if current_difficulty == recommended_difficulty:
@@ -1491,8 +1491,8 @@ class AdaptiveLearningEngine:
     # Real-time adaptation methods
 
     def _analyze_performance_significance(
-        self, performance_update: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, performance_update: dict[str, Any]
+    ) -> dict[str, Any]:
         """Analyze whether performance update is significant enough to trigger adaptation"""
         try:
             # Extract key performance indicators
@@ -1559,10 +1559,10 @@ class AdaptiveLearningEngine:
 
     def _identify_required_adaptations(
         self,
-        performance_update: Dict[str, Any],
+        performance_update: dict[str, Any],
         updated_gaps: GapAnalysisResult,
-        competency_changes: Dict[str, Any],
-    ) -> List[str]:
+        competency_changes: dict[str, Any],
+    ) -> list[str]:
         """Identify specific adaptations needed based on performance changes"""
         try:
             adaptations = []
@@ -1611,9 +1611,9 @@ class AdaptiveLearningEngine:
     async def _apply_path_adaptations(
         self,
         current_path_id: str,
-        required_adaptations: List[str],
-        updated_analysis: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        required_adaptations: list[str],
+        updated_analysis: dict[str, Any],
+    ) -> dict[str, Any]:
         """Apply adaptations to learning path"""
         try:
             # Generate new path ID
@@ -1688,9 +1688,9 @@ class AdaptiveLearningEngine:
 
     def _calculate_adaptation_improvement(
         self,
-        performance_update: Dict[str, Any],
-        adapted_path_data: Dict[str, Any],
-        required_adaptations: List[str],
+        performance_update: dict[str, Any],
+        adapted_path_data: dict[str, Any],
+        required_adaptations: list[str],
     ) -> float:
         """Calculate estimated improvement from path adaptation"""
         try:
@@ -1728,10 +1728,10 @@ class AdaptiveLearningEngine:
 
     async def _generate_weekly_schedule(
         self,
-        optimized_path: Dict[str, Any],
+        optimized_path: dict[str, Any],
         weekly_time_budget: int,
         study_duration_weeks: int,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Generate weekly study schedule for adaptive study plan"""
         try:
             weekly_schedules = []
@@ -1785,8 +1785,8 @@ class AdaptiveLearningEngine:
             return []
 
     def _distribute_weekly_sessions(
-        self, week_steps: List[Dict[str, Any]], days_per_week: int
-    ) -> List[Dict[str, Any]]:
+        self, week_steps: list[dict[str, Any]], days_per_week: int
+    ) -> list[dict[str, Any]]:
         """Distribute weekly learning steps across daily sessions"""
         daily_sessions = []
 
@@ -1814,10 +1814,10 @@ class AdaptiveLearningEngine:
 
     def _create_adaptive_milestones(
         self,
-        learning_path: Dict[str, Any],
-        student_analysis: Dict[str, Any],
+        learning_path: dict[str, Any],
+        student_analysis: dict[str, Any],
         study_duration_weeks: int,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Create adaptive milestones that adjust based on progress"""
         try:
             milestones = []
@@ -1870,8 +1870,8 @@ class AdaptiveLearningEngine:
             return []
 
     def _create_assessment_schedule(
-        self, priority_competencies: List[str], study_duration_weeks: int
-    ) -> List[Dict[str, Any]]:
+        self, priority_competencies: list[str], study_duration_weeks: int
+    ) -> list[dict[str, Any]]:
         """Create assessment schedule for progress tracking"""
         try:
             assessments = []
@@ -1930,10 +1930,10 @@ class AdaptiveLearningEngine:
 
     async def _calculate_study_plan_predictions(
         self,
-        student_analysis: Dict[str, Any],
-        learning_path: Dict[str, Any],
+        student_analysis: dict[str, Any],
+        learning_path: dict[str, Any],
         weekly_time_budget: int,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Calculate predictions for study plan success"""
         try:
             # Extract baseline metrics
@@ -2010,7 +2010,7 @@ class AdaptiveLearningEngine:
     # Additional helper methods for path enhancement
 
     async def _add_remedial_content(
-        self, path: OptimizedLearningPath, student_analysis: Dict[str, Any]
+        self, path: OptimizedLearningPath, student_analysis: dict[str, Any]
     ) -> OptimizedLearningPath:
         """Add remedial content for students at high risk"""
         # Mock implementation - would add actual remedial content
@@ -2018,7 +2018,7 @@ class AdaptiveLearningEngine:
         return path
 
     async def _add_advanced_content(
-        self, path: OptimizedLearningPath, student_analysis: Dict[str, Any]
+        self, path: OptimizedLearningPath, student_analysis: dict[str, Any]
     ) -> OptimizedLearningPath:
         """Add advanced content for high-performing students"""
         # Mock implementation - would add actual advanced content

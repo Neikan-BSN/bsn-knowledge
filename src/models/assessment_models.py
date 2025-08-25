@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -119,13 +119,13 @@ class AACNCompetency(BaseModel):
     domain: AACNDomain
     name: str
     description: str
-    sub_competencies: List[str] = Field(default_factory=list)
-    learning_outcomes: List[str] = Field(default_factory=list)
-    assessment_methods: List[str] = Field(default_factory=list)
-    prerequisites: List[str] = Field(default_factory=list)
+    sub_competencies: list[str] = Field(default_factory=list)
+    learning_outcomes: list[str] = Field(default_factory=list)
+    assessment_methods: list[str] = Field(default_factory=list)
+    prerequisites: list[str] = Field(default_factory=list)
     minimum_level: CompetencyProficiencyLevel = CompetencyProficiencyLevel.COMPETENT
     weight: float = 1.0
-    umls_concepts: List[str] = Field(default_factory=list)  # UMLS concept mappings
+    umls_concepts: list[str] = Field(default_factory=list)  # UMLS concept mappings
 
 
 class CompetencyAssessmentResult(BaseModel):
@@ -136,27 +136,29 @@ class CompetencyAssessmentResult(BaseModel):
     current_level: CompetencyProficiencyLevel
     target_level: CompetencyProficiencyLevel
     proficiency_score: float = Field(ge=0, le=100)
-    evidence_items: List[str] = Field(default_factory=list)
-    strengths: List[str] = Field(default_factory=list)
-    improvement_areas: List[str] = Field(default_factory=list)
-    recommended_resources: List[str] = Field(default_factory=list)
+    evidence_items: list[str] = Field(default_factory=list)
+    strengths: list[str] = Field(default_factory=list)
+    improvement_areas: list[str] = Field(default_factory=list)
+    recommended_resources: list[str] = Field(default_factory=list)
     assessment_date: datetime
     assessor_id: str
     confidence_score: float = Field(ge=0, le=1.0)
-    next_assessment_due: Optional[datetime] = None
+    next_assessment_due: datetime | None = None
 
 
 class StudentCompetencyProfile(BaseModel):
     student_id: str
     program: str
     semester: int
-    competency_assessments: List[CompetencyAssessmentResult] = Field(default_factory=list)
-    overall_gpa: Optional[float] = None
-    competency_gpa: Optional[float] = None
+    competency_assessments: list[CompetencyAssessmentResult] = Field(
+        default_factory=list
+    )
+    overall_gpa: float | None = None
+    competency_gpa: float | None = None
     graduation_readiness_score: float = 0.0
-    at_risk_competencies: List[str] = Field(default_factory=list)
-    strengths_summary: List[str] = Field(default_factory=list)
-    development_plan: List[str] = Field(default_factory=list)
+    at_risk_competencies: list[str] = Field(default_factory=list)
+    strengths_summary: list[str] = Field(default_factory=list)
+    development_plan: list[str] = Field(default_factory=list)
     last_updated: datetime
 
 
@@ -169,8 +171,8 @@ class LearningObjectiveProgress(BaseModel):
     attempts: int = 0
     time_spent_minutes: int = 0
     last_activity: datetime
-    resources_accessed: List[str] = Field(default_factory=list)
-    performance_trend: List[float] = Field(default_factory=list)
+    resources_accessed: list[str] = Field(default_factory=list)
+    performance_trend: list[float] = Field(default_factory=list)
 
 
 class StudentProgressMetrics(BaseModel):
@@ -184,9 +186,9 @@ class StudentProgressMetrics(BaseModel):
     consistency_score: float = Field(ge=0, le=100)  # regularity of study habits
     difficulty_preference: str = "balanced"  # easy, balanced, challenging
     learning_velocity: float = 0.0  # objectives mastered per week
-    predicted_performance: Dict[str, float] = Field(default_factory=dict)
-    risk_factors: List[str] = Field(default_factory=list)
-    success_factors: List[str] = Field(default_factory=list)
+    predicted_performance: dict[str, float] = Field(default_factory=dict)
+    risk_factors: list[str] = Field(default_factory=list)
+    success_factors: list[str] = Field(default_factory=list)
 
 
 class CohortAnalytics(BaseModel):
@@ -196,14 +198,14 @@ class CohortAnalytics(BaseModel):
     total_students: int
     active_students: int
     average_competency_score: float
-    competency_distribution: Dict[str, int] = Field(default_factory=dict)
+    competency_distribution: dict[str, int] = Field(default_factory=dict)
     at_risk_students: int
     high_performers: int
-    engagement_metrics: Dict[str, float] = Field(default_factory=dict)
-    completion_rates: Dict[str, float] = Field(default_factory=dict)
-    time_to_mastery: Dict[str, float] = Field(default_factory=dict)
-    resource_effectiveness: Dict[str, float] = Field(default_factory=dict)
-    comparison_to_historical: Dict[str, float] = Field(default_factory=dict)
+    engagement_metrics: dict[str, float] = Field(default_factory=dict)
+    completion_rates: dict[str, float] = Field(default_factory=dict)
+    time_to_mastery: dict[str, float] = Field(default_factory=dict)
+    resource_effectiveness: dict[str, float] = Field(default_factory=dict)
+    comparison_to_historical: dict[str, float] = Field(default_factory=dict)
 
 
 # Institutional Reporting Models
@@ -215,24 +217,24 @@ class ProgramEffectivenessMetrics(BaseModel):
     nclex_pass_rate: float
     employment_rate: float
     employer_satisfaction: float
-    competency_achievement_rates: Dict[AACNDomain, float] = Field(default_factory=dict)
+    competency_achievement_rates: dict[AACNDomain, float] = Field(default_factory=dict)
     curriculum_alignment_score: float = Field(ge=0, le=100)
     student_satisfaction: float = Field(ge=0, le=5.0)
     faculty_student_ratio: float
-    resource_utilization: Dict[str, float] = Field(default_factory=dict)
-    improvement_recommendations: List[str] = Field(default_factory=list)
-    accreditation_compliance: Dict[str, bool] = Field(default_factory=dict)
+    resource_utilization: dict[str, float] = Field(default_factory=dict)
+    improvement_recommendations: list[str] = Field(default_factory=list)
+    accreditation_compliance: dict[str, bool] = Field(default_factory=dict)
 
 
 class InstitutionalReport(BaseModel):
     institution_id: str
     report_period: str
     report_type: str  # "accreditation", "quarterly", "annual"
-    programs: List[ProgramEffectivenessMetrics] = Field(default_factory=list)
-    overall_metrics: Dict[str, Any] = Field(default_factory=dict)
-    benchmarking_data: Dict[str, float] = Field(default_factory=dict)
-    trend_analysis: Dict[str, List[float]] = Field(default_factory=dict)
-    action_items: List[str] = Field(default_factory=list)
+    programs: list[ProgramEffectivenessMetrics] = Field(default_factory=list)
+    overall_metrics: dict[str, Any] = Field(default_factory=dict)
+    benchmarking_data: dict[str, float] = Field(default_factory=dict)
+    trend_analysis: dict[str, list[float]] = Field(default_factory=dict)
+    action_items: list[str] = Field(default_factory=list)
     generated_date: datetime
     next_report_due: datetime
 
@@ -244,9 +246,9 @@ class KnowledgeGap(BaseModel):
     gap_type: str  # "knowledge", "skill", "attitude"
     severity: str  # "low", "medium", "high", "critical"
     description: str
-    evidence: List[str] = Field(default_factory=list)
-    prerequisite_gaps: List[str] = Field(default_factory=list)
-    recommended_interventions: List[str] = Field(default_factory=list)
+    evidence: list[str] = Field(default_factory=list)
+    prerequisite_gaps: list[str] = Field(default_factory=list)
+    recommended_interventions: list[str] = Field(default_factory=list)
     estimated_remediation_time: int  # hours
     priority_score: float = Field(ge=0, le=100)
     identified_date: datetime
@@ -257,14 +259,14 @@ class KnowledgeGap(BaseModel):
 class LearningPathRecommendation(BaseModel):
     student_id: str
     path_id: str = Field(default_factory=lambda: str(uuid4()))
-    target_competencies: List[str]
-    current_proficiency: Dict[str, float] = Field(default_factory=dict)
-    target_proficiency: Dict[str, float] = Field(default_factory=dict)
-    recommended_sequence: List[Dict[str, Any]] = Field(default_factory=list)
+    target_competencies: list[str]
+    current_proficiency: dict[str, float] = Field(default_factory=dict)
+    target_proficiency: dict[str, float] = Field(default_factory=dict)
+    recommended_sequence: list[dict[str, Any]] = Field(default_factory=list)
     estimated_duration_hours: int
     difficulty_progression: str = "adaptive"  # linear, adaptive, accelerated
-    personalization_factors: Dict[str, Any] = Field(default_factory=dict)
+    personalization_factors: dict[str, Any] = Field(default_factory=dict)
     success_probability: float = Field(ge=0, le=1.0)
-    alternative_paths: List[str] = Field(default_factory=list)
+    alternative_paths: list[str] = Field(default_factory=list)
     created_date: datetime
     last_updated: datetime

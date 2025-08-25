@@ -61,6 +61,7 @@ dependencies = [
     "websockets>=12.0",
     # Minimal library dependencies
     "idna>=3.10",
+    "psutil>=6.1.1",
 ]
 
 [project.optional-dependencies]
@@ -74,6 +75,7 @@ test = [
     "pytest-timeout>=2.3.1",
     "coverage[toml]>=7.4.0",
     "hypothesis>=6.100.0",
+    "psutil>=6.0.0",
 ]
 
 format = [
@@ -129,6 +131,7 @@ all = [
     "mkdocstrings[python]>=0.25.0",
     "pre-commit>=3.7.0",
     # No additional dependencies for basic library
+    "psutil>=6.0.0",
 
 ]
 
@@ -171,6 +174,7 @@ dev-dependencies = [
     "python-lsp-black>=2.0.0",
     "python-lsp-ruff>=2.2.2",
     "httpx>=0.28.1",
+    "psutil>=6.0.0",
 ]
 
 # ================================================================================

@@ -15,10 +15,10 @@ from ...auth import (
     UserRole,
     authenticate_user,
     create_auth_tokens,
-    get_current_user,
     get_current_admin,
-    verify_token,
+    get_current_user,
     get_user,
+    verify_token,
 )
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])

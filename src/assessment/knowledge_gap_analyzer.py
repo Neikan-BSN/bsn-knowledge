@@ -1,8 +1,9 @@
-from typing import Any, Dict, List, Optional
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
+from typing import Any
 
 from pydantic import BaseModel
+
 from ..models.assessment_models import AACNDomain
 from ..services.ragnostic_client import RAGnosticClient
 
@@ -21,10 +22,10 @@ class KnowledgeGap(BaseModel):
     priority: str  # high, medium, low
     competency_level: str  # current competency level
     target_level: str  # target competency level
-    umls_concepts: List[str] = []  # Related UMLS concepts
-    prerequisite_gaps: List[str] = []  # Dependencies
-    recommended_actions: List[str] = []
-    interventions: List[str] = []  # Specific learning interventions
+    umls_concepts: list[str] = []  # Related UMLS concepts
+    prerequisite_gaps: list[str] = []  # Dependencies
+    recommended_actions: list[str] = []
+    interventions: list[str] = []  # Specific learning interventions
     estimated_hours: int = 0  # Time to address gap
     confidence_score: float = 0.0  # Confidence in gap identification
 
@@ -33,17 +34,17 @@ class GapAnalysisResult(BaseModel):
     """Comprehensive gap analysis result with BSN competency insights"""
 
     student_id: str
-    gaps: List[KnowledgeGap] = []
+    gaps: list[KnowledgeGap] = []
     overall_readiness: float = 0.0
-    competency_readiness: Dict[str, float] = {}  # Per AACN domain
-    priority_areas: List[str] = []
-    critical_gaps: List[str] = []  # High-priority gaps
-    improvement_trajectory: Dict[str, Any] = {}  # Progress prediction
+    competency_readiness: dict[str, float] = {}  # Per AACN domain
+    priority_areas: list[str] = []
+    critical_gaps: list[str] = []  # High-priority gaps
+    improvement_trajectory: dict[str, Any] = {}  # Progress prediction
     estimated_study_time: int = 0
-    intervention_plan: Dict[
-        str, List[str]
+    intervention_plan: dict[
+        str, list[str]
     ] = {}  # Structured intervention recommendations
-    risk_assessment: Dict[str, Any] = {}  # Academic risk factors
+    risk_assessment: dict[str, Any] = {}  # Academic risk factors
     analysis_date: str
     next_assessment_date: str
 
@@ -60,13 +61,13 @@ class KnowledgeGapAnalyzer:
     - Evidence-based intervention recommendations
     """
 
-    def __init__(self, ragnostic_client: Optional[RAGnosticClient] = None):
+    def __init__(self, ragnostic_client: RAGnosticClient | None = None):
         self.ragnostic_client = ragnostic_client
         self.competency_thresholds = self._load_competency_thresholds()
         self.domain_weights = self._load_domain_weights()
         logger.info("Knowledge Gap Analyzer initialized with AACN framework")
 
-    def _load_competency_thresholds(self) -> Dict[str, float]:
+    def _load_competency_thresholds(self) -> dict[str, float]:
         """Load competency proficiency thresholds"""
         return {
             "novice": 0.0,
@@ -76,7 +77,7 @@ class KnowledgeGapAnalyzer:
             "expert": 0.92,
         }
 
-    def _load_domain_weights(self) -> Dict[str, float]:
+    def _load_domain_weights(self) -> dict[str, float]:
         """Load AACN domain importance weights"""
         return {
             "knowledge_for_nursing_practice": 1.2,
@@ -92,8 +93,8 @@ class KnowledgeGapAnalyzer:
     async def analyze_gaps(
         self,
         student_id: str,
-        assessment_results: Dict[str, Any],
-        target_competencies: List[str],
+        assessment_results: dict[str, Any],
+        target_competencies: list[str],
     ) -> GapAnalysisResult:
         """
         Comprehensive knowledge gap analysis using AACN framework and RAGnostic insights.
@@ -190,8 +191,8 @@ class KnowledgeGapAnalyzer:
             raise
 
     async def prioritize_gaps(
-        self, gaps: List[KnowledgeGap], student_profile: Dict[str, Any]
-    ) -> List[KnowledgeGap]:
+        self, gaps: list[KnowledgeGap], student_profile: dict[str, Any]
+    ) -> list[KnowledgeGap]:
         """
         Prioritize knowledge gaps based on severity, domain importance, and student context.
 
@@ -248,8 +249,8 @@ class KnowledgeGapAnalyzer:
         self,
         student_id: str,
         previous_analysis: GapAnalysisResult,
-        current_assessment: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        current_assessment: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Track progress in addressing knowledge gaps over time.
 
@@ -321,7 +322,7 @@ class KnowledgeGapAnalyzer:
             raise
 
     def calculate_readiness_score(
-        self, gaps: List[KnowledgeGap], weights: Optional[Dict[str, float]] = None
+        self, gaps: list[KnowledgeGap], weights: dict[str, float] | None = None
     ) -> float:
         """
         Calculate overall readiness score based on knowledge gaps.
@@ -367,8 +368,8 @@ class KnowledgeGapAnalyzer:
     # Private helper methods (implementation continues with all the helper methods)
 
     def _extract_competency_scores(
-        self, assessment_results: Dict[str, Any]
-    ) -> Dict[str, float]:
+        self, assessment_results: dict[str, Any]
+    ) -> dict[str, float]:
         """Extract current competency scores by domain"""
         competency_scores = {}
 
@@ -391,8 +392,8 @@ class KnowledgeGapAnalyzer:
     # (All the helper methods from the previous implementation)
 
     async def _determine_target_levels(
-        self, student_id: str, target_competencies: List[str]
-    ) -> Dict[str, float]:
+        self, student_id: str, target_competencies: list[str]
+    ) -> dict[str, float]:
         """Determine target competency levels"""
         target_levels = {}
         for domain in AACNDomain:

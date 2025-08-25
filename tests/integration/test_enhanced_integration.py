@@ -2,15 +2,16 @@
 Integration tests for enhanced BSN Knowledge architecture with RAGnostic optimization
 """
 
-import pytest
 import asyncio
 import time
 from unittest.mock import AsyncMock, patch
+
+import pytest
 from httpx import AsyncClient
 
-from src.services.ragnostic_client import RAGnosticClient
-from src.services.performance_monitor import PerformanceMonitor
 from src.api.main import app
+from src.services.performance_monitor import PerformanceMonitor
+from src.services.ragnostic_client import RAGnosticClient
 
 
 class TestEnhancedRAGnosticClient:
@@ -36,7 +37,7 @@ class TestEnhancedRAGnosticClient:
         # Mock multiple failures to trigger circuit breaker
         with patch.object(
             client.client, "post", side_effect=Exception("Connection failed")
-        ) as mock_post:
+        ):
             # Should try multiple times before circuit breaker opens
             with pytest.raises(Exception):
                 await client.search_content("test query")
@@ -77,7 +78,7 @@ class TestEnhancedRAGnosticClient:
             assert result2 == mock_response
 
             # Different query should hit API again
-            result3 = await client.search_content("different query", cache_ttl=300)
+            await client.search_content("different query", cache_ttl=300)
             assert mock_post.call_count == 2
 
     @pytest.mark.asyncio
@@ -373,8 +374,9 @@ class TestIntegrationArchitectureValidation:
         # This test would scan the codebase for direct database imports
         # For this demonstration, we'll verify our architecture
 
-        from src.services.ragnostic_client import RAGnosticClient
         import inspect
+
+        from src.services.ragnostic_client import RAGnosticClient
 
         # Verify RAGnosticClient only uses HTTP calls, no direct DB access
         client_source = inspect.getsource(RAGnosticClient)
@@ -401,7 +403,7 @@ class TestIntegrationArchitectureValidation:
         async with AsyncClient(app=app, base_url="http://test") as client:
             # Create multiple concurrent requests
             tasks = []
-            for i in range(10):
+            for _i in range(10):
                 task = client.get("/health")
                 tasks.append(task)
 

@@ -1,7 +1,7 @@
 import logging
 import time
-from contextlib import asynccontextmanager
 from collections.abc import Callable
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,6 +16,7 @@ from .error_handlers import (
     http_exception_handler,
     validation_error_handler,
 )
+from ..auth import rate_limit_middleware
 from .routers import (
     adaptive_learning,
     analytics,
@@ -211,8 +212,6 @@ async def performance_monitoring_middleware(request: Request, call_next: Callabl
 
 
 # Add rate limiting middleware
-from ..auth import rate_limit_middleware
-
 app.middleware("http")(rate_limit_middleware)
 
 # Add middleware stack

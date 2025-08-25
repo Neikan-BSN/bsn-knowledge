@@ -2,20 +2,21 @@
 Unit tests for content generation systems
 """
 
-import pytest
-from unittest.mock import Mock, AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
+import pytest
+
+from src.generators.nclex_generator import NCLEXGenerator, NCLEXQuestion
+from src.services.clinical_decision_support import (
+    ClinicalAssessment,
+    ClinicalDecisionSupportService,
+    ClinicalRecommendation,
+)
 from src.services.content_generation_service import (
+    ContentGenerationError,
     ContentGenerationService,
     GenerationRequest,
     MedicalValidationResult,
-    ContentGenerationError,
-)
-from src.generators.nclex_generator import NCLEXGenerator, NCLEXQuestion
-from src.services.clinical_decision_support import (
-    ClinicalDecisionSupportService,
-    ClinicalAssessment,
-    ClinicalRecommendation,
 )
 
 

@@ -5,11 +5,12 @@ Tests end-to-end workflows, cross-endpoint data consistency,
 RAGnostic integration, and complete user journeys.
 """
 
-import pytest
 import time
+from unittest.mock import AsyncMock, patch
+
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, patch
 
 from src.auth import UserRole
 
@@ -40,7 +41,7 @@ class TestStudentLearningWorkflow:
 
         student_data = profile_response.json()
         assert student_data["role"] == UserRole.STUDENT
-        student_id = f"student_{student_data['id']}"
+        f"student_{student_data['id']}"
 
         # Step 3: Generate study guide
         study_guide_response = client.post(
@@ -435,7 +436,7 @@ class TestCrossEndpointDataConsistency:
         )
 
         if assessment_response.status_code == status.HTTP_200_OK:
-            assessment_data = assessment_response.json()
+            assessment_response.json()
 
             # Get student profile
             profile_response = client.get(
@@ -641,7 +642,7 @@ class TestPerformanceIntegration:
         headers = {"Authorization": f"Bearer {token}"}
 
         # Step 2: Generate study guide
-        study_guide_response = client.post(
+        client.post(
             "/api/v1/study-guide/create",
             json={
                 "topic": "Basic Nursing Skills",
@@ -652,7 +653,7 @@ class TestPerformanceIntegration:
         )
 
         # Step 3: Generate NCLEX questions
-        nclex_response = client.post(
+        client.post(
             "/api/v1/nclex/generate",
             json={
                 "topic": "nursing_fundamentals",
@@ -663,9 +664,7 @@ class TestPerformanceIntegration:
         )
 
         # Step 4: Check competencies
-        competencies_response = client.get(
-            "/api/v1/assessment/competencies/available", headers=headers
-        )
+        client.get("/api/v1/assessment/competencies/available", headers=headers)
 
         performance_monitor.stop()
 
@@ -826,7 +825,7 @@ class TestLongRunningIntegrationWorkflows:
             ("GET", "/api/v1/assessment/proficiency-levels"),
         ]
 
-        for i, (method, endpoint) in enumerate(operations):
+        for _i, (method, endpoint) in enumerate(operations):
             if method == "GET":
                 response = client.get(endpoint, headers=headers)
             else:

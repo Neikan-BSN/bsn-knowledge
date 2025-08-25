@@ -5,9 +5,10 @@ Tests response times, concurrent handling, memory usage,
 and performance benchmarks for the API.
 """
 
-import pytest
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
@@ -289,15 +290,16 @@ class TestMemoryUsagePerformance:
 
     def test_memory_usage_stability(self, client: TestClient, auth_headers):
         """Test that memory usage remains stable over multiple requests."""
-        import psutil
         import os
+
+        import psutil
 
         # Get initial memory usage
         process = psutil.Process(os.getpid())
         initial_memory = process.memory_info().rss
 
         # Make many requests
-        for i in range(100):
+        for _i in range(100):
             response = client.get("/api/v1/auth/me", headers=auth_headers["student1"])
             assert response.status_code == status.HTTP_200_OK
 
@@ -359,7 +361,7 @@ class TestMemoryUsagePerformance:
         fake_users_db.update(test_users)
 
         # Simulate many short-lived connections
-        for i in range(50):
+        for _i in range(50):
             # Each iteration creates a new "connection"
             login_response = client.post(
                 "/api/v1/auth/login",
@@ -501,9 +503,9 @@ class TestScalabilityIndicators:
 
         response_times = []
 
-        for expected_complexity, request_data in complexity_tests:
+        for _expected_complexity, request_data in complexity_tests:
             start_time = time.time()
-            response = client.post(
+            client.post(
                 "/api/v1/nclex/generate",
                 json=request_data,
                 headers=auth_headers["student1"],
@@ -703,8 +705,9 @@ class TestResourceUtilization:
 
     def test_cpu_utilization_efficiency(self, client: TestClient, auth_headers):
         """Test that CPU utilization is reasonable under load."""
-        import psutil
         import os
+
+        import psutil
 
         # Monitor CPU during load
         process = psutil.Process(os.getpid())

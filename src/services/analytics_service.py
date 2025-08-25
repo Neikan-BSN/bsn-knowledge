@@ -1,14 +1,14 @@
-from datetime import datetime, timedelta
-from typing import Any, Dict, List
 import logging
-from statistics import mean, stdev, median
 from collections import defaultdict
+from datetime import datetime, timedelta
+from statistics import mean, median, stdev
+from typing import Any
 
 from ..models.assessment_models import (
-    StudentProgressMetrics,
     CohortAnalytics,
     InstitutionalReport,
     StudentCompetencyProfile,
+    StudentProgressMetrics,
 )
 from .ragnostic_client import RAGnosticClient
 
@@ -124,7 +124,7 @@ class AnalyticsService:
             logger.error(f"Error analyzing student progress: {str(e)}")
             raise
 
-    async def get_learning_insights(self, student_id: str) -> Dict[str, Any]:
+    async def get_learning_insights(self, student_id: str) -> dict[str, Any]:
         """
         Generate personalized learning insights using RAGnostic analysis
 
@@ -186,7 +186,7 @@ class AnalyticsService:
 
     async def get_content_performance(
         self, content_id: str, time_period: str = "month"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze content performance across student population
 
@@ -291,7 +291,7 @@ class AnalyticsService:
             logger.error(f"Error analyzing content performance: {str(e)}")
             raise
 
-    async def get_quiz_analytics(self, quiz_id: str) -> Dict[str, Any]:
+    async def get_quiz_analytics(self, quiz_id: str) -> dict[str, Any]:
         """
         Detailed analytics for specific quiz/assessment
 
@@ -375,7 +375,7 @@ class AnalyticsService:
 
     async def get_cohort_comparison(
         self, student_id: str, comparison_group: str = "year"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Compare student performance against cohort benchmarks
 
@@ -447,7 +447,7 @@ class AnalyticsService:
 
     async def generate_learning_report(
         self, student_id: str, report_type: str = "comprehensive"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate comprehensive learning report for student
 
@@ -525,7 +525,7 @@ class AnalyticsService:
             raise
 
     async def track_engagement_metrics(
-        self, student_id: str, activity_data: Dict[str, Any]
+        self, student_id: str, activity_data: dict[str, Any]
     ) -> None:
         """
         Track and store student engagement metrics
@@ -580,7 +580,7 @@ class AnalyticsService:
 
     async def predict_performance(
         self, student_id: str, target_assessment: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Predict student performance on upcoming assessment
 
@@ -862,7 +862,7 @@ class AnalyticsService:
 
     async def _fetch_student_activity(
         self, student_id: str, time_period: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Fetch student activity data for specified time period
         """
@@ -900,7 +900,7 @@ class AnalyticsService:
         return 5.2  # 5.2% improvement
 
     async def _calculate_engagement_score(
-        self, activity_data: List[Dict[str, Any]]
+        self, activity_data: list[dict[str, Any]]
     ) -> float:
         """
         Calculate engagement score from activity data
@@ -921,7 +921,7 @@ class AnalyticsService:
         return min(100, (frequency_score + duration_score + variety_score) / 3)
 
     async def _calculate_consistency_score(
-        self, activity_data: List[Dict[str, Any]], time_period: str
+        self, activity_data: list[dict[str, Any]], time_period: str
     ) -> float:
         """
         Calculate consistency score based on regularity of study habits
@@ -949,7 +949,7 @@ class AnalyticsService:
         return max(0, min(100, consistency))
 
     async def _analyze_difficulty_preference(
-        self, activity_data: List[Dict[str, Any]]
+        self, activity_data: list[dict[str, Any]]
     ) -> str:
         """
         Analyze student's difficulty preference based on activity choices
@@ -981,7 +981,7 @@ class AnalyticsService:
         # Mock calculation
         return 2.3  # 2.3 objectives per week
 
-    async def _predict_performance_metrics(self, student_id: str) -> Dict[str, float]:
+    async def _predict_performance_metrics(self, student_id: str) -> dict[str, float]:
         """
         Generate predictive performance metrics
         """
@@ -993,8 +993,8 @@ class AnalyticsService:
         }
 
     async def _identify_risk_factors(
-        self, student_id: str, activity_data: List[Dict[str, Any]]
-    ) -> List[str]:
+        self, student_id: str, activity_data: list[dict[str, Any]]
+    ) -> list[str]:
         """
         Identify academic risk factors
         """
@@ -1021,8 +1021,8 @@ class AnalyticsService:
         return risk_factors
 
     async def _identify_success_factors(
-        self, student_id: str, activity_data: List[Dict[str, Any]]
-    ) -> List[str]:
+        self, student_id: str, activity_data: list[dict[str, Any]]
+    ) -> list[str]:
         """
         Identify factors contributing to success
         """
@@ -1049,7 +1049,7 @@ class AnalyticsService:
     # Placeholder methods for additional functionality
     # These would be implemented with actual database queries and ML models
 
-    def _empty_content_performance(self, content_id: str) -> Dict[str, Any]:
+    def _empty_content_performance(self, content_id: str) -> dict[str, Any]:
         """Return empty content performance structure"""
         return {
             "content_id": content_id,
@@ -1058,7 +1058,7 @@ class AnalyticsService:
             "message": "No interaction data available",
         }
 
-    def _empty_quiz_analytics(self, quiz_id: str) -> Dict[str, Any]:
+    def _empty_quiz_analytics(self, quiz_id: str) -> dict[str, Any]:
         """Return empty quiz analytics structure"""
         return {
             "quiz_id": quiz_id,
@@ -1102,27 +1102,27 @@ class AnalyticsService:
 
     async def _fetch_content_interactions(
         self, content_id: str, time_period: str
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Fetch content interaction data"""
         return []
 
-    async def _analyze_learning_patterns(self, student_id: str) -> Dict[str, Any]:
+    async def _analyze_learning_patterns(self, student_id: str) -> dict[str, Any]:
         """Analyze student learning patterns"""
         return {"pattern": "visual_learner", "confidence": 0.8}
 
     async def _generate_personalized_recommendations(
-        self, student_id: str, profile: Any, patterns: Dict[str, Any]
-    ) -> List[str]:
+        self, student_id: str, profile: Any, patterns: dict[str, Any]
+    ) -> list[str]:
         """Generate personalized learning recommendations"""
         return ["Focus on visual study materials", "Practice clinical scenarios"]
 
-    async def _identify_learning_style(self, student_id: str) -> Dict[str, Any]:
+    async def _identify_learning_style(self, student_id: str) -> dict[str, Any]:
         """Identify student's learning style preferences"""
         return {"primary": "visual", "secondary": "kinesthetic", "confidence": 0.75}
 
     async def _calculate_advancement_readiness(
         self, profile: StudentCompetencyProfile
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Calculate readiness for advancement"""
         return {
             "overall_readiness": 0.78,
@@ -1131,8 +1131,8 @@ class AnalyticsService:
         }
 
     async def _generate_study_optimization(
-        self, student_id: str, patterns: Dict[str, Any]
-    ) -> List[str]:
+        self, student_id: str, patterns: dict[str, Any]
+    ) -> list[str]:
         """Generate study optimization recommendations"""
         return [
             "Study in 45-minute focused blocks",

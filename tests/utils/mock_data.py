@@ -6,8 +6,8 @@ realistic test cases, and edge case testing.
 """
 
 import random
-from datetime import datetime, timezone, timedelta
-from typing import Dict, List, Any
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from src.models.assessment_models import AACNDomain, CompetencyProficiencyLevel
 
@@ -84,7 +84,7 @@ class MockNursingScenarios:
     """Generates realistic nursing education scenarios."""
 
     @staticmethod
-    def create_cardiovascular_scenario() -> Dict[str, Any]:
+    def create_cardiovascular_scenario() -> dict[str, Any]:
         """Create a cardiovascular nursing scenario."""
         return {
             "title": "Cardiovascular Assessment and Intervention",
@@ -138,7 +138,7 @@ class MockNursingScenarios:
         }
 
     @staticmethod
-    def create_medication_safety_scenario() -> Dict[str, Any]:
+    def create_medication_safety_scenario() -> dict[str, Any]:
         """Create a medication safety scenario."""
         return {
             "title": "Medication Administration and Safety",
@@ -183,7 +183,7 @@ class MockNursingScenarios:
         }
 
     @staticmethod
-    def create_infection_control_scenario() -> Dict[str, Any]:
+    def create_infection_control_scenario() -> dict[str, Any]:
         """Create an infection control scenario."""
         return {
             "title": "Infection Prevention and Control",
@@ -228,10 +228,10 @@ class MockAssessmentData:
     @staticmethod
     def create_student_competency_profile(
         student_id: str, program: str = "BSN"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a comprehensive student competency profile."""
         domains = list(AACNDomain)
-        proficiency_levels = list(CompetencyProficiencyLevel)
+        list(CompetencyProficiencyLevel)
 
         # Generate competency scores for each domain
         domain_scores = {}
@@ -266,16 +266,16 @@ class MockAssessmentData:
             ][: random.randint(2, 4)],
             "clinical_hours_completed": random.randint(200, 800),
             "simulation_hours": random.randint(50, 150),
-            "last_updated": datetime.now(timezone.utc).isoformat(),
+            "last_updated": datetime.now(UTC).isoformat(),
             "next_assessment_date": (
-                datetime.now(timezone.utc) + timedelta(days=random.randint(30, 90))
+                datetime.now(UTC) + timedelta(days=random.randint(30, 90))
             ).isoformat(),
         }
 
     @staticmethod
     def create_competency_gaps_analysis(
         student_id: str,
-    ) -> Dict[str, List[Dict[str, Any]]]:
+    ) -> dict[str, list[dict[str, Any]]]:
         """Create competency gap analysis for a student."""
         domains = random.sample(list(AACNDomain), k=random.randint(2, 4))
 
@@ -286,7 +286,7 @@ class MockAssessmentData:
 
             for i in range(random.randint(1, 3)):
                 gap = {
-                    "competency_id": f"AACN_{domain.value.upper()}_{i+1:02d}",
+                    "competency_id": f"AACN_{domain.value.upper()}_{i + 1:02d}",
                     "gap_description": random.choice(
                         [
                             "Insufficient knowledge in pathophysiology concepts",
@@ -308,8 +308,7 @@ class MockAssessmentData:
                     if random.random() > 0.5
                     else [],
                     "identified_date": (
-                        datetime.now(timezone.utc)
-                        - timedelta(days=random.randint(1, 30))
+                        datetime.now(UTC) - timedelta(days=random.randint(1, 30))
                     ).isoformat(),
                 }
                 domain_gaps.append(gap)
@@ -320,8 +319,8 @@ class MockAssessmentData:
 
     @staticmethod
     def create_learning_path_recommendation(
-        student_id: str, target_competencies: List[str]
-    ) -> Dict[str, Any]:
+        student_id: str, target_competencies: list[str]
+    ) -> dict[str, Any]:
         """Create a learning path recommendation."""
         activities = [
             "reading_assignment",
@@ -384,13 +383,13 @@ class MockAssessmentData:
                 {
                     "milestone": f"Complete {competency} foundation",
                     "target_date": (
-                        datetime.now(timezone.utc) + timedelta(weeks=i * 2 + 2)
+                        datetime.now(UTC) + timedelta(weeks=i * 2 + 2)
                     ).isoformat(),
                 }
                 for i, competency in enumerate(target_competencies)
             ],
-            "created_date": datetime.now(timezone.utc).isoformat(),
-            "last_updated": datetime.now(timezone.utc).isoformat(),
+            "created_date": datetime.now(UTC).isoformat(),
+            "last_updated": datetime.now(UTC).isoformat(),
         }
 
 
@@ -398,7 +397,7 @@ class MockAnalyticsData:
     """Generates mock analytics and reporting data."""
 
     @staticmethod
-    def create_student_analytics(student_id: str) -> Dict[str, Any]:
+    def create_student_analytics(student_id: str) -> dict[str, Any]:
         """Create comprehensive student analytics."""
         domains = list(AACNDomain)
 
@@ -448,9 +447,7 @@ class MockAnalyticsData:
             ),
             "recent_activity": [
                 {
-                    "date": (
-                        datetime.now(timezone.utc) - timedelta(days=i)
-                    ).isoformat(),
+                    "date": (datetime.now(UTC) - timedelta(days=i)).isoformat(),
                     "activity": random.choice(
                         [
                             "Completed NCLEX practice quiz",
@@ -464,11 +461,11 @@ class MockAnalyticsData:
                 for i in range(random.randint(5, 10))
             ],
             "projected_graduation_readiness": round(random.uniform(75.0, 95.0), 1),
-            "last_updated": datetime.now(timezone.utc).isoformat(),
+            "last_updated": datetime.now(UTC).isoformat(),
         }
 
     @staticmethod
-    def create_class_analytics(class_id: str) -> Dict[str, Any]:
+    def create_class_analytics(class_id: str) -> dict[str, Any]:
         """Create class-level analytics."""
         num_students = random.randint(20, 40)
 
@@ -525,11 +522,11 @@ class MockAnalyticsData:
                     k=random.randint(2, 4),
                 ),
             },
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
         }
 
     @staticmethod
-    def create_institutional_metrics() -> Dict[str, Any]:
+    def create_institutional_metrics() -> dict[str, Any]:
         """Create institution-level metrics."""
         return {
             "institution_id": "BSN_UNIVERSITY_001",
@@ -563,8 +560,8 @@ class MockContentData:
 
     @staticmethod
     def create_study_guide_content(
-        topic: str, competencies: List[str]
-    ) -> Dict[str, Any]:
+        topic: str, competencies: list[str]
+    ) -> dict[str, Any]:
         """Create comprehensive study guide content."""
         return {
             "topic": topic,
@@ -630,17 +627,17 @@ class MockContentData:
             ],
             "estimated_study_time_hours": random.randint(3, 12),
             "difficulty_level": random.choice(MockDataConstants.DIFFICULTY_LEVELS),
-            "created_date": datetime.now(timezone.utc).isoformat(),
-            "last_updated": datetime.now(timezone.utc).isoformat(),
+            "created_date": datetime.now(UTC).isoformat(),
+            "last_updated": datetime.now(UTC).isoformat(),
         }
 
     @staticmethod
-    def create_nclex_question_bank(topic: str, count: int = 10) -> Dict[str, Any]:
+    def create_nclex_question_bank(topic: str, count: int = 10) -> dict[str, Any]:
         """Create a bank of NCLEX-style questions."""
         questions = []
 
         for i in range(count):
-            question_id = f"{topic.lower().replace(' ', '_')}_q_{i+1:03d}"
+            question_id = f"{topic.lower().replace(' ', '_')}_q_{i + 1:03d}"
 
             # Generate question based on topic
             if "cardiovascular" in topic.lower():
@@ -671,13 +668,13 @@ class MockContentData:
                     "hard": len([q for q in questions if q["difficulty"] == "hard"]),
                 },
                 "nclex_category_distribution": {},  # Would be populated in real implementation
-                "created_date": datetime.now(timezone.utc).isoformat(),
+                "created_date": datetime.now(UTC).isoformat(),
                 "version": "1.0",
             },
         }
 
     @staticmethod
-    def _create_cardiovascular_question(question_id: str) -> Dict[str, Any]:
+    def _create_cardiovascular_question(question_id: str) -> dict[str, Any]:
         """Create a cardiovascular-focused question."""
         templates = [
             {
@@ -710,7 +707,7 @@ class MockContentData:
         }
 
     @staticmethod
-    def _create_medication_question(question_id: str) -> Dict[str, Any]:
+    def _create_medication_question(question_id: str) -> dict[str, Any]:
         """Create a medication-focused question."""
         return {
             "id": question_id,
@@ -732,7 +729,7 @@ class MockContentData:
         }
 
     @staticmethod
-    def _create_infection_question(question_id: str) -> Dict[str, Any]:
+    def _create_infection_question(question_id: str) -> dict[str, Any]:
         """Create an infection control question."""
         return {
             "id": question_id,
@@ -756,7 +753,7 @@ class MockContentData:
     @staticmethod
     def _create_general_nursing_question(
         question_id: str, topic: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a general nursing question."""
         return {
             "id": question_id,

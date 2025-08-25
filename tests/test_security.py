@@ -5,14 +5,15 @@ Tests security vulnerabilities, input sanitization, authentication bypass,
 and medical content validation security.
 """
 
-import pytest
 import time
 from datetime import timedelta
-from fastapi import status
-from fastapi.testclient import TestClient
 from unittest.mock import patch
 
-from src.auth import UserRole, create_access_token, verify_password, get_password_hash
+import pytest
+from fastapi import status
+from fastapi.testclient import TestClient
+
+from src.auth import UserRole, create_access_token, get_password_hash, verify_password
 
 
 @pytest.mark.security
@@ -590,7 +591,7 @@ class TestDataProtection:
 
         with patch("src.api.main.logger") as mock_logger:
             # Make request that should be logged
-            response = client.post(
+            client.post(
                 "/api/v1/auth/login",
                 json={"username": "student1", "password": "test_password"},
             )
@@ -706,7 +707,7 @@ class TestSecurityPerformanceImpact:
         }
 
         performance_monitor.start()
-        response = client.post(
+        client.post(
             "/api/v1/study-guide/create",
             json=large_but_valid_data,
             headers=auth_headers["student1"],
@@ -790,7 +791,7 @@ class TestThreatModeling:
         """Test resistance to service disruption attempts."""
         # Rapid fire requests (basic DoS test)
         responses = []
-        for i in range(20):  # Rapid requests
+        for _i in range(20):  # Rapid requests
             response = client.get("/health")
             responses.append(response.status_code)
 

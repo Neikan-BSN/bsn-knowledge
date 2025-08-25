@@ -1,8 +1,8 @@
-from typing import Any, Dict, List, Optional
-import logging
 import asyncio
-from datetime import datetime, timedelta
+import logging
 from contextlib import asynccontextmanager
+from datetime import datetime, timedelta
+from typing import Any
 
 import httpx
 from pydantic import BaseModel
@@ -14,12 +14,12 @@ class RAGnosticRequest(BaseModel):
     query: str
     context_type: str = "medical"
     max_results: int = 10
-    filters: Dict[str, Any] = {}
+    filters: dict[str, Any] = {}
 
 
 class RAGnosticResponse(BaseModel):
-    results: List[Dict[str, Any]]
-    metadata: Dict[str, Any]
+    results: list[dict[str, Any]]
+    metadata: dict[str, Any]
     processing_time: float
 
 
@@ -30,7 +30,7 @@ class CircuitBreakerState:
         self.failure_threshold = failure_threshold
         self.reset_timeout = reset_timeout
         self.failure_count = 0
-        self.last_failure_time: Optional[datetime] = None
+        self.last_failure_time: datetime | None = None
         self.state = "CLOSED"  # CLOSED, OPEN, HALF_OPEN
 
     def is_open(self) -> bool:
@@ -57,10 +57,10 @@ class RequestCache:
     """Simple in-memory cache with TTL for API responses"""
 
     def __init__(self, default_ttl: int = 300):
-        self.cache: Dict[str, tuple] = {}
+        self.cache: dict[str, tuple] = {}
         self.default_ttl = default_ttl
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         if key in self.cache:
             value, expiry = self.cache[key]
             if datetime.now() < expiry:
@@ -69,7 +69,7 @@ class RequestCache:
                 del self.cache[key]
         return None
 
-    def set(self, key: str, value: Any, ttl: Optional[int] = None):
+    def set(self, key: str, value: Any, ttl: int | None = None):
         expiry = datetime.now() + timedelta(seconds=ttl or self.default_ttl)
         self.cache[key] = (value, expiry)
 
@@ -83,7 +83,7 @@ class RAGnosticClient:
     def __init__(
         self,
         base_url: str = "http://localhost:8000",
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         max_retries: int = 3,
         cache_ttl: int = 300,
         connection_pool_size: int = 100,
@@ -131,7 +131,7 @@ class RAGnosticClient:
             f"Performance features: caching (TTL={cache_ttl}s), circuit breaker, connection pooling ({connection_pool_size})"
         )
 
-    def _cache_key(self, endpoint: str, params: Dict[str, Any]) -> str:
+    def _cache_key(self, endpoint: str, params: dict[str, Any]) -> str:
         """Generate cache key for request"""
         import hashlib
         import json
@@ -143,10 +143,10 @@ class RAGnosticClient:
         self,
         method: str,
         endpoint: str,
-        payload: Optional[Dict[str, Any]] = None,
+        payload: dict[str, Any] | None = None,
         cache_enabled: bool = True,
-        cache_ttl: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        cache_ttl: int | None = None,
+    ) -> dict[str, Any]:
         """Make HTTP request with circuit breaker, caching, and retry logic"""
 
         # Check circuit breaker
@@ -220,11 +220,11 @@ class RAGnosticClient:
     async def search_content(
         self,
         query: str,
-        filters: Optional[Dict[str, Any]] = None,
+        filters: dict[str, Any] | None = None,
         limit: int = 10,
         offset: int = 0,
-        cache_ttl: Optional[int] = 300,
-    ) -> Dict[str, Any]:
+        cache_ttl: int | None = 300,
+    ) -> dict[str, Any]:
         """
         Search enriched content from RAGnostic pipeline with caching
 
@@ -252,8 +252,8 @@ class RAGnosticClient:
             return {"items": [], "total": 0, "error": str(e), "fallback_mode": True}
 
     async def get_concept_graph(
-        self, concept_id: str, cache_ttl: Optional[int] = 600
-    ) -> Dict[str, Any]:
+        self, concept_id: str, cache_ttl: int | None = 600
+    ) -> dict[str, Any]:
         """Get prerequisite and relationship graph with extended caching"""
         endpoint = f"{self.base_url}/api/v1/concepts/{concept_id}/graph"
 
@@ -276,11 +276,11 @@ class RAGnosticClient:
 
     async def get_content_by_metadata(
         self,
-        metadata_filters: Dict[str, Any],
-        sort_by: Optional[str] = "relevance",
+        metadata_filters: dict[str, Any],
+        sort_by: str | None = "relevance",
         limit: int = 50,
-        cache_ttl: Optional[int] = 300,
-    ) -> Dict[str, Any]:
+        cache_ttl: int | None = 300,
+    ) -> dict[str, Any]:
         """Retrieve content by rich metadata with caching"""
         endpoint = f"{self.base_url}/api/v1/content/metadata"
         payload = {"filters": metadata_filters, "sort_by": sort_by, "limit": limit}
@@ -322,7 +322,7 @@ class RAGnosticClient:
 
     async def get_study_materials(
         self, topic: str, level: str = "undergraduate"
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get study materials with enhanced caching and error handling"""
         request = RAGnosticRequest(
             query=f"study materials for {topic}",
@@ -344,7 +344,7 @@ class RAGnosticClient:
             logger.error(f"Failed to get study materials for {topic}: {str(e)}")
             return []
 
-    async def validate_medical_content(self, content: str) -> Dict[str, Any]:
+    async def validate_medical_content(self, content: str) -> dict[str, Any]:
         """Validate medical content with improved error handling"""
         endpoint = f"{self.base_url}/api/v1/validate"
         payload = {"content": content}
@@ -365,7 +365,7 @@ class RAGnosticClient:
                 "fallback_mode": True,
             }
 
-    async def batch_search(self, queries: List[str], **kwargs) -> List[Dict[str, Any]]:
+    async def batch_search(self, queries: list[str], **kwargs) -> list[dict[str, Any]]:
         """Perform multiple searches concurrently for improved performance"""
         tasks = [self.search_content(query, **kwargs) for query in queries]
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -383,7 +383,7 @@ class RAGnosticClient:
 
         return processed_results
 
-    def get_performance_metrics(self) -> Dict[str, Any]:
+    def get_performance_metrics(self) -> dict[str, Any]:
         """Get client performance metrics"""
         uptime = (datetime.now() - self.metrics["last_reset"]).total_seconds()
         return {
@@ -410,7 +410,7 @@ class RAGnosticClient:
         self.cache.clear()
         logger.info("RAGnostic client metrics reset")
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """Check RAGnostic service health"""
         endpoint = f"{self.base_url}/api/v1/health"
         try:

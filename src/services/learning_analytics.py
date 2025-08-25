@@ -1,15 +1,15 @@
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
 import logging
 from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from typing import Any
 
 from ..models.assessment_models import (
-    StudentProgressMetrics,
     AACNDomain,
     CompetencyProficiencyLevel,
+    StudentProgressMetrics,
 )
-from .ragnostic_client import RAGnosticClient
 from .analytics_service import AnalyticsService
+from .ragnostic_client import RAGnosticClient
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +20,8 @@ class LearningPattern:
 
     pattern_type: str
     confidence: float
-    indicators: List[str] = field(default_factory=list)
-    recommendations: List[str] = field(default_factory=list)
+    indicators: list[str] = field(default_factory=list)
+    recommendations: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -30,9 +30,9 @@ class ProgressTrend:
 
     direction: str  # "improving", "declining", "stable"
     velocity: float  # rate of change
-    trajectory: List[float] = field(default_factory=list)
-    predicted_score: Optional[float] = None
-    confidence_interval: Optional[Tuple[float, float]] = None
+    trajectory: list[float] = field(default_factory=list)
+    predicted_score: float | None = None
+    confidence_interval: tuple[float, float] | None = None
 
 
 @dataclass
@@ -44,8 +44,8 @@ class CompetencyGap:
     current_level: CompetencyProficiencyLevel
     target_level: CompetencyProficiencyLevel
     gap_severity: str  # "minor", "moderate", "major", "critical"
-    evidence: List[str] = field(default_factory=list)
-    interventions: List[str] = field(default_factory=list)
+    evidence: list[str] = field(default_factory=list)
+    interventions: list[str] = field(default_factory=list)
     estimated_time_to_close: int = 0  # hours
 
 
@@ -80,7 +80,7 @@ class LearningAnalytics:
             "Learning Analytics system initialized with RAGnostic and Analytics service integration"
         )
 
-    async def analyze_student_progress(self, student_id: str) -> Dict[str, Any]:
+    async def analyze_student_progress(self, student_id: str) -> dict[str, Any]:
         """
         Comprehensive student progress analysis with competency tracking,
         knowledge gap identification, and personalized recommendations.
@@ -183,7 +183,7 @@ class LearningAnalytics:
             logger.error(f"Error analyzing student progress: {str(e)}")
             raise
 
-    async def generate_institutional_reports(self) -> Dict[str, Any]:
+    async def generate_institutional_reports(self) -> dict[str, Any]:
         """
         Generate comprehensive institutional reports including:
         - Program effectiveness metrics
@@ -278,7 +278,7 @@ class LearningAnalytics:
 
     # Private helper methods for comprehensive analytics
 
-    async def _track_competency_progression(self, student_id: str) -> Dict[str, Any]:
+    async def _track_competency_progression(self, student_id: str) -> dict[str, Any]:
         """Track competency progression across AACN domains"""
         try:
             # Get current competency profile
@@ -323,20 +323,16 @@ class LearningAnalytics:
             logger.error(f"Error tracking competency progression: {str(e)}")
             return {"error": "Competency progression analysis failed"}
 
-    async def _identify_knowledge_gaps(self, student_id: str) -> List[Dict[str, Any]]:
+    async def _identify_knowledge_gaps(self, student_id: str) -> list[dict[str, Any]]:
         """Identify knowledge gaps using RAGnostic content analysis"""
         try:
             logger.info(f"Identifying knowledge gaps for student {student_id}")
 
             # Get student's performance data
-            progress_metrics = await self.analytics_service.get_student_progress(
-                student_id
-            )
+            await self.analytics_service.get_student_progress(student_id)
 
             # Get competency assessment results
-            competency_profile = (
-                await self.analytics_service._get_student_competency_profile(student_id)
-            )
+            (await self.analytics_service._get_student_competency_profile(student_id))
 
             knowledge_gaps = []
 
@@ -367,9 +363,9 @@ class LearningAnalytics:
     async def _generate_learning_recommendations(
         self,
         student_id: str,
-        competency_progression: Dict[str, Any],
-        knowledge_gaps: List[Dict[str, Any]],
-    ) -> List[Dict[str, Any]]:
+        competency_progression: dict[str, Any],
+        knowledge_gaps: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         """Generate personalized learning recommendations based on analysis"""
         try:
             recommendations = []
@@ -416,9 +412,9 @@ class LearningAnalytics:
         self,
         student_id: str,
         progress_metrics: StudentProgressMetrics,
-        competency_progression: Dict[str, Any],
-        knowledge_gaps: List[Dict[str, Any]],
-    ) -> Dict[str, Any]:
+        competency_progression: dict[str, Any],
+        knowledge_gaps: list[dict[str, Any]],
+    ) -> dict[str, Any]:
         """Create comprehensive progress report"""
         try:
             # Calculate progress indicators
@@ -490,7 +486,7 @@ class LearningAnalytics:
             ],
         )
 
-    async def _predict_future_performance(self, student_id: str) -> Dict[str, Any]:
+    async def _predict_future_performance(self, student_id: str) -> dict[str, Any]:
         """Predict future performance based on current trends"""
         return {
             "predicted_gpa": 3.2,
@@ -500,8 +496,8 @@ class LearningAnalytics:
         }
 
     async def _calculate_aacn_alignment(
-        self, student_id: str, competency_progression: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, student_id: str, competency_progression: dict[str, Any]
+    ) -> dict[str, Any]:
         """Calculate alignment with AACN competency framework"""
         return {
             "overall_alignment": 0.82,
@@ -522,7 +518,7 @@ class LearningAnalytics:
 
     def _calculate_risk_level(
         self,
-        knowledge_gaps: List[Dict[str, Any]],
+        knowledge_gaps: list[dict[str, Any]],
         progress_metrics: StudentProgressMetrics,
     ) -> str:
         """Calculate overall risk level for student"""
@@ -539,7 +535,7 @@ class LearningAnalytics:
         else:
             return "low"
 
-    def _assess_intervention_urgency(self, knowledge_gaps: List[Dict[str, Any]]) -> str:
+    def _assess_intervention_urgency(self, knowledge_gaps: list[dict[str, Any]]) -> str:
         """Assess urgency of intervention needed"""
         critical_gaps = [
             gap for gap in knowledge_gaps if gap.get("severity") == "critical"
@@ -553,7 +549,7 @@ class LearningAnalytics:
 
     # Institutional analytics helper methods
 
-    async def _analyze_program_effectiveness(self, period: str) -> Dict[str, Any]:
+    async def _analyze_program_effectiveness(self, period: str) -> dict[str, Any]:
         """Analyze overall program effectiveness metrics"""
         return {
             "overall_score": 85.2,
@@ -564,7 +560,7 @@ class LearningAnalytics:
             "competency_achievement_rate": 0.82,
         }
 
-    async def _analyze_curriculum_alignment(self) -> Dict[str, Any]:
+    async def _analyze_curriculum_alignment(self) -> dict[str, Any]:
         """Analyze curriculum alignment with standards"""
         return {
             "alignment_score": 0.87,
@@ -585,23 +581,23 @@ class LearningAnalytics:
         return next_review.isoformat()
 
     # Placeholder methods for complex operations
-    async def _measure_learning_outcomes(self, period: str) -> Dict[str, Any]:
+    async def _measure_learning_outcomes(self, period: str) -> dict[str, Any]:
         """Measure learning outcomes for the period"""
         return {"student_satisfaction": 4.2, "competency_achievement": 0.85}
 
-    async def _benchmark_performance(self, period: str) -> Dict[str, Any]:
+    async def _benchmark_performance(self, period: str) -> dict[str, Any]:
         """Benchmark performance against standards"""
         return {"national_percentile": 75, "regional_percentile": 82}
 
-    async def _analyze_institutional_trends(self) -> Dict[str, Any]:
+    async def _analyze_institutional_trends(self) -> dict[str, Any]:
         """Analyze trends across multiple periods"""
         return {"overall_direction": "improving", "improvement_rate": 0.05}
 
     async def _generate_executive_summary(
         self,
-        program_effectiveness: Dict[str, Any],
-        outcome_measurements: Dict[str, Any],
-        trend_analysis: Dict[str, Any],
+        program_effectiveness: dict[str, Any],
+        outcome_measurements: dict[str, Any],
+        trend_analysis: dict[str, Any],
     ) -> str:
         """Generate executive summary of institutional performance"""
         return f"Program effectiveness at {program_effectiveness.get('overall_score', 0):.1f}% with {trend_analysis.get('overall_direction', 'stable')} trends."

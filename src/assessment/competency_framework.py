@@ -1,15 +1,16 @@
+import logging
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional
-import logging
 from statistics import mean, stdev
+from typing import Any
 
 from pydantic import BaseModel
+
 from ..models.assessment_models import (
-    AACNDomain,
     AACNCompetency,
-    CompetencyProficiencyLevel,
+    AACNDomain,
     CompetencyAssessmentResult,
+    CompetencyProficiencyLevel,
     KnowledgeGap,
     LearningPathRecommendation,
 )
@@ -61,7 +62,7 @@ class AACNCompetencyFramework:
 
     def __init__(self, ragnostic_client: RAGnosticClient):
         self.ragnostic_client = ragnostic_client
-        self.competencies: Dict[str, AACNCompetency] = {}
+        self.competencies: dict[str, AACNCompetency] = {}
         self.proficiency_thresholds = {
             CompetencyProficiencyLevel.NOVICE: 0.0,
             CompetencyProficiencyLevel.ADVANCED_BEGINNER: 0.4,
@@ -294,7 +295,7 @@ class AACNCompetencyFramework:
         self,
         student_id: str,
         competency_id: str,
-        performance_data: Dict[str, Any],
+        performance_data: dict[str, Any],
         assessment_id: str,
         assessor_id: str = "system",
     ) -> CompetencyAssessmentResult:
@@ -381,7 +382,7 @@ class AACNCompetencyFramework:
             raise
 
     async def _calculate_proficiency_score(
-        self, performance_data: Dict[str, Any], competency: AACNCompetency
+        self, performance_data: dict[str, Any], competency: AACNCompetency
     ) -> float:
         """
         Calculate weighted proficiency score from various assessment types
@@ -439,7 +440,7 @@ class AACNCompetencyFramework:
 
         return CompetencyProficiencyLevel.NOVICE
 
-    def _extract_evidence_items(self, performance_data: Dict[str, Any]) -> List[str]:
+    def _extract_evidence_items(self, performance_data: dict[str, Any]) -> list[str]:
         """
         Extract evidence items from performance data for documentation
         """
@@ -471,9 +472,9 @@ class AACNCompetencyFramework:
     async def _analyze_performance_patterns(
         self,
         competency: AACNCompetency,
-        performance_data: Dict[str, Any],
+        performance_data: dict[str, Any],
         proficiency_score: float,
-    ) -> Dict[str, List[str]]:
+    ) -> dict[str, list[str]]:
         """
         Use RAGnostic to analyze performance patterns and identify strengths/weaknesses
         """
@@ -481,7 +482,7 @@ class AACNCompetencyFramework:
             # Query RAGnostic for competency-specific analysis
             query = f"""Analyze nursing student performance in {competency.domain.value} competency.
             Performance score: {proficiency_score:.1f}%.
-            Sub-competencies: {', '.join(competency.sub_competencies)}.
+            Sub-competencies: {", ".join(competency.sub_competencies)}.
             Provide strengths and improvement areas."""
 
             response = await self.ragnostic_client.search_content(
@@ -499,7 +500,7 @@ class AACNCompetencyFramework:
 
             if response.get("items"):
                 for item in response["items"]:
-                    content = item.get("content", "")
+                    item.get("content", "")
                     metadata = item.get("metadata", {})
 
                     # Extract strengths and weaknesses based on proficiency score
@@ -544,15 +545,15 @@ class AACNCompetencyFramework:
         student_id: str,
         competency: AACNCompetency,
         current_level: CompetencyProficiencyLevel,
-        analysis: Dict[str, List[str]],
-    ) -> List[str]:
+        analysis: dict[str, list[str]],
+    ) -> list[str]:
         """
         Get personalized learning resource recommendations from RAGnostic
         """
         try:
-            query = f"""Recommend learning resources for nursing student to improve {competency.domain.value} competency.
+            f"""Recommend learning resources for nursing student to improve {competency.domain.value} competency.
             Current level: {current_level}. Target level: {competency.minimum_level}.
-            Learning outcomes: {', '.join(competency.learning_outcomes)}."""
+            Learning outcomes: {", ".join(competency.learning_outcomes)}."""
 
             response = await self.ragnostic_client.get_content_by_metadata(
                 metadata_filters={
@@ -591,7 +592,7 @@ class AACNCompetencyFramework:
             return [f"Review {competency.domain.value} study materials"]
 
     def _calculate_confidence_score(
-        self, performance_data: Dict[str, Any], evidence_items: List[str]
+        self, performance_data: dict[str, Any], evidence_items: list[str]
     ) -> float:
         """
         Calculate confidence score based on data quality and consistency
@@ -648,9 +649,9 @@ class AACNCompetencyFramework:
     async def get_competency_gaps(
         self,
         student_id: str,
-        target_competencies: List[str],
-        current_assessments: Optional[List[CompetencyAssessmentResult]] = None,
-    ) -> Dict[str, List[KnowledgeGap]]:
+        target_competencies: list[str],
+        current_assessments: list[CompetencyAssessmentResult] | None = None,
+    ) -> dict[str, list[KnowledgeGap]]:
         """
         Identify competency gaps and create targeted remediation plans
 
@@ -664,7 +665,7 @@ class AACNCompetencyFramework:
         """
         try:
             logger.info(f"Analyzing competency gaps for student {student_id}")
-            gaps_by_domain: Dict[str, List[KnowledgeGap]] = {}
+            gaps_by_domain: dict[str, list[KnowledgeGap]] = {}
 
             for competency_id in target_competencies:
                 competency = self.competencies.get(competency_id)
@@ -724,7 +725,7 @@ class AACNCompetencyFramework:
         student_id: str,
         competency: AACNCompetency,
         assessment: CompetencyAssessmentResult,
-    ) -> List[KnowledgeGap]:
+    ) -> list[KnowledgeGap]:
         """
         Identify specific gaps within a competency based on assessment results
         """
@@ -830,9 +831,9 @@ class AACNCompetencyFramework:
     async def recommend_learning_path(
         self,
         student_id: str,
-        target_competencies: List[str],
-        current_proficiency: Optional[Dict[str, float]] = None,
-        learning_preferences: Optional[Dict[str, Any]] = None,
+        target_competencies: list[str],
+        current_proficiency: dict[str, float] | None = None,
+        learning_preferences: dict[str, Any] | None = None,
     ) -> LearningPathRecommendation:
         """
         Generate personalized learning path recommendations using RAGnostic insights
@@ -938,8 +939,8 @@ class AACNCompetencyFramework:
             raise
 
     async def _build_prerequisite_graph(
-        self, competency_ids: List[str]
-    ) -> Dict[str, List[str]]:
+        self, competency_ids: list[str]
+    ) -> dict[str, list[str]]:
         """
         Build prerequisite dependency graph for competencies
         """
@@ -960,10 +961,10 @@ class AACNCompetencyFramework:
 
     def _optimize_learning_sequence(
         self,
-        competency_ids: List[str],
-        prerequisite_graph: Dict[str, List[str]],
-        current_proficiency: Dict[str, float],
-    ) -> List[str]:
+        competency_ids: list[str],
+        prerequisite_graph: dict[str, list[str]],
+        current_proficiency: dict[str, float],
+    ) -> list[str]:
         """
         Optimize learning sequence using topological sort and proficiency analysis
         """
@@ -1006,8 +1007,8 @@ class AACNCompetencyFramework:
         self,
         competency: AACNCompetency,
         current_level: CompetencyProficiencyLevel,
-        preferences: Dict[str, Any],
-    ) -> List[Dict[str, Any]]:
+        preferences: dict[str, Any],
+    ) -> list[dict[str, Any]]:
         """
         Generate specific learning activities for a competency
         """
@@ -1059,7 +1060,7 @@ class AACNCompetencyFramework:
 
     def _get_standard_activities(
         self, competency: AACNCompetency, level: CompetencyProficiencyLevel
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Generate standard learning activities based on competency and level
         """
@@ -1109,7 +1110,7 @@ class AACNCompetencyFramework:
         return activities
 
     def _calculate_success_probability(
-        self, student_id: str, competencies: List[str], current_prof: Dict[str, float]
+        self, student_id: str, competencies: list[str], current_prof: dict[str, float]
     ) -> float:
         """
         Calculate probability of success based on current proficiency and historical patterns
@@ -1136,10 +1137,10 @@ class AACNCompetencyFramework:
 
     async def _generate_alternative_paths(
         self,
-        competencies: List[str],
-        current_prof: Dict[str, float],
-        preferences: Dict[str, Any],
-    ) -> List[str]:
+        competencies: list[str],
+        current_prof: dict[str, float],
+        preferences: dict[str, Any],
+    ) -> list[str]:
         """
         Generate alternative learning path identifiers
         """
@@ -1158,19 +1159,19 @@ class AACNCompetencyFramework:
 
         return alternatives[:3]  # Limit to 3 alternatives
 
-    def get_all_competencies(self) -> List[AACNCompetency]:
+    def get_all_competencies(self) -> list[AACNCompetency]:
         """
         Get all AACN competencies in the framework
         """
         return list(self.competencies.values())
 
-    def get_competencies_by_domain(self, domain: AACNDomain) -> List[AACNCompetency]:
+    def get_competencies_by_domain(self, domain: AACNDomain) -> list[AACNCompetency]:
         """
         Get competencies for a specific AACN domain
         """
         return [c for c in self.competencies.values() if c.domain == domain]
 
-    def get_competency_by_id(self, competency_id: str) -> Optional[AACNCompetency]:
+    def get_competency_by_id(self, competency_id: str) -> AACNCompetency | None:
         """
         Get a specific competency by ID
         """
@@ -1183,7 +1184,7 @@ class CompetencyFramework(AACNCompetencyFramework):
     Legacy wrapper for backward compatibility
     """
 
-    def __init__(self, ragnostic_client: Optional[RAGnosticClient] = None):
+    def __init__(self, ragnostic_client: RAGnosticClient | None = None):
         if ragnostic_client is None:
             # Create a minimal client for compatibility
             ragnostic_client = RAGnosticClient("http://localhost:8000")

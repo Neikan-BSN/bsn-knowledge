@@ -3,13 +3,13 @@ Input validation utilities and middleware for BSN Knowledge API
 """
 
 import re
-from typing import Any, Dict, List, Optional
 from functools import wraps
+from typing import Any
 
 from fastapi import Request, status
-from pydantic import BaseModel, validator, Field
+from pydantic import BaseModel, Field, validator
 
-from .error_handlers import ValidationError, APIError
+from .error_handlers import APIError, ValidationError
 
 
 class StudentIDValidation(BaseModel):
@@ -48,8 +48,8 @@ class PaginationValidation(BaseModel):
 class TimeRangeValidation(BaseModel):
     """Time range validation"""
 
-    start_date: Optional[str] = Field(None, regex=r"^\d{4}-\d{2}-\d{2}$")
-    end_date: Optional[str] = Field(None, regex=r"^\d{4}-\d{2}-\d{2}$")
+    start_date: str | None = Field(None, regex=r"^\d{4}-\d{2}-\d{2}$")
+    end_date: str | None = Field(None, regex=r"^\d{4}-\d{2}-\d{2}$")
 
     @validator("end_date")
     def validate_date_range(cls, v, values):
@@ -94,7 +94,7 @@ class DifficultyValidation(BaseModel):
 class AssessmentDataValidation(BaseModel):
     """Assessment performance data validation"""
 
-    performance_data: Dict[str, Any] = Field(..., min_items=1)
+    performance_data: dict[str, Any] = Field(..., min_items=1)
 
     @validator("performance_data")
     def validate_performance_data_structure(cls, v):
@@ -108,12 +108,12 @@ class AssessmentDataValidation(BaseModel):
                 raise ValueError(f"Missing required key: {key}")
 
         # Validate scores
-        if not isinstance(v["scores"], (dict, list)):
+        if not isinstance(v["scores"], dict | list):
             raise ValueError("Scores must be a dictionary or list")
 
         # Validate completion time
         if (
-            not isinstance(v["completion_time"], (int, float))
+            not isinstance(v["completion_time"], int | float)
             or v["completion_time"] < 0
         ):
             raise ValueError("Completion time must be a non-negative number")
@@ -190,7 +190,7 @@ def validate_request_size(max_size_mb: float = 50):
     return decorator
 
 
-def validate_content_type(allowed_types: List[str]):
+def validate_content_type(allowed_types: list[str]):
     """Middleware to validate content type"""
 
     def decorator(func):

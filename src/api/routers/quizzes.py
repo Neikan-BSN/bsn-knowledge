@@ -1,8 +1,8 @@
 import logging
-from typing import Optional, Dict, Any
 from datetime import datetime
+from typing import Any
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from ...generators.nclex_generator import NCLEXGenerator
@@ -23,7 +23,7 @@ class QuizRequest(BaseModel):
     quiz_type: str = Field(
         default="nclex", pattern="^(nclex|general|clinical_scenario)$"
     )
-    category: Optional[str] = None
+    category: str | None = None
     include_rationales: bool = True
     medical_accuracy_threshold: float = Field(default=0.95, ge=0.8, le=1.0)
 
@@ -41,9 +41,9 @@ class QuizQuestion(BaseModel):
     question: str
     options: list[str]
     correct_answer: int
-    rationale: Optional[str] = None
-    category: Optional[str] = None
-    clinical_scenario: Optional[str] = None
+    rationale: str | None = None
+    category: str | None = None
+    clinical_scenario: str | None = None
     evidence_citations: list[str] = []
 
 
@@ -54,14 +54,14 @@ class QuizResponse(BaseModel):
     questions: list[QuizQuestion]
     created_at: str
     difficulty: str
-    validation_summary: Dict[str, Any] = {}
+    validation_summary: dict[str, Any] = {}
     estimated_completion_time: int = 0  # in minutes
 
 
 class QuizValidationResponse(BaseModel):
     quiz_id: str
     is_valid: bool
-    validation_details: Dict[str, Any]
+    validation_details: dict[str, Any]
     suggestions: list[str] = []
 
 
@@ -101,7 +101,7 @@ async def create_quiz(
             # Convert to API response format
             quiz_questions = [
                 QuizQuestion(
-                    id=f"q_{i+1}",
+                    id=f"q_{i + 1}",
                     question=q.question,
                     options=q.options,
                     correct_answer=q.correct_answer,
@@ -155,7 +155,7 @@ async def create_clinical_scenario_quiz(
 
         quiz_questions = [
             QuizQuestion(
-                id=f"cs_{i+1}",
+                id=f"cs_{i + 1}",
                 question=q.question,
                 options=q.options,
                 correct_answer=q.correct_answer,

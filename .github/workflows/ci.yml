@@ -46,16 +46,26 @@ jobs:
 
       - name: Code Quality Check
         run: |
-          uv run ruff format --check src/ tests/ || echo "Format issues detected"
-          uv run ruff check src/ tests/ || echo "Lint issues detected"
+          echo "🔍 Running code formatting check..."
+          uv run ruff format --check src/ tests/
+          echo "✅ Format check completed"
+          echo "🔍 Running linting check..."
+          uv run ruff check src/ tests/
+          echo "✅ Lint check completed"
 
       - name: Type Checking
         run: |
-          uv run mypy src/ || echo "Type issues detected"
+          echo "🔍 Running type checking on source code..."
+          uv run mypy src/
+          echo "🔍 Running type checking on tests..."
+          uv run mypy tests/ --ignore-missing-imports
+          echo "✅ Type checking completed"
 
       - name: Basic Security Scan
         run: |
-          uv run bandit -r src/ -f json -o bandit-report.json || echo "Security findings detected"
+          echo "🔍 Running security scan..."
+          uv run bandit -r src/ -f json -o bandit-report.json
+          echo "✅ Security scan completed"
 
       - name: Run Tests
         run: |

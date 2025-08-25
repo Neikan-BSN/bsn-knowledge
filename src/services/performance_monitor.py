@@ -4,10 +4,10 @@ Performance monitoring and optimization service for BSN Knowledge API
 
 import asyncio
 import logging
-from typing import Dict, List, Any, Optional
-from datetime import datetime, timedelta
+from collections import deque
 from dataclasses import dataclass, field
-from collections import defaultdict, deque
+from datetime import datetime, timedelta
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class RequestMetrics:
     status_code: int
     response_time: float
     timestamp: datetime
-    error: Optional[str] = None
+    error: str | None = None
     cache_hit: bool = False
 
 
@@ -47,10 +47,8 @@ class PerformanceMonitor:
 
     def __init__(self, retention_hours: int = 24):
         self.retention_hours = retention_hours
-        self.metrics: List[RequestMetrics] = []
-        self.endpoint_stats: dict[str, EndpointStats] = defaultdict(
-            lambda: EndpointStats()
-        )
+        self.metrics: list[RequestMetrics] = []
+        self.endpoint_stats: dict[str, EndpointStats] = {}
         self.system_metrics = {
             "total_requests": 0,
             "average_response_time": 0.0,
@@ -88,7 +86,7 @@ class PerformanceMonitor:
         method: str,
         status_code: int,
         response_time: float,
-        error: Optional[str] = None,
+        error: str | None = None,
         cache_hit: bool = False,
     ):
         """Record a request's performance metrics"""
@@ -118,10 +116,11 @@ class PerformanceMonitor:
     def _update_endpoint_stats(self, metric: RequestMetrics):
         """Update aggregated endpoint statistics"""
         endpoint_key = f"{metric.method} {metric.endpoint}"
-        stats = self.endpoint_stats[endpoint_key]
 
-        if stats.endpoint == "":  # First time initialization
-            stats.endpoint = endpoint_key
+        if endpoint_key not in self.endpoint_stats:
+            self.endpoint_stats[endpoint_key] = EndpointStats(endpoint=endpoint_key)
+
+        stats = self.endpoint_stats[endpoint_key]
 
         stats.total_requests += 1
         stats.recent_response_times.append(metric.response_time)
@@ -247,7 +246,7 @@ class PerformanceMonitor:
         if len(self.alerts) > 100:
             self.alerts = self.alerts[-100:]
 
-    def get_system_metrics(self) -> Dict[str, Any]:
+    def get_system_metrics(self) -> dict[str, Any]:
         """Get system-wide performance metrics"""
         return {
             **self.system_metrics,
@@ -262,11 +261,11 @@ class PerformanceMonitor:
             ),
         }
 
-    def get_endpoint_metrics(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+    def get_endpoint_metrics(self, limit: int | None = None) -> list[dict[str, Any]]:
         """Get per-endpoint performance metrics"""
         stats_list = []
 
-        for endpoint, stats in self.endpoint_stats.items():
+        for _endpoint, stats in self.endpoint_stats.items():
             stats_dict = {
                 "endpoint": stats.endpoint,
                 "total_requests": stats.total_requests,
@@ -291,8 +290,8 @@ class PerformanceMonitor:
         return stats_list[:limit] if limit else stats_list
 
     def get_alerts(
-        self, severity: Optional[str] = None, limit: int = 50
-    ) -> List[Dict[str, Any]]:
+        self, severity: str | None = None, limit: int = 50
+    ) -> list[dict[str, Any]]:
         """Get recent alerts"""
         alerts = self.alerts[-limit:]
 
@@ -311,11 +310,11 @@ class PerformanceMonitor:
 
         return alerts
 
-    def get_slowest_endpoints(self, limit: int = 10) -> List[Dict[str, Any]]:
+    def get_slowest_endpoints(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get the slowest endpoints by average response time"""
         endpoint_list = []
 
-        for endpoint, stats in self.endpoint_stats.items():
+        for _endpoint, stats in self.endpoint_stats.items():
             if (
                 stats.total_requests >= 10
             ):  # Only include endpoints with sufficient data

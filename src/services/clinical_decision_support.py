@@ -5,9 +5,9 @@ Provides evidence-based clinical recommendations using RAGnostic enriched conten
 
 import json
 import logging
-from typing import Any, Dict, List, Optional
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -42,10 +42,10 @@ class ClinicalRecommendation(BaseModel):
     evidence_level: EvidenceLevel
     confidence_score: float = Field(ge=0.0, le=1.0)
     priority: ClinicalPriority
-    contraindications: List[str] = []
-    monitoring_parameters: List[str] = []
-    evidence_citations: List[str] = []
-    umls_concepts: List[str] = []
+    contraindications: list[str] = []
+    monitoring_parameters: list[str] = []
+    evidence_citations: list[str] = []
+    umls_concepts: list[str] = []
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -53,25 +53,25 @@ class ClinicalAssessment(BaseModel):
     """Patient assessment data for decision support"""
 
     patient_condition: str
-    symptoms: List[str] = []
-    vital_signs: Dict[str, Any] = {}
-    lab_values: Dict[str, Any] = {}
-    medications: List[str] = []
-    allergies: List[str] = []
-    comorbidities: List[str] = []
-    nursing_concerns: List[str] = []
+    symptoms: list[str] = []
+    vital_signs: dict[str, Any] = {}
+    lab_values: dict[str, Any] = {}
+    medications: list[str] = []
+    allergies: list[str] = []
+    comorbidities: list[str] = []
+    nursing_concerns: list[str] = []
 
 
 class ClinicalDecisionResponse(BaseModel):
     """Complete clinical decision support response"""
 
     assessment: ClinicalAssessment
-    recommendations: List[ClinicalRecommendation]
-    nursing_diagnoses: List[str] = []
-    priority_interventions: List[str] = []
-    educational_needs: List[str] = []
-    safety_considerations: List[str] = []
-    evidence_summary: Dict[str, Any]
+    recommendations: list[ClinicalRecommendation]
+    nursing_diagnoses: list[str] = []
+    priority_interventions: list[str] = []
+    educational_needs: list[str] = []
+    safety_considerations: list[str] = []
+    evidence_summary: dict[str, Any]
     confidence_score: float = Field(ge=0.0, le=1.0)
     generated_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -156,7 +156,7 @@ Return as JSON with this structure:
     async def get_clinical_recommendations(
         self,
         assessment: ClinicalAssessment,
-        focus_area: Optional[str] = None,
+        focus_area: str | None = None,
         max_recommendations: int = 10,
         min_confidence: float = 0.8,
     ) -> ClinicalDecisionResponse:
@@ -226,7 +226,7 @@ Return as JSON with this structure:
             ):
                 try:
                     # Set defaults for missing fields
-                    rec_data.setdefault("id", f"rec_{i+1}")
+                    rec_data.setdefault("id", f"rec_{i + 1}")
                     rec_data.setdefault("contraindications", [])
                     rec_data.setdefault("monitoring_parameters", [])
                     rec_data.setdefault("evidence_citations", [])
@@ -246,7 +246,7 @@ Return as JSON with this structure:
 
                     # Ensure confidence score is valid
                     confidence = rec_data.get("confidence_score", 0.5)
-                    if not isinstance(confidence, (int, float)) or not (
+                    if not isinstance(confidence, int | float) or not (
                         0 <= confidence <= 1
                     ):
                         rec_data["confidence_score"] = 0.5
@@ -305,8 +305,8 @@ Return as JSON with this structure:
             raise
 
     async def get_emergency_protocols(
-        self, emergency_situation: str, patient_factors: Dict[str, Any] = None
-    ) -> Dict[str, Any]:
+        self, emergency_situation: str, patient_factors: dict[str, Any] = None
+    ) -> dict[str, Any]:
         """
         Get emergency nursing protocols and interventions
         """
@@ -325,7 +325,7 @@ Return as JSON with this structure:
 
             emergency_prompt = f"""
             Emergency Situation: {emergency_situation}
-            Patient Factors: {patient_factors or 'None specified'}
+            Patient Factors: {patient_factors or "None specified"}
 
             Provide immediate emergency nursing protocols including:
             1. Initial assessment priorities (ABCDE approach)
@@ -360,8 +360,8 @@ Return as JSON with this structure:
             raise
 
     async def validate_care_plan(
-        self, care_plan: Dict[str, Any], patient_condition: str
-    ) -> Dict[str, Any]:
+        self, care_plan: dict[str, Any], patient_condition: str
+    ) -> dict[str, Any]:
         """
         Validate a nursing care plan against evidence-based standards
         """

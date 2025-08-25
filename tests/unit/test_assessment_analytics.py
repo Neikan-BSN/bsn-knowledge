@@ -3,19 +3,20 @@ Unit tests for assessment and analytics functionality
 Tests the AACN competency framework and learning analytics services
 """
 
-import pytest
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock
 
+import pytest
+
+from src.assessment.competency_framework import AACNCompetencyFramework
 from src.models.assessment_models import (
     AACNDomain,
-    CompetencyProficiencyLevel,
     CompetencyAssessmentResult,
-    StudentProgressMetrics,
+    CompetencyProficiencyLevel,
     KnowledgeGap,
     LearningPathRecommendation,
+    StudentProgressMetrics,
 )
-from src.assessment.competency_framework import AACNCompetencyFramework
 from src.services.analytics_service import AnalyticsService
 from src.services.ragnostic_client import RAGnosticClient
 

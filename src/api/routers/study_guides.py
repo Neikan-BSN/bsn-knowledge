@@ -1,14 +1,14 @@
 import logging
-from typing import Optional, Dict, Any, List
 from datetime import datetime
+from typing import Any
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from ...generators.study_guide_generator import (
-    StudyGuideGenerator,
     CompetencyFramework,
     LearningObjectiveType,
+    StudyGuideGenerator,
 )
 from ...services.content_generation_service import ContentGenerationService
 from ...services.ragnostic_client import RAGnosticClient
@@ -25,15 +25,15 @@ class StudyGuideRequest(BaseModel):
     )
     target_audience: str = "BSN students"
     section_count: int = Field(default=5, ge=2, le=10)
-    competency_frameworks: List[str] = Field(default=["qsen", "nclex_categories"])
+    competency_frameworks: list[str] = Field(default=["qsen", "nclex_categories"])
     include_clinical_applications: bool = True
     personalization_enabled: bool = False
 
 
 class PersonalizedGuideRequest(BaseModel):
     topic: str
-    student_profile: Dict[str, Any]
-    learning_path: Optional[List[str]] = None
+    student_profile: dict[str, Any]
+    learning_path: list[str] | None = None
 
 
 class CompetencyFocusedRequest(BaseModel):
@@ -41,16 +41,16 @@ class CompetencyFocusedRequest(BaseModel):
     competency: str = Field(
         pattern="^(aacn_essentials|qsen|nclex_categories|nursing_process)$"
     )
-    specific_standards: Optional[List[str]] = None
+    specific_standards: list[str] | None = None
 
 
 class StudyGuideSection(BaseModel):
     title: str
     content: str
-    learning_objectives: List[Dict[str, Any]]
-    key_concepts: List[str]
-    clinical_applications: List[str]
-    study_questions: List[str]
+    learning_objectives: list[dict[str, Any]]
+    key_concepts: list[str]
+    clinical_applications: list[str]
+    study_questions: list[str]
     estimated_study_time: int
 
 
@@ -60,14 +60,14 @@ class StudyGuideResponse(BaseModel):
     topic: str
     difficulty_level: str
     target_audience: str
-    sections: List[StudyGuideSection]
-    overall_objectives: List[Dict[str, Any]]
-    prerequisites: List[str]
+    sections: list[StudyGuideSection]
+    overall_objectives: list[dict[str, Any]]
+    prerequisites: list[str]
     estimated_completion_time: int
-    competency_alignment: Dict[str, List[str]]
-    evidence_citations: List[str]
+    competency_alignment: dict[str, list[str]]
+    evidence_citations: list[str]
     created_at: str
-    generation_metadata: Dict[str, Any]
+    generation_metadata: dict[str, Any]
 
 
 # Dependency injection for services
@@ -274,7 +274,7 @@ async def create_competency_focused_guide(
 @router.post("/customize/{guide_id}", response_model=StudyGuideResponse)
 async def customize_study_guide(
     guide_id: str,
-    student_profile: Dict[str, Any],
+    student_profile: dict[str, Any],
     content_service: ContentGenerationService = Depends(get_content_service),
 ):
     """
@@ -292,7 +292,7 @@ async def customize_study_guide(
         raise HTTPException(status_code=500, detail=f"Customization failed: {str(e)}")
 
 
-@router.get("/topics", response_model=List[str])
+@router.get("/topics", response_model=list[str])
 async def get_available_topics(
     content_service: ContentGenerationService = Depends(get_content_service),
 ):
@@ -307,7 +307,7 @@ async def get_available_topics(
         raise HTTPException(status_code=500, detail="Failed to retrieve topics")
 
 
-@router.get("/competency-frameworks", response_model=List[str])
+@router.get("/competency-frameworks", response_model=list[str])
 async def get_competency_frameworks():
     """
     Get available nursing competency frameworks
@@ -315,7 +315,7 @@ async def get_competency_frameworks():
     return [framework.value for framework in CompetencyFramework]
 
 
-@router.get("/objective-types", response_model=List[str])
+@router.get("/objective-types", response_model=list[str])
 async def get_learning_objective_types():
     """
     Get available learning objective types (Bloom's taxonomy)
@@ -323,7 +323,7 @@ async def get_learning_objective_types():
     return [obj_type.value for obj_type in LearningObjectiveType]
 
 
-@router.get("/", response_model=List[StudyGuideResponse])
+@router.get("/", response_model=list[StudyGuideResponse])
 async def list_study_guides(topic: str | None = None, difficulty: str | None = None):
     """
     List existing study guides (placeholder - would integrate with storage)

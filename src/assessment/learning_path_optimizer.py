@@ -1,8 +1,9 @@
-from typing import Any, Dict, List, Optional
-from datetime import datetime
 import logging
+from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel
+
 from ..services.ragnostic_client import RAGnosticClient
 
 logger = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ class LearningPathOptimizer:
     - AACN competency framework alignment
     """
 
-    def __init__(self, ragnostic_client: Optional[RAGnosticClient] = None):
+    def __init__(self, ragnostic_client: RAGnosticClient | None = None):
         self.ragnostic_client = ragnostic_client
         self.resources = {}
         self._load_default_resources()
@@ -97,9 +98,9 @@ class LearningPathOptimizer:
     async def create_optimized_path(
         self,
         student_id: str,
-        knowledge_gaps: List[Dict[str, Any]],
-        learning_preferences: Dict[str, Any],
-        time_constraints: Optional[int] = None,
+        knowledge_gaps: list[dict[str, Any]],
+        learning_preferences: dict[str, Any],
+        time_constraints: int | None = None,
     ) -> OptimizedLearningPath:
         """
         Create an optimized learning path tailored to the student's specific needs.
@@ -176,7 +177,7 @@ class LearningPathOptimizer:
             raise
 
     async def adapt_path(
-        self, path: OptimizedLearningPath, progress_data: Dict[str, Any]
+        self, path: OptimizedLearningPath, progress_data: dict[str, Any]
     ) -> OptimizedLearningPath:
         """
         Adapt existing learning path based on student progress and performance.
@@ -253,8 +254,8 @@ class LearningPathOptimizer:
         self,
         student_id: str,
         current_path: OptimizedLearningPath,
-        recent_performance: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        recent_performance: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Recommend the next learning action based on current path and performance.
 
@@ -310,8 +311,8 @@ class LearningPathOptimizer:
             raise
 
     def validate_path_feasibility(
-        self, path: OptimizedLearningPath, student_constraints: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, path: OptimizedLearningPath, student_constraints: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Validate the feasibility of a learning path against student constraints.
 
@@ -403,8 +404,8 @@ class LearningPathOptimizer:
     # Private helper methods
 
     def _prioritize_gaps(
-        self, knowledge_gaps: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+        self, knowledge_gaps: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         """Prioritize knowledge gaps by severity and domain importance"""
         severity_weights = {"critical": 4, "major": 3, "moderate": 2, "minor": 1}
 
@@ -418,22 +419,22 @@ class LearningPathOptimizer:
         return sorted(knowledge_gaps, key=gap_priority, reverse=True)
 
     async def _map_gaps_to_resources(
-        self, gaps: List[Dict[str, Any]]
-    ) -> List[LearningResource]:
+        self, gaps: list[dict[str, Any]]
+    ) -> list[LearningResource]:
         """Map knowledge gaps to appropriate learning resources"""
         resources = []
         for gap in gaps:
             # Simple mapping logic - would be more sophisticated in production
             gap_topics = gap.get("topics", [])
-            for resource_id, resource in self.resources.items():
+            for _resource_id, resource in self.resources.items():
                 if any(topic in resource.topics for topic in gap_topics):
                     resources.append(resource)
                     break
         return list(set(resources))  # Remove duplicates
 
     def _optimize_resource_sequence(
-        self, resources: List[LearningResource]
-    ) -> List[LearningResource]:
+        self, resources: list[LearningResource]
+    ) -> list[LearningResource]:
         """Optimize the sequence of resources based on prerequisites"""
         # Topological sort based on prerequisites
         sequenced = []
@@ -467,8 +468,8 @@ class LearningPathOptimizer:
         return sequenced
 
     def _customize_for_preferences(
-        self, resources: List[LearningResource], preferences: Dict[str, Any]
-    ) -> List[LearningResource]:
+        self, resources: list[LearningResource], preferences: dict[str, Any]
+    ) -> list[LearningResource]:
         """Customize resource selection based on learning preferences"""
         preferred_types = preferences.get("preferred_content_types", [])
         if not preferred_types:
@@ -487,8 +488,8 @@ class LearningPathOptimizer:
         return customized
 
     def _adjust_for_time_constraints(
-        self, resources: List[LearningResource], time_constraint: int
-    ) -> List[LearningResource]:
+        self, resources: list[LearningResource], time_constraint: int
+    ) -> list[LearningResource]:
         """Adjust path to fit within time constraints"""
         total_time = sum(r.estimated_duration for r in resources)
         if total_time <= time_constraint:
@@ -522,7 +523,7 @@ class LearningPathOptimizer:
         """Generate expected learning outcome for a resource"""
         return f"Master {', '.join(resource.topics[:2])} concepts at {resource.difficulty} level"
 
-    def _generate_assessment_criteria(self, resource: LearningResource) -> List[str]:
+    def _generate_assessment_criteria(self, resource: LearningResource) -> list[str]:
         """Generate assessment criteria for a resource"""
         criteria = []
         for topic in resource.topics[:2]:
@@ -530,7 +531,7 @@ class LearningPathOptimizer:
         criteria.append(f"Complete {resource.type} with 80% accuracy")
         return criteria
 
-    def _generate_milestones(self, steps: List[LearningStep]) -> List[str]:
+    def _generate_milestones(self, steps: list[LearningStep]) -> list[str]:
         """Generate learning milestones"""
         milestones = []
         milestone_points = [
@@ -542,16 +543,14 @@ class LearningPathOptimizer:
 
         for point in milestone_points:
             if point > 0 and point <= len(steps):
-                milestone = (
-                    f"Complete {point} learning steps - {steps[point-1].resource.title}"
-                )
+                milestone = f"Complete {point} learning steps - {steps[point - 1].resource.title}"
                 milestones.append(milestone)
 
         return milestones
 
     def _calculate_success_metrics(
-        self, steps: List[LearningStep], gaps: List[Dict[str, Any]]
-    ) -> Dict[str, float]:
+        self, steps: list[LearningStep], gaps: list[dict[str, Any]]
+    ) -> dict[str, float]:
         """Calculate success metrics for the path"""
         return {
             "knowledge_gap_closure_rate": min(1.0, len(steps) / max(len(gaps), 1)),
@@ -570,8 +569,8 @@ class LearningPathOptimizer:
     # - etc.
 
     def _find_current_step(
-        self, path: OptimizedLearningPath, performance: Dict[str, Any]
-    ) -> Optional[LearningStep]:
+        self, path: OptimizedLearningPath, performance: dict[str, Any]
+    ) -> LearningStep | None:
         """Find current step in learning path"""
         completed_steps = performance.get("completed_steps", [])
         for step in path.steps:
@@ -580,8 +579,8 @@ class LearningPathOptimizer:
         return None
 
     def _recommend_step_action(
-        self, step: LearningStep, performance: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, step: LearningStep, performance: dict[str, Any]
+    ) -> dict[str, Any]:
         """Recommend action for current step"""
         return {
             "primary_action": {
@@ -603,8 +602,8 @@ class LearningPathOptimizer:
         }
 
     def _recommend_path_completion_action(
-        self, path: OptimizedLearningPath, performance: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, path: OptimizedLearningPath, performance: dict[str, Any]
+    ) -> dict[str, Any]:
         """Recommend action when path is completed or not started"""
         if not performance.get("completed_steps"):
             return {
@@ -630,7 +629,7 @@ class LearningPathOptimizer:
             }
 
     def _calculate_path_progress(
-        self, path: OptimizedLearningPath, performance: Dict[str, Any]
+        self, path: OptimizedLearningPath, performance: dict[str, Any]
     ) -> float:
         """Calculate progress through learning path"""
         completed_steps = len(performance.get("completed_steps", []))
@@ -638,7 +637,7 @@ class LearningPathOptimizer:
         return completed_steps / total_steps if total_steps > 0 else 0.0
 
     def _estimate_completion_time(
-        self, path: OptimizedLearningPath, performance: Dict[str, Any]
+        self, path: OptimizedLearningPath, performance: dict[str, Any]
     ) -> int:
         """Estimate time to complete remaining path"""
         completed_steps = set(performance.get("completed_steps", []))
@@ -650,8 +649,8 @@ class LearningPathOptimizer:
         return remaining_duration
 
     def _check_time_feasibility(
-        self, path: OptimizedLearningPath, constraints: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, path: OptimizedLearningPath, constraints: dict[str, Any]
+    ) -> dict[str, Any]:
         """Check if path fits within time constraints"""
         available_time = (
             constraints.get("available_hours_per_week", 0) * 60
@@ -668,8 +667,8 @@ class LearningPathOptimizer:
             }
 
     def _check_difficulty_feasibility(
-        self, path: OptimizedLearningPath, constraints: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, path: OptimizedLearningPath, constraints: dict[str, Any]
+    ) -> dict[str, Any]:
         """Check if path difficulty aligns with student level"""
         max_difficulty = constraints.get("max_difficulty_level", "advanced")
         difficulty_levels = {"beginner": 1, "intermediate": 2, "advanced": 3}
@@ -688,8 +687,8 @@ class LearningPathOptimizer:
             }
 
     def _check_prerequisite_feasibility(
-        self, path: OptimizedLearningPath, constraints: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, path: OptimizedLearningPath, constraints: dict[str, Any]
+    ) -> dict[str, Any]:
         """Check if student meets prerequisites"""
         completed_courses = set(constraints.get("completed_courses", []))
         missing_prerequisites = []
@@ -709,8 +708,8 @@ class LearningPathOptimizer:
             }
 
     def _check_learning_style_alignment(
-        self, path: OptimizedLearningPath, constraints: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, path: OptimizedLearningPath, constraints: dict[str, Any]
+    ) -> dict[str, Any]:
         """Check alignment with learning style preferences"""
         preferred_types = set(constraints.get("preferred_content_types", []))
         if not preferred_types:

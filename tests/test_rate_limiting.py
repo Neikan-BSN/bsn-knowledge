@@ -5,13 +5,14 @@ Tests tiered rate limiting, rate limit enforcement, headers,
 and rate limit bypass prevention.
 """
 
-import pytest
 import time
-from fastapi import status
-from fastapi.testclient import TestClient
 from unittest.mock import patch
 
-from src.auth import rate_limiter, RateLimiter
+import pytest
+from fastapi import status
+from fastapi.testclient import TestClient
+
+from src.auth import RateLimiter, rate_limiter
 
 
 @pytest.mark.rate_limiting
@@ -42,7 +43,7 @@ class TestRateLimiterCore:
         user_id = 12345
 
         # Simulate hitting the content generation limit (50/hour)
-        for i in range(50):
+        for _i in range(50):
             allowed, _ = rate_limiter.is_allowed(user_id, "content_generation")
             assert allowed is True
 
@@ -58,7 +59,7 @@ class TestRateLimiterCore:
         user2 = 22222
 
         # User 1 hits content generation limit
-        for i in range(50):
+        for _i in range(50):
             allowed, _ = rate_limiter.is_allowed(user1, "content_generation")
             assert allowed is True
 
@@ -76,7 +77,7 @@ class TestRateLimiterCore:
         user_id = 12345
 
         # Hit content generation limit
-        for i in range(50):
+        for _i in range(50):
             allowed, _ = rate_limiter.is_allowed(user_id, "content_generation")
             assert allowed is True
 
@@ -183,7 +184,7 @@ class TestRateLimitMiddleware:
 
         for endpoint in skip_endpoints:
             # Make many requests (more than any rate limit)
-            for i in range(60):  # More than content generation limit
+            for _i in range(60):  # More than content generation limit
                 if endpoint == "/api/v1/auth/login":
                     response = client.post(
                         endpoint, json={"username": "test", "password": "test"}
@@ -212,7 +213,7 @@ class TestRateLimitMiddleware:
         success_count = 0
         rate_limited_count = 0
 
-        for i in range(60):  # Try more than the limit
+        for _i in range(60):  # Try more than the limit
             response = client.post(
                 content_endpoint,
                 json=request_data,
@@ -266,7 +267,7 @@ class TestRateLimitMiddleware:
         endpoint = "/api/v1/auth/me"
 
         responses = []
-        for i in range(10):
+        for _i in range(10):
             response = client.get(endpoint)
             responses.append(response.status_code)
 
@@ -288,7 +289,7 @@ class TestTieredRateLimiting:
         request_data = {"topic": "test", "difficulty": "easy", "question_count": 1}
 
         # Make exactly 50 requests
-        for i in range(50):
+        for _i in range(50):
             response = client.post(
                 endpoint, json=request_data, headers=auth_headers["student1"]
             )
@@ -318,7 +319,7 @@ class TestTieredRateLimiting:
         # Test that we can make more than 50 requests (content limit)
         # but will eventually hit 200 limit
         success_count = 0
-        for i in range(210):  # Try more than assessment limit
+        for _i in range(210):  # Try more than assessment limit
             response = client.post(
                 endpoint, json=request_data, headers=auth_headers["instructor1"]
             )
@@ -375,7 +376,7 @@ class TestRateLimitBypassPrevention:
         """Test that different tokens for the same user share rate limits."""
         # This would require token invalidation/refresh testing
         # For now, we test the concept with different requests from same user
-        from src.auth import fake_users_db, create_auth_tokens
+        from src.auth import create_auth_tokens, fake_users_db
 
         fake_users_db.update(test_users)
 
@@ -392,13 +393,13 @@ class TestRateLimitBypassPrevention:
         request_data = {"topic": "test", "difficulty": "easy", "question_count": 1}
 
         # Make requests with first token up to near limit
-        for i in range(25):
+        for _i in range(25):
             response = client.post(endpoint, json=request_data, headers=headers1)
             if response.status_code == status.HTTP_429_TOO_MANY_REQUESTS:
                 break
 
         # Make more requests with second token - should contribute to same limit
-        for i in range(30):
+        for _i in range(30):
             response = client.post(endpoint, json=request_data, headers=headers2)
             if response.status_code == status.HTTP_429_TOO_MANY_REQUESTS:
                 # Should be rate limited because both tokens use same user_id
@@ -426,7 +427,7 @@ class TestRateLimitBypassPrevention:
         for user_agent in user_agents:
             headers = {**auth_headers["student1"], "User-Agent": user_agent}
 
-            for i in range(12):  # 60 total requests across all user agents
+            for _i in range(12):  # 60 total requests across all user agents
                 response = client.post(endpoint, json=request_data, headers=headers)
                 total_requests += 1
 
@@ -457,7 +458,7 @@ class TestRateLimitBypassPrevention:
                 "X-Real-IP": ip,
             }
 
-            for i in range(15):  # 60 total requests
+            for _i in range(15):  # 60 total requests
                 response = client.post(endpoint, json=request_data, headers=headers)
                 total_requests += 1
 
@@ -482,7 +483,7 @@ class TestRateLimitErrorHandling:
         request_data = {"topic": "test", "difficulty": "easy", "question_count": 1}
 
         # Exhaust rate limit
-        for i in range(51):
+        for _i in range(51):
             response = client.post(
                 endpoint, json=request_data, headers=auth_headers["student1"]
             )
@@ -516,7 +517,7 @@ class TestRateLimitErrorHandling:
         request_data = {"topic": "test", "difficulty": "easy", "question_count": 1}
 
         # Exhaust rate limit
-        for i in range(51):
+        for _i in range(51):
             response = client.post(
                 endpoint, json=request_data, headers=auth_headers["student1"]
             )
@@ -565,7 +566,7 @@ class TestRateLimitPerformance:
         start_time = time.time()
 
         for user_id in range(100):  # 100 different users
-            for request_num in range(5):  # 5 requests each
+            for _request_num in range(5):  # 5 requests each
                 allowed, rate_info = rate_limiter.is_allowed(user_id, "default")
                 assert allowed is True  # All should be within limits
 
@@ -593,7 +594,7 @@ class TestRateLimitConfiguration:
         user_id = 99999
 
         # Should allow up to 10 requests
-        for i in range(10):
+        for _i in range(10):
             allowed, _ = custom_limiter.is_allowed(user_id, "custom_endpoint")
             assert allowed is True
 

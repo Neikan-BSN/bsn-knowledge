@@ -5,19 +5,20 @@ Tests JWT authentication, role-based access control, token validation,
 and OAuth2 integration.
 """
 
+from datetime import UTC, datetime, timedelta
+
 import pytest
-from datetime import datetime, timedelta, timezone
 from fastapi import status
 from fastapi.testclient import TestClient
 
 from src.auth import (
     UserRole,
-    create_access_token,
-    create_refresh_token,
-    create_auth_tokens,
-    verify_token,
     authenticate_user,
+    create_access_token,
+    create_auth_tokens,
+    create_refresh_token,
     fake_users_db,
+    verify_token,
 )
 
 
@@ -76,8 +77,8 @@ class TestJWTTokenGeneration:
         assert access_payload["exp"] < refresh_payload["exp"]
 
         # Access token should expire in ~30 minutes
-        access_exp = datetime.fromtimestamp(access_payload["exp"], tz=timezone.utc)
-        now = datetime.now(timezone.utc)
+        access_exp = datetime.fromtimestamp(access_payload["exp"], tz=UTC)
+        now = datetime.now(UTC)
         access_duration = access_exp - now
         assert 25 <= access_duration.total_seconds() / 60 <= 35  # 25-35 minutes range
 
@@ -89,8 +90,8 @@ class TestJWTTokenGeneration:
         token = create_access_token(token_data, expires_delta=custom_expires)
         payload = assert_valid_jwt_token(token)
 
-        exp_time = datetime.fromtimestamp(payload["exp"], tz=timezone.utc)
-        now = datetime.now(timezone.utc)
+        exp_time = datetime.fromtimestamp(payload["exp"], tz=UTC)
+        now = datetime.now(UTC)
         duration = exp_time - now
 
         # Should be approximately 2 hours (allow some variance)

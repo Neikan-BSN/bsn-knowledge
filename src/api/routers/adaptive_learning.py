@@ -11,20 +11,21 @@ Built per REVISED_PHASE3_PLAN.md B.5 specifications
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from typing import Any
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from ...assessment.knowledge_gap_analyzer import KnowledgeGapAnalyzer
+from ...assessment.learning_path_optimizer import LearningPathOptimizer
+from ...dependencies import get_analytics_service, get_ragnostic_client
 from ...services.adaptive_learning_engine import (
     AdaptiveLearningEngine,
     LearningPathAdaptation,
 )
+from ...services.analytics_service import AnalyticsService
 from ...services.learning_analytics import LearningAnalytics
 from ...services.ragnostic_client import RAGnosticClient
-from ...services.analytics_service import AnalyticsService
-from ...assessment.knowledge_gap_analyzer import KnowledgeGapAnalyzer
-from ...assessment.learning_path_optimizer import LearningPathOptimizer
-from ...dependencies import get_ragnostic_client, get_analytics_service
 
 router = APIRouter(prefix="/adaptive-learning", tags=["adaptive-learning"])
 
@@ -36,13 +37,13 @@ class PersonalizedContentRequest(BaseModel):
     """Request for personalized content generation"""
 
     student_id: str = Field(..., description="Student identifier")
-    target_competencies: Optional[List[str]] = Field(
+    target_competencies: list[str] | None = Field(
         None, description="Specific competencies to target"
     )
-    content_filters: Optional[Dict[str, Any]] = Field(
+    content_filters: dict[str, Any] | None = Field(
         None, description="Additional content filters"
     )
-    learning_preferences: Optional[Dict[str, Any]] = Field(
+    learning_preferences: dict[str, Any] | None = Field(
         None, description="Learning style preferences"
     )
 
@@ -51,8 +52,8 @@ class PersonalizedContentResponse(BaseModel):
     """Response with personalized content recommendations"""
 
     student_id: str
-    recommendations: List[Dict[str, Any]]
-    personalization_factors: Dict[str, Any]
+    recommendations: list[dict[str, Any]]
+    personalization_factors: dict[str, Any]
     generated_at: str
     cache_duration_seconds: int = 1800  # 30 minutes
 
@@ -61,13 +62,13 @@ class LearningPathOptimizationRequest(BaseModel):
     """Request for learning path optimization"""
 
     student_id: str = Field(..., description="Student identifier")
-    target_competencies: List[str] = Field(
+    target_competencies: list[str] = Field(
         ..., description="Target competencies for optimization"
     )
-    time_constraints: Optional[Dict[str, int]] = Field(
+    time_constraints: dict[str, int] | None = Field(
         None, description="Time constraints (weekly_minutes, etc.)"
     )
-    performance_context: Optional[Dict[str, Any]] = Field(
+    performance_context: dict[str, Any] | None = Field(
         None, description="Current performance context"
     )
 
@@ -77,12 +78,12 @@ class LearningPathOptimizationResponse(BaseModel):
 
     student_id: str
     path_id: str
-    target_competencies: List[str]
-    optimized_path: Dict[str, Any]
-    success_metrics: Dict[str, Any]
-    feasibility_analysis: Dict[str, Any]
-    adaptation_features: Dict[str, bool]
-    performance_predictions: Dict[str, Any]
+    target_competencies: list[str]
+    optimized_path: dict[str, Any]
+    success_metrics: dict[str, Any]
+    feasibility_analysis: dict[str, Any]
+    adaptation_features: dict[str, bool]
+    performance_predictions: dict[str, Any]
     generated_at: str
 
 
@@ -90,13 +91,13 @@ class DifficultyAdjustmentRequest(BaseModel):
     """Request for dynamic difficulty adjustment"""
 
     student_id: str = Field(..., description="Student identifier")
-    current_content: Dict[str, Any] = Field(
+    current_content: dict[str, Any] = Field(
         ..., description="Currently assigned content"
     )
-    recent_performance: Dict[str, Any] = Field(
+    recent_performance: dict[str, Any] = Field(
         ..., description="Recent performance metrics"
     )
-    competency_context: Dict[str, Any] = Field(
+    competency_context: dict[str, Any] = Field(
         ..., description="Current competency levels"
     )
 
@@ -109,7 +110,7 @@ class DifficultyAdjustmentResponse(BaseModel):
     recommended_difficulty: str
     adjustment_reason: str
     confidence_score: float
-    supporting_metrics: Dict[str, Any]
+    supporting_metrics: dict[str, Any]
     adjustment_magnitude: float
     calculated_at: str
 
@@ -119,10 +120,10 @@ class RealtimePathAdaptationRequest(BaseModel):
 
     student_id: str = Field(..., description="Student identifier")
     current_path_id: str = Field(..., description="Current learning path ID")
-    performance_update: Dict[str, Any] = Field(
+    performance_update: dict[str, Any] = Field(
         ..., description="Latest performance data"
     )
-    competency_changes: Dict[str, Any] = Field(
+    competency_changes: dict[str, Any] = Field(
         ..., description="Changes in competency levels"
     )
 
@@ -133,8 +134,8 @@ class RealtimePathAdaptationResponse(BaseModel):
     student_id: str
     original_path_id: str
     adapted_path_id: str
-    adaptations_made: List[str]
-    performance_triggers: List[str]
+    adaptations_made: list[str]
+    performance_triggers: list[str]
     estimated_improvement: float
     adaptation_confidence: float
     adapted_at: str
@@ -150,7 +151,7 @@ class AdaptiveStudyPlanRequest(BaseModel):
     weekly_time_budget: int = Field(
         ..., ge=60, le=2400, description="Available study time per week (minutes)"
     )
-    priority_competencies: List[str] = Field(
+    priority_competencies: list[str] = Field(
         ..., description="High-priority competencies to focus on"
     )
 
@@ -162,15 +163,15 @@ class AdaptiveStudyPlanResponse(BaseModel):
     plan_id: str
     study_duration_weeks: int
     weekly_time_budget: int
-    priority_competencies: List[str]
-    personalized_content: List[Dict[str, Any]]
-    learning_path: Dict[str, Any]
-    weekly_schedule: List[Dict[str, Any]]
-    milestones: List[Dict[str, Any]]
-    assessment_schedule: List[Dict[str, Any]]
-    adaptive_features: Dict[str, bool]
-    success_predictions: Dict[str, Any]
-    tracking_metrics: Dict[str, Any]
+    priority_competencies: list[str]
+    personalized_content: list[dict[str, Any]]
+    learning_path: dict[str, Any]
+    weekly_schedule: list[dict[str, Any]]
+    milestones: list[dict[str, Any]]
+    assessment_schedule: list[dict[str, Any]]
+    adaptive_features: dict[str, bool]
+    success_predictions: dict[str, Any]
+    tracking_metrics: dict[str, Any]
     generated_at: str
     next_adaptation_date: str
 
@@ -494,7 +495,7 @@ async def _track_adaptation_effectiveness(
     """
     try:
         # Mock implementation - would store in database for ML training
-        adaptation_data = {
+        {
             "student_id": student_id,
             "adaptation_id": f"adapt_{student_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             "adaptations_made": adaptation_result.adaptations_made,
@@ -517,10 +518,10 @@ async def _track_adaptation_effectiveness(
 # Legacy endpoints for backward compatibility
 
 
-@router.post("/path", response_model=Dict[str, Any])
+@router.post("/path", response_model=dict[str, Any])
 async def create_learning_path_legacy(
     student_id: str,
-    target_competencies: List[str],
+    target_competencies: list[str],
     current_level: str = "beginner",
     adaptive_engine: AdaptiveLearningEngine = Depends(get_adaptive_learning_engine),
 ):
@@ -559,7 +560,7 @@ async def create_learning_path_legacy(
         )
 
 
-@router.get("/path/{student_id}", response_model=Dict[str, Any])
+@router.get("/path/{student_id}", response_model=dict[str, Any])
 async def get_learning_path_legacy(student_id: str):
     """
     Legacy endpoint for learning path retrieval.

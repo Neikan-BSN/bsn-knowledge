@@ -5,8 +5,9 @@ Provides fixtures for authentication, database setup, and mock services.
 
 import asyncio
 import time
-from datetime import datetime, timezone
-from typing import AsyncGenerator, Dict, Any
+from collections.abc import AsyncGenerator
+from datetime import UTC, datetime
+from typing import Any
 from unittest.mock import AsyncMock
 
 import pytest
@@ -21,14 +22,14 @@ from src.auth import (
     UserInDB,
     UserRole,
     create_auth_tokens,
-    get_password_hash,
     fake_users_db,
+    get_password_hash,
 )
 from src.models.assessment_models import (
     CompetencyAssessmentResult,
+    CompetencyProficiencyLevel,
     KnowledgeGap,
     LearningPathRecommendation,
-    CompetencyProficiencyLevel,
 )
 
 # Test database URL
@@ -74,7 +75,7 @@ async def async_client(test_app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
 
 # Authentication fixtures
 @pytest.fixture(scope="function")
-def test_users() -> Dict[str, UserInDB]:
+def test_users() -> dict[str, UserInDB]:
     """Test users for authentication testing."""
     return {
         "student1": UserInDB(
@@ -84,7 +85,7 @@ def test_users() -> Dict[str, UserInDB]:
             role=UserRole.STUDENT,
             hashed_password=get_password_hash("test_password"),
             is_active=True,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
         ),
         "instructor1": UserInDB(
             id=2,
@@ -93,7 +94,7 @@ def test_users() -> Dict[str, UserInDB]:
             role=UserRole.INSTRUCTOR,
             hashed_password=get_password_hash("test_password"),
             is_active=True,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
         ),
         "admin1": UserInDB(
             id=3,
@@ -102,7 +103,7 @@ def test_users() -> Dict[str, UserInDB]:
             role=UserRole.ADMIN,
             hashed_password=get_password_hash("test_password"),
             is_active=True,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
         ),
         "inactive_user": UserInDB(
             id=4,
@@ -111,13 +112,13 @@ def test_users() -> Dict[str, UserInDB]:
             role=UserRole.STUDENT,
             hashed_password=get_password_hash("test_password"),
             is_active=False,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
         ),
     }
 
 
 @pytest.fixture(scope="function")
-def auth_tokens(test_users: Dict[str, UserInDB]) -> Dict[str, str]:
+def auth_tokens(test_users: dict[str, UserInDB]) -> dict[str, str]:
     """Generate authentication tokens for test users."""
     tokens = {}
     for username, user in test_users.items():
@@ -128,7 +129,7 @@ def auth_tokens(test_users: Dict[str, UserInDB]) -> Dict[str, str]:
 
 
 @pytest.fixture(scope="function")
-def auth_headers(auth_tokens: Dict[str, str]) -> Dict[str, Dict[str, str]]:
+def auth_headers(auth_tokens: dict[str, str]) -> dict[str, dict[str, str]]:
     """Generate authentication headers for test requests."""
     return {
         username: {"Authorization": f"Bearer {token}"}
@@ -138,7 +139,7 @@ def auth_headers(auth_tokens: Dict[str, str]) -> Dict[str, Dict[str, str]]:
 
 # Mock data fixtures
 @pytest.fixture
-def sample_nursing_content() -> Dict[str, Any]:
+def sample_nursing_content() -> dict[str, Any]:
     """Sample nursing education content for testing."""
     return {
         "topics": [
@@ -182,7 +183,7 @@ def sample_nursing_content() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def mock_nclex_questions() -> Dict[str, Any]:
+def mock_nclex_questions() -> dict[str, Any]:
     """Mock NCLEX-style questions for testing."""
     return {
         "questions": [
@@ -223,7 +224,7 @@ def mock_nclex_questions() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def mock_assessment_data() -> Dict[str, Any]:
+def mock_assessment_data() -> dict[str, Any]:
     """Mock assessment data for competency testing."""
     return {
         "student_performance": {
@@ -252,7 +253,7 @@ def mock_assessment_data() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def mock_analytics_data() -> Dict[str, Any]:
+def mock_analytics_data() -> dict[str, Any]:
     """Mock analytics data for testing."""
     return {
         "student_analytics": {
@@ -327,8 +328,8 @@ def mock_competency_framework():
         recommendations=["Review cardiovascular system", "Practice case studies"],
         evidence_summary="Based on quiz scores and clinical evaluations",
         assessor_id="instructor_001",
-        assessment_date=datetime.now(timezone.utc),
-        next_assessment_due=datetime.now(timezone.utc),
+        assessment_date=datetime.now(UTC),
+        next_assessment_due=datetime.now(UTC),
         proficiency_trend="improving",
     )
 
@@ -443,7 +444,7 @@ def assert_valid_jwt_token():
     """Helper to validate JWT token structure."""
     import jwt
 
-    def _validate_token(token: str) -> Dict[str, Any]:
+    def _validate_token(token: str) -> dict[str, Any]:
         try:
             # Decode without verification for testing
             payload = jwt.decode(token, options={"verify_signature": False})
