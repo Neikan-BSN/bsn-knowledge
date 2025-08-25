@@ -3,6 +3,7 @@ Clinical Decision Support System for BSN Knowledge
 Provides evidence-based clinical recommendations using RAGnostic enriched content
 """
 
+import json
 import logging
 from typing import Any, Dict, List, Optional
 from datetime import datetime

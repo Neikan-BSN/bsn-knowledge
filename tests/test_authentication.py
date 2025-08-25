@@ -14,6 +14,7 @@ from src.auth import (
     UserRole,
     create_access_token,
     create_refresh_token,
+    create_auth_tokens,
     verify_token,
     authenticate_user,
     fake_users_db,
