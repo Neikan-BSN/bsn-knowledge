@@ -99,5 +99,5 @@ jobs:
 
       - name: Container Security Scan
         run: |
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy image ${{ env.PROJECT_NAME }}:test || echo "Container security findings detected"
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image ${{ env.PROJECT_NAME }}:test || echo "Container security findings detected"
+
