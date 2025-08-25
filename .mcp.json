@@ -93,9 +93,7 @@
     "codanna": {
       "type": "stdio",
       "command": "/home/user01/.local/bin/codanna",
-      "args": [
-        "serve"
-      ],
+      "args": ["serve"],
       "env": {}
     }
   }
