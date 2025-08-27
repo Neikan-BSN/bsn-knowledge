@@ -14,6 +14,7 @@ import os
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+import httpx
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.pool import StaticPool
