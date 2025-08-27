@@ -13,7 +13,7 @@ import os
 import random
 import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -43,35 +43,35 @@ class UMLSConcept(BaseModel):
     cui: str
     preferred_name: str
     semantic_type: str
-    definition: Optional[str] = None
+    definition: str | None = None
     confidence_score: float = Field(ge=0.0, le=1.0)
 
 
 class GeneratedQuestion(BaseModel):
     id: str
     question: str
-    options: List[str]
+    options: list[str]
     correct_answer: str
     rationale: str
     difficulty: str
     nclex_category: str
-    umls_concepts: List[str]
+    umls_concepts: list[str]
 
 
 class ContentProcessingResponse(BaseModel):
     processed_content: str
     enriched_content: str
-    medical_concepts: List[UMLSConcept]
-    generated_questions: Optional[List[GeneratedQuestion]] = None
-    processing_metadata: Dict[str, Any]
+    medical_concepts: list[UMLSConcept]
+    generated_questions: list[GeneratedQuestion] | None = None
+    processing_metadata: dict[str, Any]
     processing_time_ms: float
 
 
 class BatchProcessingRequest(BaseModel):
     batch_size: int = Field(ge=1, le=100)
-    topics: List[str]
-    difficulty_levels: List[str]
-    question_types: List[str]
+    topics: list[str]
+    difficulty_levels: list[str]
+    question_types: list[str]
 
 
 class HealthResponse(BaseModel):
@@ -241,7 +241,7 @@ async def track_requests(request: Request, call_next):
     return response
 
 
-def get_mock_concepts(content: str) -> List[UMLSConcept]:
+def get_mock_concepts(content: str) -> list[UMLSConcept]:
     """Extract relevant UMLS concepts based on content keywords."""
     content_lower = content.lower()
     concepts = []
@@ -278,7 +278,7 @@ def get_mock_concepts(content: str) -> List[UMLSConcept]:
     return unique_concepts[:5]  # Limit to 5 most relevant concepts
 
 
-def enrich_content(original_content: str, concepts: List[UMLSConcept]) -> str:
+def enrich_content(original_content: str, concepts: list[UMLSConcept]) -> str:
     """Enrich content with medical terminology and context."""
     enriched = original_content
 
@@ -297,8 +297,8 @@ def enrich_content(original_content: str, concepts: List[UMLSConcept]) -> str:
 
 
 def generate_mock_questions(
-    content: str, concepts: List[UMLSConcept], count: int = 5
-) -> List[GeneratedQuestion]:
+    content: str, concepts: list[UMLSConcept], count: int = 5
+) -> list[GeneratedQuestion]:
     """Generate mock questions based on content and concepts."""
     # In a real implementation, this would use AI to generate questions
     # For mock purposes, we return pre-defined questions with slight variations
@@ -311,7 +311,7 @@ def generate_mock_questions(
 
         # Create variations
         question = GeneratedQuestion(
-            id=f"mock_q_{i+1}_{int(time.time())}",
+            id=f"mock_q_{i + 1}_{int(time.time())}",
             question=base_q.question,
             options=base_q.options.copy(),
             correct_answer=base_q.correct_answer,

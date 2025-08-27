@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import httpx
 
@@ -34,9 +34,9 @@ class TestResult:
     test_name: str
     status: str  # "passed", "failed", "skipped", "error"
     duration_seconds: float
-    error_message: Optional[str] = None
-    metrics: Dict[str, Any] = None
-    artifacts: List[str] = None
+    error_message: str | None = None
+    metrics: dict[str, Any] = None
+    artifacts: list[str] = None
     timestamp: str = None
 
     def __post_init__(self):
@@ -55,7 +55,7 @@ class TestSuite:
     suite_id: str
     name: str
     description: str
-    test_cases: List[Dict[str, Any]]
+    test_cases: list[dict[str, Any]]
     parallel_execution: bool = True
     max_workers: int = 4
     timeout_seconds: int = 300
@@ -65,11 +65,11 @@ class TestSuite:
 class ServiceHealthChecker:
     """Health checking and dependency validation for test services."""
 
-    def __init__(self, services_config: Dict[str, str]):
+    def __init__(self, services_config: dict[str, str]):
         self.services = services_config
         self.client = httpx.AsyncClient(timeout=httpx.Timeout(10.0))
 
-    async def check_service_health(self, service_name: str, url: str) -> Dict[str, Any]:
+    async def check_service_health(self, service_name: str, url: str) -> dict[str, Any]:
         """Check individual service health with detailed metrics."""
         start_time = time.time()
         try:
@@ -135,7 +135,7 @@ class ServiceHealthChecker:
         logger.error(f"Services failed to become healthy within {max_wait_seconds}s")
         return False
 
-    async def get_all_health_status(self) -> Dict[str, Any]:
+    async def get_all_health_status(self) -> dict[str, Any]:
         """Get comprehensive health status for all services."""
         health_checks = []
         for service_name, url in self.services.items():
@@ -164,9 +164,9 @@ class TestExecutor:
 
     def __init__(self, max_workers: int = 4):
         self.max_workers = max_workers
-        self.results: List[TestResult] = []
+        self.results: list[TestResult] = []
 
-    async def execute_test_case(self, test_case: Dict[str, Any]) -> TestResult:
+    async def execute_test_case(self, test_case: dict[str, Any]) -> TestResult:
         """Execute individual test case with metrics collection."""
         start_time = time.time()
         test_id = test_case.get("id", f"test_{int(time.time())}")
@@ -212,7 +212,7 @@ class TestExecutor:
                 error_message=str(e),
             )
 
-    def execute_test_suite_parallel(self, test_suite: TestSuite) -> List[TestResult]:
+    def execute_test_suite_parallel(self, test_suite: TestSuite) -> list[TestResult]:
         """Execute test suite with parallel execution support."""
         logger.info(
             f"Starting test suite: {test_suite.name} ({len(test_suite.test_cases)} tests)"
@@ -272,7 +272,7 @@ class TestReporter:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-    def generate_summary_report(self, results: List[TestResult]) -> Dict[str, Any]:
+    def generate_summary_report(self, results: list[TestResult]) -> dict[str, Any]:
         """Generate comprehensive test execution summary."""
         total_tests = len(results)
         passed = sum(1 for r in results if r.status == "passed")
@@ -324,7 +324,7 @@ class TestReporter:
         }
 
     def save_json_report(
-        self, results: List[TestResult], filename: str = "test_results.json"
+        self, results: list[TestResult], filename: str = "test_results.json"
     ):
         """Save test results in JSON format for programmatic analysis."""
         report = self.generate_summary_report(results)
@@ -336,7 +336,7 @@ class TestReporter:
         logger.info(f"JSON report saved to: {output_file}")
 
     def save_html_report(
-        self, results: List[TestResult], filename: str = "test_results.html"
+        self, results: list[TestResult], filename: str = "test_results.html"
     ):
         """Generate HTML report with visualization and interactive elements."""
         summary = self.generate_summary_report(results)
@@ -349,7 +349,7 @@ class TestReporter:
 
         logger.info(f"HTML report saved to: {output_file}")
 
-    def _generate_html_template(self, summary: Dict[str, Any]) -> str:
+    def _generate_html_template(self, summary: dict[str, Any]) -> str:
         """Generate comprehensive HTML report template."""
         exec_summary = summary["execution_summary"]
         categories = summary["category_breakdown"]
@@ -461,7 +461,7 @@ class TestReporter:
 class E2ETestOrchestrator:
     """Main orchestrator for end-to-end pipeline testing."""
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         self.config = config
         self.services = config.get("services", {})
         self.test_suites = config.get("test_suites", [])
@@ -471,7 +471,7 @@ class E2ETestOrchestrator:
         self.executor = TestExecutor(max_workers=config.get("max_workers", 4))
         self.reporter = TestReporter(self.output_dir)
 
-    async def run_full_test_suite(self) -> Dict[str, Any]:
+    async def run_full_test_suite(self) -> dict[str, Any]:
         """Execute complete end-to-end test suite with health checking and reporting."""
         logger.info("Starting E2E test orchestration...")
 

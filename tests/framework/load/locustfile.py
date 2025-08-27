@@ -8,7 +8,7 @@ import json
 import random
 import time
 
-from locust import HttpUser, task, between, events
+from locust import HttpUser, between, events, task
 from locust.log import setup_logging
 
 # Configure logging

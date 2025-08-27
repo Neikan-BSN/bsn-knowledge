@@ -40,9 +40,9 @@ class TestRoleBasedAccessControl:
             elif method == "DELETE":
                 response = client.delete(endpoint, headers=auth_headers["student1"])
 
-            assert (
-                response.status_code == status.HTTP_403_FORBIDDEN
-            ), f"Student should not access {method} {endpoint}"
+            assert response.status_code == status.HTTP_403_FORBIDDEN, (
+                f"Student should not access {method} {endpoint}"
+            )
 
         # Student SHOULD have access to:
         allowed_endpoints = [
@@ -85,9 +85,9 @@ class TestRoleBasedAccessControl:
             elif method == "DELETE":
                 response = client.delete(endpoint, headers=auth_headers["instructor1"])
 
-            assert (
-                response.status_code == status.HTTP_403_FORBIDDEN
-            ), f"Instructor should not access {method} {endpoint}"
+            assert response.status_code == status.HTTP_403_FORBIDDEN, (
+                f"Instructor should not access {method} {endpoint}"
+            )
 
         # Instructor SHOULD have access to:
         allowed_endpoints = [
@@ -181,12 +181,12 @@ class TestPrivilegeEscalationPrevention:
             ("/api/v1/analytics/system", "GET"),
         ]
 
-        for endpoint, method in admin_functions:
+        for endpoint, _method in admin_functions:
             response = client.get(endpoint, headers=auth_headers["student1"])
             assert response.status_code == status.HTTP_403_FORBIDDEN
 
         # Instructor attempting admin functions
-        for endpoint, method in admin_functions:
+        for endpoint, _method in admin_functions:
             response = client.get(endpoint, headers=auth_headers["instructor1"])
             assert response.status_code == status.HTTP_403_FORBIDDEN
 
@@ -212,9 +212,9 @@ class TestPrivilegeEscalationPrevention:
 
         for headers in role_manipulation_attempts:
             response = client.get("/api/v1/auth/users", headers=headers)
-            assert (
-                response.status_code == status.HTTP_403_FORBIDDEN
-            ), f"Role manipulation succeeded with headers: {headers}"
+            assert response.status_code == status.HTTP_403_FORBIDDEN, (
+                f"Role manipulation succeeded with headers: {headers}"
+            )
 
     def test_session_hijacking_protection(self, client: TestClient, test_users):
         """Test protection against session hijacking attacks."""
@@ -279,7 +279,7 @@ class TestResourceAccessControl:
 
             # Should not see other users' private resources
             if response.status_code == status.HTTP_200_OK:
-                data = response.json()
+                response.json()
                 # Verify data filtering (implementation specific)
                 pass
 
@@ -325,9 +325,9 @@ class TestResourceAccessControl:
                             ]
                         ), f"{role} should access {endpoint}"
                     else:
-                        assert (
-                            response.status_code == status.HTTP_403_FORBIDDEN
-                        ), f"{role} should not access {endpoint}"
+                        assert response.status_code == status.HTTP_403_FORBIDDEN, (
+                            f"{role} should not access {endpoint}"
+                        )
 
 
 @pytest.mark.security
@@ -342,7 +342,7 @@ class TestCrossServiceAuthorizationSecurity:
             mock_client.return_value = mock_instance
 
             # Make request that would trigger RAGnostic call
-            response = client.post(
+            client.post(
                 "/api/v1/study-guide/create",
                 json={
                     "topic": "Nursing Assessment",
@@ -364,7 +364,7 @@ class TestCrossServiceAuthorizationSecurity:
         with patch("src.services.ragnostic_client.RAGnosticClient") as mock_ragnostic:
             mock_ragnostic.return_value.search_content.return_value = {"items": []}
 
-            response = client.post(
+            client.post(
                 "/api/v1/nclex/generate",
                 json={
                     "topic": "Pharmacology",
@@ -377,7 +377,6 @@ class TestCrossServiceAuthorizationSecurity:
             # Service calls should use service-specific credentials
             # Not user credentials or mixed credentials
             if mock_ragnostic.called:
-                init_args = mock_ragnostic.call_args
                 # Verify proper service authentication
                 # This is implementation-specific validation
                 pass
@@ -481,9 +480,9 @@ class TestAuthorizationBypassAttempts:
 
         # All requests should be consistently denied
         for response in results:
-            assert (
-                response.status_code == status.HTTP_403_FORBIDDEN
-            ), "Race condition allowed authorization bypass"
+            assert response.status_code == status.HTTP_403_FORBIDDEN, (
+                "Race condition allowed authorization bypass"
+            )
 
     def test_time_of_check_time_of_use_prevention(self, client: TestClient, test_users):
         """Test prevention of TOCTOU (Time-of-Check-Time-of-Use) attacks."""

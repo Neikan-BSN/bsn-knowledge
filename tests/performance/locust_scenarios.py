@@ -13,7 +13,6 @@ from datetime import datetime
 from locust import HttpUser, TaskSet, between, events, tag, task
 from locust.exception import RescheduleTask
 
-
 # Test Data Templates
 STUDENT_USERNAMES = [
     "student_001",

@@ -47,7 +47,6 @@ class TestDataEncryptionInTransit:
         # For unit tests, we verify the configuration expectations
 
         # Verify TLS version requirements
-        minimum_tls_version = ssl.TLSVersion.TLSv1_2
 
         # Test SSL context configuration (conceptual)
         context = ssl.create_default_context()
@@ -92,7 +91,7 @@ class TestDataEncryptionInTransit:
         ]
 
         for endpoint in sensitive_endpoints:
-            response = client.get(endpoint, headers=auth_headers["student1"])
+            client.get(endpoint, headers=auth_headers["student1"])
 
             # URLs should not contain passwords, tokens, or personal info
             sensitive_patterns = [
@@ -104,9 +103,9 @@ class TestDataEncryptionInTransit:
             ]
 
             for pattern in sensitive_patterns:
-                assert not re.search(
-                    pattern, endpoint, re.IGNORECASE
-                ), f"Sensitive data pattern in URL: {pattern}"
+                assert not re.search(pattern, endpoint, re.IGNORECASE), (
+                    f"Sensitive data pattern in URL: {pattern}"
+                )
 
     def test_request_response_encryption_indicators(
         self, client: TestClient, auth_headers
@@ -242,9 +241,9 @@ class TestDataPrivacyControls:
                     matches = re.findall(pattern, response_text)
                     # If PII found, it should be masked
                     for match in matches:
-                        assert (
-                            "*" in match or "[REDACTED]" in response_text
-                        ), f"PII not properly protected: {match}"
+                        assert "*" in match or "[REDACTED]" in response_text, (
+                            f"PII not properly protected: {match}"
+                        )
 
     def test_data_retention_controls(self, client: TestClient, auth_headers):
         """Test data retention and deletion controls."""
@@ -301,7 +300,7 @@ class TestSecureDataStorage:
 
         # Database should only contain hashed passwords
         fake_users_db.update(test_users)
-        for username, user in fake_users_db.items():
+        for _username, user in fake_users_db.items():
             # No user should have plaintext password stored
             assert not hasattr(user, "password") or user.password is None
             assert user.hashed_password.startswith("$2b$")
@@ -391,9 +390,9 @@ class TestDataLeakagePrevention:
             ]
 
             for leak in sensitive_leaks:
-                assert (
-                    leak not in response_text
-                ), f"Sensitive data leaked in error message: {leak}"
+                assert leak not in response_text, (
+                    f"Sensitive data leaked in error message: {leak}"
+                )
 
     def test_debug_information_leakage(self, client: TestClient):
         """Test that debug information is not leaked in production."""
@@ -416,9 +415,9 @@ class TestDataLeakagePrevention:
 
         response_text = response.text.lower()
         for indicator in debug_indicators:
-            assert (
-                indicator not in response_text
-            ), f"Debug information leaked: {indicator}"
+            assert indicator not in response_text, (
+                f"Debug information leaked: {indicator}"
+            )
 
     def test_response_header_data_leakage(self, client: TestClient):
         """Test that response headers don't leak sensitive data."""
@@ -481,9 +480,9 @@ class TestDataLeakagePrevention:
 
             # Standard deviation should be less than 30% of mean
             # This allows for some variation while detecting obvious timing attacks
-            assert (
-                std_dev < mean_time * 0.3
-            ), f"Potential timing attack vulnerability: std_dev={std_dev:.3f}, mean={mean_time:.3f}"
+            assert std_dev < mean_time * 0.3, (
+                f"Potential timing attack vulnerability: std_dev={std_dev:.3f}, mean={mean_time:.3f}"
+            )
 
 
 @pytest.mark.security
@@ -521,19 +520,13 @@ class TestComplianceAndRegulatory:
                 matches = re.findall(pattern, response_text)
                 # If found, should be de-identified
                 for match in matches:
-                    assert (
-                        "[PATIENT]" in response_text or "***" in match
-                    ), f"PHI not properly de-identified: {match}"
+                    assert "[PATIENT]" in response_text or "***" in match, (
+                        f"PHI not properly de-identified: {match}"
+                    )
 
     def test_gdpr_compliance_controls(self, client: TestClient):
         """Test GDPR compliance controls."""
         # Test data subject rights (conceptual - would require full implementation)
-        gdpr_requirements = [
-            "data_portability",  # Right to data portability
-            "data_erasure",  # Right to be forgotten
-            "data_rectification",  # Right to rectification
-            "access_request",  # Right of access
-        ]
 
         # In production, would test:
         # - Data export functionality
@@ -682,6 +675,6 @@ class TestDataIntegrityAndValidation:
                 ]
 
                 for pattern in dangerous_patterns:
-                    assert (
-                        pattern not in response_text
-                    ), f"Malicious content not sanitized: {pattern}"
+                    assert pattern not in response_text, (
+                        f"Malicious content not sanitized: {pattern}"
+                    )

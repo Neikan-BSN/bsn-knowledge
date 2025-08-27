@@ -690,9 +690,9 @@ class TestPerformanceRegression:
                 results[test_name] = avg_time
 
                 # Check against threshold
-                assert (
-                    avg_time <= threshold
-                ), f"{test_name} exceeded threshold: {avg_time:.3f}s > {threshold}s"
+                assert avg_time <= threshold, (
+                    f"{test_name} exceeded threshold: {avg_time:.3f}s > {threshold}s"
+                )
 
         # Store results for future regression comparison
         # In a real scenario, you'd persist these to compare against future runs
@@ -757,12 +757,12 @@ class TestResourceUtilization:
                 # Response sizes should be reasonable
                 # Health and auth responses should be small
                 if "health" in endpoint or "auth/me" in endpoint:
-                    assert (
-                        response_size < 5000
-                    ), f"Response too large for {endpoint}: {response_size} bytes"
+                    assert response_size < 5000, (
+                        f"Response too large for {endpoint}: {response_size} bytes"
+                    )
 
                 # Reference data can be larger but should be reasonable
                 else:
-                    assert (
-                        response_size < 50000
-                    ), f"Response too large for {endpoint}: {response_size} bytes"
+                    assert response_size < 50000, (
+                        f"Response too large for {endpoint}: {response_size} bytes"
+                    )

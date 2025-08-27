@@ -11,11 +11,10 @@ import asyncio
 import logging
 import time
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any
 
 import httpx
 from pydantic import BaseModel
-
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -42,9 +41,9 @@ class BatchJobResult(BaseModel):
     processed_documents: int
     failed_documents: int
     processing_time_seconds: float
-    memory_usage_mb: Optional[float] = None
-    cpu_utilization_percent: Optional[float] = None
-    error_messages: List[str] = []
+    memory_usage_mb: float | None = None
+    cpu_utilization_percent: float | None = None
+    error_messages: list[str] = []
 
 
 class DocumentBatch:
@@ -55,7 +54,7 @@ class DocumentBatch:
         self.content_type = content_type
         self.documents = self._generate_sample_documents()
 
-    def _generate_sample_documents(self) -> List[dict[str, Any]]:
+    def _generate_sample_documents(self) -> list[dict[str, Any]]:
         """Generate sample medical documents for processing."""
         document_templates = [
             {
@@ -202,9 +201,9 @@ class RAGnosticBatchSimulator:
             start_time = time.time()
 
             # Simulate different types of batch processing
-            result = await self._process_batch_by_type(job, doc_batch.documents)
+            await self._process_batch_by_type(job, doc_batch.documents)
 
-            processing_time = time.time() - start_time
+            time.time() - start_time
 
             # Record metrics
             self.performance_metrics["jobs_submitted"] += 1
@@ -230,7 +229,7 @@ class RAGnosticBatchSimulator:
             raise
 
     async def _process_batch_by_type(
-        self, job: BatchJob, documents: List[dict]
+        self, job: BatchJob, documents: list[dict]
     ) -> dict:
         """Process batch based on job type."""
 
@@ -247,7 +246,7 @@ class RAGnosticBatchSimulator:
         else:
             return await self._process_generic_batch(documents)
 
-    async def _process_document_enrichment(self, documents: List[dict]) -> dict:
+    async def _process_document_enrichment(self, documents: list[dict]) -> dict:
         """Simulate document enrichment processing."""
         # Simulate UMLS concept mapping and enrichment
         processed = 0
@@ -282,7 +281,7 @@ class RAGnosticBatchSimulator:
             },
         }
 
-    async def _process_vector_indexing(self, documents: List[dict]) -> dict:
+    async def _process_vector_indexing(self, documents: list[dict]) -> dict:
         """Simulate vector database indexing."""
         processed = 0
         failed = 0
@@ -315,7 +314,7 @@ class RAGnosticBatchSimulator:
             },
         }
 
-    async def _process_content_extraction(self, documents: List[dict]) -> dict:
+    async def _process_content_extraction(self, documents: list[dict]) -> dict:
         """Simulate content extraction and parsing."""
         processed = 0
         failed = 0
@@ -349,7 +348,7 @@ class RAGnosticBatchSimulator:
             },
         }
 
-    async def _process_knowledge_graph_update(self, documents: List[dict]) -> dict:
+    async def _process_knowledge_graph_update(self, documents: list[dict]) -> dict:
         """Simulate knowledge graph updates."""
         processed = 0
         failed = 0
@@ -383,7 +382,7 @@ class RAGnosticBatchSimulator:
             },
         }
 
-    async def _process_medical_validation(self, documents: List[dict]) -> dict:
+    async def _process_medical_validation(self, documents: list[dict]) -> dict:
         """Simulate medical content validation."""
         processed = 0
         failed = 0
@@ -417,7 +416,7 @@ class RAGnosticBatchSimulator:
             },
         }
 
-    async def _process_generic_batch(self, documents: List[dict]) -> dict:
+    async def _process_generic_batch(self, documents: list[dict]) -> dict:
         """Generic batch processing simulation."""
         processed = len(documents)
         failed = 0
@@ -544,7 +543,7 @@ class RAGnosticBatchSimulator:
         return result
 
     async def run_concurrent_batch_simulation(
-        self, scenarios: List[dict], duration_seconds: int = 300
+        self, scenarios: list[dict], duration_seconds: int = 300
     ):
         """Run concurrent batch processing simulation."""
         logger.info(

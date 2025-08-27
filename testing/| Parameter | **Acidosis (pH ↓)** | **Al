@@ -1,0 +1,31 @@
+| Parameter                              | **Acidosis (pH ↓)**                                                                                                                             | **Alkalosis (pH ↑)**                                                        |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| **Systemic Vascular Resistance (SVR)** | Early: ↑ (sympathetic clampdown)  <br> Severe/late: ↓ (vascular smooth muscle fails, catecholamine resistance → vasodilation, refractory shock) | ↑ (vasoconstriction due to enhanced Ca²⁺ influx in smooth muscle)           |
+| **Myocardial Contractility**           | ↓ (H⁺ interferes with Ca²⁺ handling, ↓ ATP availability)                                                                                        | ↓ (especially with hypokalemia + ↓ ionized Ca²⁺)                            |
+| **Heart Rate**                         | ↑ (sympathetic drive) but rhythm unstable (arrhythmias with hyperkalemia)                                                                       | Often ↑ (reflex tachycardia), but arrhythmias from hypokalemia/hypocalcemia |
+| **Blood Pressure**                     | Initially maintained by SVR ↑ → then ↓ with vasoplegia → severe hypotension                                                                     | Mild ↑ due to vasoconstriction, but falls if contractility impaired         |
+| **Oxyhemoglobin Dissociation Curve**   | Right shift: ↓ affinity, ↑ O₂ unloading to tissues (good for delivery, bad for loading in lungs)                                                | Left shift: ↑ affinity, ↓ O₂ unloading (tissues starve despite okay SpO₂)   |
+| **Electrolytes**                       | Hyperkalemia (K⁺ shift out of cells), hypercalcemia (↑ ionized Ca²⁺)                                                                            | Hypokalemia (K⁺ shifts into cells), ↓ ionized Ca²⁺ (tetany, seizures)       |
+| **Neuro effects**                      | Confusion → coma (CO₂ narcosis + poor perfusion)                                                                                                | Irritability, seizures, tetany from ↓ ionized Ca²⁺                          |
+| **Pressor Response**                   | ↓ response to catecholamines in severe acidosis (<7.2)                                                                                          | Pressors may work, but arrhythmia risk ↑ due to electrolyte shifts          |
+
+Short answer, Jeff: **< \~6.8 or > \~7.8**. Those are the classic “incompatible with life” bounds you’ll see in trauma/critical care.
+
+Longer (but still tight):
+
+* **Normal arterial pH:** **7.35–7.45**.
+* **“Lethal” range (textbook):** **pH < \~6.8** (severe acidemia) or **pH > \~7.8** (severe alkalemia). Survival outside those is vanishingly rare and usually brief without immediate correction.
+* **Reality check:** There are scattered case reports of survival down to the **6.5–6.6** range (usually young, rapidly corrected DKA/overdose). Above **\~7.7–7.8**, badness comes fast (seizures, malignant arrhythmias). Don’t bank on outliers.
+
+Why it kills (quick physiology):
+
+* **Acidemia (<7.0):** ↓ myocardial contractility, vasodilation → shock, **refractory hyperkalemia** (K⁺ shifts out of cells), **ventricular arrhythmias**, catecholamine resistance. Oxyhemoglobin curve shifts **right** (harder loading in lungs).
+* **Alkalemia (>7.7):** **Hypokalemia/hypocalcemia**, coronary/cerebral **vasoconstriction**, ↓ cerebral blood flow, **seizures**, **ventricular ectopy**, left shift of O₂ curve (off-loading fails).
+
+Practical ICU/ED flags:
+
+* **pH ≤7.0** or **≥7.7** = expect instability/arrest; fix cause **now** (ventilate CO₂ off, perfuse, treat lactic source, dialyze, give Ca²⁺/K⁺ as indicated, etc.).
+* **Duration matters:** minutes at 6.9 can be survivable; hours usually aren’t.
+* **ABG vs VBG:** venous pH runs \~0.03–0.05 lower than arterial—know your sample.
+
+Bottom line: aim hard to keep **≥7.2** in resuscitation while you reverse the cause; once stabilized, target normal.

@@ -480,7 +480,7 @@ async def adaptive_learning_health_check(
         raise HTTPException(
             status_code=503,
             detail=f"B.5 Adaptive Learning Engine health check failed: {str(e)}",
-        )
+        ) from e
 
 
 # Background task for adaptation tracking
@@ -557,7 +557,7 @@ async def create_learning_path_legacy(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error creating learning path: {str(e)}"
-        )
+        ) from e
 
 
 @router.get("/path/{student_id}", response_model=dict[str, Any])
@@ -577,11 +577,11 @@ async def get_learning_path_legacy(student_id: str):
             "study_planning": "Use POST /adaptive-learning/b5-generate-adaptive-study-plan for comprehensive planning",
         }
 
-    except Exception:
+    except Exception as e:
         raise HTTPException(
             status_code=404,
             detail=f"Learning path not found for student {student_id}. Please use B.5 adaptive learning endpoints.",
-        )
+        ) from e
 
 
 @router.post("/progress/{student_id}")
@@ -606,4 +606,4 @@ async def update_progress_legacy(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error updating progress: {str(e)}"
-        )
+        ) from e

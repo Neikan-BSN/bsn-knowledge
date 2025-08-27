@@ -478,7 +478,7 @@ def cleanup_test_environment():
                 username="student1",
                 email="student1@nursing.edu",
                 role=UserRole.STUDENT,
-                hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
+                hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # noqa: S106
                 is_active=True,
             ),
             "instructor1": UserInDB(
@@ -486,7 +486,7 @@ def cleanup_test_environment():
                 username="instructor1",
                 email="instructor1@nursing.edu",
                 role=UserRole.INSTRUCTOR,
-                hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
+                hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # noqa: S106
                 is_active=True,
             ),
             "admin1": UserInDB(
@@ -494,7 +494,7 @@ def cleanup_test_environment():
                 username="admin1",
                 email="admin1@nursing.edu",
                 role=UserRole.ADMIN,
-                hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
+                hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # noqa: S106
                 is_active=True,
             ),
         }
@@ -745,9 +745,10 @@ def security_test_vectors():
 @pytest.fixture
 def performance_monitoring():
     """Performance monitoring utilities for E2E tests."""
-    import psutil
     import time
     from collections import defaultdict
+
+    import psutil
 
     class PerformanceMonitor:
         def __init__(self):

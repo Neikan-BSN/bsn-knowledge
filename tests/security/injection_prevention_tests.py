@@ -81,9 +81,9 @@ class TestSQLInjectionPrevention:
                 ]
 
                 for indicator in sql_error_indicators:
-                    assert (
-                        indicator not in response_text
-                    ), f"SQL error leaked in response for payload: {payload}"
+                    assert indicator not in response_text, (
+                        f"SQL error leaked in response for payload: {payload}"
+                    )
 
     def test_blind_sql_injection_prevention(self, client: TestClient, auth_headers):
         """Test prevention of blind SQL injection attacks."""
@@ -95,12 +95,12 @@ class TestSQLInjectionPrevention:
             "' AND (SELECT CASE WHEN (1=1) THEN 1 ELSE 0 END) --",
         ]
 
-        baseline_response = client.get(
+        client.get(
             "/api/v1/analytics/student/valid_id",
             headers=auth_headers["instructor1"],
         )
         baseline_time = time.time()
-        baseline_response = client.get(
+        client.get(
             "/api/v1/analytics/student/valid_id",
             headers=auth_headers["instructor1"],
         )
@@ -239,9 +239,9 @@ class TestXSSPrevention:
                     ]
 
                     for pattern in dangerous_patterns:
-                        assert (
-                            pattern.lower() not in response_text.lower()
-                        ), f"XSS pattern '{pattern}' found in response for payload: {payload}"
+                        assert pattern.lower() not in response_text.lower(), (
+                            f"XSS pattern '{pattern}' found in response for payload: {payload}"
+                        )
 
     def test_stored_xss_prevention(self, client: TestClient, auth_headers):
         """Test prevention of stored XSS attacks."""
@@ -284,9 +284,9 @@ class TestXSSPrevention:
                     ]
 
                     for indicator in xss_indicators:
-                        assert (
-                            indicator not in response_text
-                        ), f"Stored XSS vulnerability: {indicator} found in response"
+                        assert indicator not in response_text, (
+                            f"Stored XSS vulnerability: {indicator} found in response"
+                        )
 
     def test_dom_xss_prevention(self, client: TestClient, auth_headers):
         """Test prevention of DOM-based XSS attacks."""
@@ -360,7 +360,7 @@ class TestCommandInjectionPrevention:
         ]
 
         for payload in command_injection_payloads:
-            for endpoint, method, field in test_endpoints:
+            for endpoint, _method, field in test_endpoints:
                 request_data = {
                     field: f"Nursing Care {payload}",
                     "competencies": ["AACN_KNOWLEDGE_1"] if field == "topic" else None,
@@ -399,9 +399,9 @@ class TestCommandInjectionPrevention:
                     ]
 
                     for indicator in command_output_indicators:
-                        assert (
-                            indicator not in response_text
-                        ), f"Command execution detected for payload: {payload}"
+                        assert indicator not in response_text, (
+                            f"Command execution detected for payload: {payload}"
+                        )
 
     def test_template_injection_prevention(self, client: TestClient, auth_headers):
         """Test prevention of template injection attacks."""
@@ -443,9 +443,9 @@ class TestCommandInjectionPrevention:
                 ]
 
                 for indicator in injection_indicators:
-                    assert (
-                        indicator not in response_text
-                    ), f"Template injection executed for payload: {payload}"
+                    assert indicator not in response_text, (
+                        f"Template injection executed for payload: {payload}"
+                    )
 
 
 @pytest.mark.security
@@ -492,9 +492,9 @@ class TestLDAPInjectionPrevention:
             ]
 
             for indicator in ldap_error_indicators:
-                assert (
-                    indicator not in response_text
-                ), f"LDAP error message leaked for payload: {payload}"
+                assert indicator not in response_text, (
+                    f"LDAP error message leaked for payload: {payload}"
+                )
 
 
 @pytest.mark.security
@@ -541,9 +541,9 @@ class TestNoSQLInjectionPrevention:
                 ]
 
                 for indicator in nosql_error_indicators:
-                    assert (
-                        indicator.lower() not in response_text.lower()
-                    ), f"NoSQL error leaked for payload: {payload}"
+                    assert indicator.lower() not in response_text.lower(), (
+                        f"NoSQL error leaked for payload: {payload}"
+                    )
 
 
 @pytest.mark.security
@@ -572,7 +572,7 @@ class TestRAGnosticServiceInjectionSecurity:
 
         for query in injection_queries:
             # Should sanitize query before sending to RAGnostic
-            result = await client.search_content(query)
+            await client.search_content(query)
 
             # Verify the request was made (basic functionality works)
             assert mock_client.return_value.request.called
@@ -662,9 +662,9 @@ class TestInputSanitizationComprehensive:
                 ]
 
                 for element in dangerous_elements:
-                    assert (
-                        element not in response_text
-                    ), f"Dangerous medical content not filtered: {element}"
+                    assert element not in response_text, (
+                        f"Dangerous medical content not filtered: {element}"
+                    )
 
     def test_unicode_and_encoding_attacks(self, client: TestClient, auth_headers):
         """Test prevention of Unicode and encoding-based attacks."""

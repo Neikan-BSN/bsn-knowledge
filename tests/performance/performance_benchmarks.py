@@ -14,7 +14,7 @@ import statistics
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import psutil
 
@@ -65,8 +65,8 @@ class PerformanceMetric:
     metric_name: str
     value: float
     unit: str
-    context: Dict[str, Any] = field(default_factory=dict)
-    tags: List[str] = field(default_factory=list)
+    context: dict[str, Any] = field(default_factory=dict)
+    tags: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -75,9 +75,9 @@ class PerformanceBenchmark:
 
     benchmark_name: str
     description: str
-    thresholds: Dict[str, PerformanceThreshold]
+    thresholds: dict[str, PerformanceThreshold]
     baseline_established_at: datetime
-    measurements: List[PerformanceMetric] = field(default_factory=list)
+    measurements: list[PerformanceMetric] = field(default_factory=list)
 
     def add_measurement(self, metric: PerformanceMetric):
         """Add a new performance measurement."""
@@ -87,7 +87,7 @@ class PerformanceBenchmark:
         if len(self.measurements) > 1000:
             self.measurements = self.measurements[-1000:]
 
-    def get_recent_stats(self, metric_name: str, hours: int = 24) -> Dict[str, float]:
+    def get_recent_stats(self, metric_name: str, hours: int = 24) -> dict[str, float]:
         """Get statistics for recent measurements."""
         cutoff_time = datetime.now() - timedelta(hours=hours)
         recent_measurements = [
@@ -119,9 +119,9 @@ class PerformanceBenchmark:
 class PerformanceBenchmarkManager:
     """Manages performance benchmarks and thresholds."""
 
-    def __init__(self, benchmark_file: Optional[str] = None):
+    def __init__(self, benchmark_file: str | None = None):
         self.benchmark_file = Path(benchmark_file or "performance_benchmarks.json")
-        self.benchmarks: Dict[str, PerformanceBenchmark] = {}
+        self.benchmarks: dict[str, PerformanceBenchmark] = {}
         self.load_benchmarks()
 
         # Initialize default BSN Knowledge benchmarks
@@ -296,8 +296,8 @@ class PerformanceBenchmarkManager:
         metric_name: str,
         value: float,
         unit: str,
-        context: Optional[Dict[str, Any]] = None,
-        tags: Optional[List[str]] = None,
+        context: dict[str, Any] | None = None,
+        tags: list[str] | None = None,
     ):
         """Record a performance measurement."""
         if benchmark_name not in self.benchmarks:
@@ -335,7 +335,7 @@ class PerformanceBenchmarkManager:
             else:
                 logger.debug(f"Performance OK: {message}")
 
-    def get_benchmark_status(self, benchmark_name: str) -> Dict[str, Any]:
+    def get_benchmark_status(self, benchmark_name: str) -> dict[str, Any]:
         """Get current status of all metrics in a benchmark."""
         if benchmark_name not in self.benchmarks:
             return {"error": f"Benchmark '{benchmark_name}' not found"}
@@ -375,7 +375,7 @@ class PerformanceBenchmarkManager:
 
         return status
 
-    def generate_performance_report(self) -> Dict[str, Any]:
+    def generate_performance_report(self) -> dict[str, Any]:
         """Generate comprehensive performance report."""
         report = {
             "generated_at": datetime.now().isoformat(),
@@ -417,7 +417,7 @@ class PerformanceBenchmarkManager:
 
         return report
 
-    def _get_system_info(self) -> Dict[str, Any]:
+    def _get_system_info(self) -> dict[str, Any]:
         """Get current system information."""
         return {
             "cpu_count": psutil.cpu_count(),
@@ -432,8 +432,8 @@ class PerformanceBenchmarkManager:
         }
 
     def _generate_recommendations(
-        self, critical_issues: List[str], warning_issues: List[str]
-    ) -> List[str]:
+        self, critical_issues: list[str], warning_issues: list[str]
+    ) -> list[str]:
         """Generate performance improvement recommendations."""
         recommendations = []
 
@@ -538,7 +538,7 @@ class PerformanceBenchmarkManager:
             return
 
         try:
-            with open(self.benchmark_file, "r") as f:
+            with open(self.benchmark_file) as f:
                 data = json.load(f)
 
             for name, benchmark_data in data.items():
@@ -646,7 +646,7 @@ def record_error_rate(error_type: str, error_rate: float):
     )
 
 
-def get_performance_report() -> Dict[str, Any]:
+def get_performance_report() -> dict[str, Any]:
     """Get comprehensive performance report."""
     return benchmark_manager.generate_performance_report()
 

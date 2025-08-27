@@ -10,12 +10,10 @@ import logging
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Optional
 
 import psutil
 from locust.env import Environment
-from locust.user import HttpUser, task, between
-
+from locust.user import HttpUser, between, task
 from performance_benchmarks import benchmark_manager, record_resource_usage
 
 # Configure logging
@@ -53,7 +51,7 @@ class StepResults:
     success_rate: float
     total_requests: int
     failed_requests: int
-    breaking_point_indicators: List[str]
+    breaking_point_indicators: list[str]
 
     @property
     def is_breaking_point(self) -> bool:
@@ -131,9 +129,9 @@ class BreakingPointAnalyzer:
         self.duration_per_step = duration_per_step
         self.monitor_resources = monitor_resources
 
-        self.test_results: List[StepResults] = []
+        self.test_results: list[StepResults] = []
         self.breaking_point_found = False
-        self.breaking_point_step: Optional[int] = None
+        self.breaking_point_step: int | None = None
 
         logger.info("Breaking Point Analyzer initialized:")
         logger.info(f"  Base URL: {base_url}")
@@ -142,7 +140,7 @@ class BreakingPointAnalyzer:
         logger.info(f"  Duration per step: {duration_per_step}s")
         logger.info(f"  Resource monitoring: {monitor_resources}")
 
-    def generate_load_steps(self) -> List[LoadStep]:
+    def generate_load_steps(self) -> list[LoadStep]:
         """Generate load testing steps with gradual increase."""
         steps = []
         step_number = 1
@@ -165,12 +163,12 @@ class BreakingPointAnalyzer:
 
     def run_load_step(self, step: LoadStep) -> StepResults:
         """Execute a single load testing step."""
-        logger.info(f"\n{'='*60}")
+        logger.info(f"\n{'=' * 60}")
         logger.info(f"EXECUTING STEP {step.step_number}: {step.user_count} users")
         logger.info(
             f"Duration: {step.duration_seconds}s, Batch jobs: {step.batch_jobs}"
         )
-        logger.info(f"{'='*60}")
+        logger.info(f"{'=' * 60}")
 
         # Resource monitoring setup
         resource_monitor = ResourceMonitor() if self.monitor_resources else None
@@ -313,11 +311,11 @@ class BreakingPointAnalyzer:
                 f"  ⚠️  BREAKING POINT DETECTED at {results.step.user_count} users"
             )
 
-    def analyze_breaking_points(self) -> Dict:
+    def analyze_breaking_points(self) -> dict:
         """Analyze all test results to identify breaking points and patterns."""
-        logger.info(f"\n{'='*80}")
+        logger.info(f"\n{'=' * 80}")
         logger.info("BREAKING POINT ANALYSIS")
-        logger.info(f"{'='*80}")
+        logger.info(f"{'=' * 80}")
 
         analysis = {
             "test_summary": {
@@ -469,7 +467,7 @@ class BreakingPointAnalyzer:
 
         return sum(efficiencies) / len(efficiencies)
 
-    def _calculate_resource_efficiency(self) -> Dict[str, float]:
+    def _calculate_resource_efficiency(self) -> dict[str, float]:
         """Calculate resource utilization efficiency."""
         if not self.test_results:
             return {"cpu_efficiency": 0.0, "memory_efficiency": 0.0}
@@ -498,7 +496,7 @@ class BreakingPointAnalyzer:
             else 0.0,
         }
 
-    def _log_analysis_results(self, analysis: Dict):
+    def _log_analysis_results(self, analysis: dict):
         """Log the complete analysis results."""
         logger.info("\nBREAKING POINT ANALYSIS RESULTS:")
         logger.info(
@@ -547,7 +545,7 @@ class BreakingPointAnalyzer:
         for i, rec in enumerate(analysis["recommendations"], 1):
             logger.info(f"  {i}. {rec}")
 
-    def run_complete_analysis(self) -> Dict:
+    def run_complete_analysis(self) -> dict:
         """Run complete breaking point analysis."""
         logger.info("Starting Breaking Point Analysis")
 
@@ -592,7 +590,7 @@ class BreakingPointAnalyzer:
 
         return analysis
 
-    def _save_results_to_file(self, analysis: Dict):
+    def _save_results_to_file(self, analysis: dict):
         """Save analysis results to JSON file."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"breaking_point_analysis_{timestamp}.json"
@@ -675,7 +673,7 @@ class ResourceMonitor:
                 logger.error(f"Error in resource monitoring: {str(e)}")
                 break
 
-    def get_stats(self) -> Dict[str, float]:
+    def get_stats(self) -> dict[str, float]:
         """Get resource utilization statistics."""
         if not self.cpu_samples or not self.memory_samples:
             return {
@@ -735,9 +733,9 @@ def main():
     try:
         results = analyzer.run_complete_analysis()
 
-        logger.info(f"\n{'='*80}")
+        logger.info(f"\n{'=' * 80}")
         logger.info("BREAKING POINT ANALYSIS COMPLETED SUCCESSFULLY")
-        logger.info(f"{'='*80}")
+        logger.info(f"{'=' * 80}")
 
         if results["test_summary"]["breaking_point_detected"]:
             logger.warning(

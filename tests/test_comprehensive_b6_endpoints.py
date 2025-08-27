@@ -11,13 +11,14 @@ Tests include unit tests, integration tests, performance validation,
 security verification, and error handling scenarios.
 """
 
-import pytest
 import time
-from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import UTC, datetime
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, patch, MagicMock
 
 from src.models.assessment_models import (
     CompetencyProficiencyLevel,
@@ -240,7 +241,7 @@ class TestB6NCLEXGenerationEndpoint:
 
         # Make multiple requests rapidly
         responses = []
-        for i in range(60):  # More than the limit
+        for _i in range(60):  # More than the limit
             response = client.post(
                 "/api/v1/nclex/generate",
                 json=request_data,
@@ -249,7 +250,7 @@ class TestB6NCLEXGenerationEndpoint:
             responses.append(response.status_code)
 
         # Should see mix of successful and rate-limited responses
-        success_count = sum(1 for code in responses if code == status.HTTP_200_OK)
+        sum(1 for code in responses if code == status.HTTP_200_OK)
         rate_limited_count = sum(
             1 for code in responses if code == status.HTTP_429_TOO_MANY_REQUESTS
         )
@@ -352,7 +353,7 @@ class TestB6CompetencyAssessmentEndpoint:
         # Validate field types and values
         assert data["student_id"] == "student_001"
         assert data["competency_id"] == "AACN_KNOWLEDGE_1"
-        assert isinstance(data["score"], (int, float))
+        assert isinstance(data["score"], int | float)
         assert 0 <= data["score"] <= 100
         assert isinstance(data["strengths"], list)
         assert isinstance(data["areas_for_improvement"], list)
@@ -642,7 +643,7 @@ class TestB6StudyGuideCreationEndpoint:
         assert isinstance(data["learning_objectives"], list)
         assert len(data["learning_objectives"]) >= 3
         assert isinstance(data["assessment_methods"], list)
-        assert isinstance(data["estimated_study_time_hours"], (int, float))
+        assert isinstance(data["estimated_study_time_hours"], int | float)
         assert data["estimated_study_time_hours"] > 0
 
     def test_study_guide_create_all_difficulty_levels(
@@ -831,7 +832,7 @@ class TestB6StudyGuideCreationEndpoint:
 
         # Make multiple requests rapidly
         responses = []
-        for i in range(60):  # More than the limit
+        for _i in range(60):  # More than the limit
             response = client.post(
                 "/api/v1/study-guide/create",
                 json=request_data,
@@ -875,7 +876,7 @@ class TestB6StudentAnalyticsEndpoint:
             strengths=["Interprofessional Communication", "Person-Centered Care"],
             time_to_graduation_estimate=18.5,
             risk_factors=[],
-            last_updated=datetime.now(timezone.utc),
+            last_updated=datetime.now(UTC),
         )
         mock_analytics.return_value = mock_service
 
@@ -904,7 +905,7 @@ class TestB6StudentAnalyticsEndpoint:
 
         # Validate field types and values
         assert data["student_id"] == "student_001"
-        assert isinstance(data["overall_progress"], (int, float))
+        assert isinstance(data["overall_progress"], int | float)
         assert 0 <= data["overall_progress"] <= 100
         assert isinstance(data["competency_scores"], dict)
         assert len(data["competency_scores"]) == 8  # All 8 AACN domains
@@ -1040,7 +1041,7 @@ class TestB6StudentAnalyticsEndpoint:
         """Test student analytics rate limiting (500 requests/hour)."""
         # Make multiple requests rapidly
         responses = []
-        for i in range(550):  # More than the limit
+        for _i in range(550):  # More than the limit
             response = client.get(
                 "/api/v1/analytics/student/student_001",
                 headers=auth_headers["instructor1"],
@@ -1049,9 +1050,7 @@ class TestB6StudentAnalyticsEndpoint:
 
         # Analytics should have higher rate limit
         success_count = sum(1 for code in responses if code == status.HTTP_200_OK)
-        rate_limited_count = sum(
-            1 for code in responses if code == status.HTTP_429_TOO_MANY_REQUESTS
-        )
+        sum(1 for code in responses if code == status.HTTP_429_TOO_MANY_REQUESTS)
 
         # Should allow more requests than content generation
         assert success_count > 400  # Should allow most requests
@@ -1322,7 +1321,7 @@ class TestB6EndpointsIntegration:
 
         # Analyze performance results
         endpoint_times = {}
-        for endpoint, duration, status_code in all_results:
+        for endpoint, duration, _status_code in all_results:
             if endpoint not in endpoint_times:
                 endpoint_times[endpoint] = []
             endpoint_times[endpoint].append(duration)
@@ -1334,16 +1333,16 @@ class TestB6EndpointsIntegration:
                 max_time = max(times)
 
                 if endpoint == "analytics":
-                    assert (
-                        avg_time < 1.0
-                    ), f"{endpoint} average time {avg_time:.3f}s too slow"
-                    assert (
-                        max_time < 2.0
-                    ), f"{endpoint} max time {max_time:.3f}s too slow"
+                    assert avg_time < 1.0, (
+                        f"{endpoint} average time {avg_time:.3f}s too slow"
+                    )
+                    assert max_time < 2.0, (
+                        f"{endpoint} max time {max_time:.3f}s too slow"
+                    )
                 else:  # nclex and study_guide
-                    assert (
-                        avg_time < 3.0
-                    ), f"{endpoint} average time {avg_time:.3f}s too slow"
-                    assert (
-                        max_time < 5.0
-                    ), f"{endpoint} max time {max_time:.3f}s too slow"
+                    assert avg_time < 3.0, (
+                        f"{endpoint} average time {avg_time:.3f}s too slow"
+                    )
+                    assert max_time < 5.0, (
+                        f"{endpoint} max time {max_time:.3f}s too slow"
+                    )

@@ -11,24 +11,23 @@ Tests validate response times, concurrent handling, rate limiting,
 throughput metrics, and performance under various load conditions.
 """
 
-import pytest
-import time
 import statistics
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from fastapi import status
-from fastapi.testclient import TestClient
+from dataclasses import dataclass
 from unittest.mock import AsyncMock, patch
-from typing import List
 
 import psutil
-from dataclasses import dataclass
+import pytest
+from fastapi import status
+from fastapi.testclient import TestClient
 
 
 @dataclass
 class PerformanceMetrics:
     """Container for performance measurement data."""
 
-    response_times: List[float]
+    response_times: list[float]
     success_count: int
     error_count: int
     rate_limited_count: int
@@ -270,15 +269,15 @@ class TestB6ConcurrentPerformance:
         metrics = self._measure_concurrent_requests(nclex_request, 20, max_workers=10)
 
         # Validate concurrent performance
-        assert (
-            metrics.success_rate >= 50.0
-        ), f"Success rate too low: {metrics.success_rate}%"
-        assert (
-            metrics.average_response_time < 5.0
-        ), f"Average response time too high: {metrics.average_response_time:.3f}s"
-        assert (
-            metrics.p95_response_time < 10.0
-        ), f"P95 response time too high: {metrics.p95_response_time:.3f}s"
+        assert metrics.success_rate >= 50.0, (
+            f"Success rate too low: {metrics.success_rate}%"
+        )
+        assert metrics.average_response_time < 5.0, (
+            f"Average response time too high: {metrics.average_response_time:.3f}s"
+        )
+        assert metrics.p95_response_time < 10.0, (
+            f"P95 response time too high: {metrics.p95_response_time:.3f}s"
+        )
 
     def test_competency_assessment_concurrent_load(
         self, client: TestClient, auth_headers
@@ -310,12 +309,12 @@ class TestB6ConcurrentPerformance:
             )
 
             # Assessment should handle concurrent load well
-            assert (
-                metrics.success_rate >= 70.0
-            ), f"Success rate too low: {metrics.success_rate}%"
-            assert (
-                metrics.average_response_time < 2.0
-            ), f"Average response time too high: {metrics.average_response_time:.3f}s"
+            assert metrics.success_rate >= 70.0, (
+                f"Success rate too low: {metrics.success_rate}%"
+            )
+            assert metrics.average_response_time < 2.0, (
+                f"Average response time too high: {metrics.average_response_time:.3f}s"
+            )
 
     def test_mixed_endpoint_concurrent_usage(self, client: TestClient, auth_headers):
         """Test concurrent usage across different B.6 endpoints."""
@@ -369,12 +368,12 @@ class TestB6ConcurrentPerformance:
         )
 
         # Mixed workload should perform reasonably
-        assert (
-            avg_response_time < 3.0
-        ), f"Mixed workload average response time too high: {avg_response_time:.3f}s"
-        assert (
-            success_rate >= 40.0
-        ), f"Mixed workload success rate too low: {success_rate}%"
+        assert avg_response_time < 3.0, (
+            f"Mixed workload average response time too high: {avg_response_time:.3f}s"
+        )
+        assert success_rate >= 40.0, (
+            f"Mixed workload success rate too low: {success_rate}%"
+        )
 
 
 @pytest.mark.performance
@@ -420,12 +419,12 @@ class TestB6RateLimitingPerformance:
         )
 
         # Should enforce rate limiting
-        assert (
-            rate_limited_count > 5
-        ), f"Rate limiting not enforced effectively: {rate_limited_count} rate limited"
-        assert (
-            success_count <= 55
-        ), f"Too many successful requests: {success_count} (should be ~50)"
+        assert rate_limited_count > 5, (
+            f"Rate limiting not enforced effectively: {rate_limited_count} rate limited"
+        )
+        assert success_count <= 55, (
+            f"Too many successful requests: {success_count} (should be ~50)"
+        )
 
         # Rate limiting should kick in progressively
         later_requests = results[40:]  # Last 20 requests
@@ -434,9 +433,9 @@ class TestB6RateLimitingPerformance:
             for r in later_requests
             if r["status_code"] == status.HTTP_429_TOO_MANY_REQUESTS
         )
-        assert (
-            later_rate_limited > rate_limited_count / 2
-        ), "Rate limiting should be more frequent later"
+        assert later_rate_limited > rate_limited_count / 2, (
+            "Rate limiting should be more frequent later"
+        )
 
     def test_assessment_rate_limiting_enforcement(
         self, client: TestClient, auth_headers, reset_rate_limiter
@@ -456,7 +455,7 @@ class TestB6RateLimitingPerformance:
 
             # Make requests to test rate limiting (210 requests for 200/hour limit)
             results = []
-            for i in range(210):
+            for _i in range(210):
                 response = client.post(
                     "/api/v1/assessment/competency",
                     json=request_data,
@@ -470,12 +469,12 @@ class TestB6RateLimitingPerformance:
             )
 
             # Should allow more requests than NCLEX (higher limit)
-            assert (
-                success_count >= 150
-            ), f"Assessment rate limit too restrictive: {success_count} successful"
-            assert (
-                rate_limited_count > 0
-            ), "Assessment rate limiting should eventually kick in"
+            assert success_count >= 150, (
+                f"Assessment rate limit too restrictive: {success_count} successful"
+            )
+            assert rate_limited_count > 0, (
+                "Assessment rate limiting should eventually kick in"
+            )
 
     def test_analytics_rate_limiting_performance(
         self, client: TestClient, auth_headers, reset_rate_limiter
@@ -497,9 +496,9 @@ class TestB6RateLimitingPerformance:
         )
 
         # Analytics should have highest rate limit
-        assert (
-            success_count >= 400
-        ), f"Analytics rate limit too restrictive: {success_count} successful"
+        assert success_count >= 400, (
+            f"Analytics rate limit too restrictive: {success_count} successful"
+        )
         # But should still eventually rate limit
         assert rate_limited_count < 100, "Analytics rate limiting should be permissive"
 
@@ -588,12 +587,12 @@ class TestB6ThroughputAndScalability:
 
         # Should handle sustained load well
         assert len(results) >= 100, f"Not enough requests processed: {len(results)}"
-        assert (
-            avg_response_time < 1.0
-        ), f"Average response time degraded: {avg_response_time:.3f}s"
-        assert (
-            success_rate >= 50.0
-        ), f"Success rate too low under sustained load: {success_rate}%"
+        assert avg_response_time < 1.0, (
+            f"Average response time degraded: {avg_response_time:.3f}s"
+        )
+        assert success_rate >= 50.0, (
+            f"Success rate too low under sustained load: {success_rate}%"
+        )
 
     def test_memory_usage_under_load(self, client: TestClient, auth_headers):
         """Test memory usage during B.6 endpoint load testing."""
@@ -643,9 +642,9 @@ class TestB6ThroughputAndScalability:
         memory_increase = final_memory - initial_memory
 
         # Memory increase should be reasonable (less than 100MB)
-        assert (
-            memory_increase < 100 * 1024 * 1024
-        ), f"Excessive memory usage increase: {memory_increase / (1024 * 1024):.1f}MB"
+        assert memory_increase < 100 * 1024 * 1024, (
+            f"Excessive memory usage increase: {memory_increase / (1024 * 1024):.1f}MB"
+        )
 
     def test_response_size_efficiency(self, client: TestClient, auth_headers):
         """Test that B.6 endpoint responses are reasonably sized."""
@@ -688,9 +687,9 @@ class TestB6ThroughputAndScalability:
 
             if response.status_code == status.HTTP_200_OK:
                 response_size = len(response.content)
-                assert (
-                    response_size <= max_size
-                ), f"Response too large for {endpoint}: {response_size} bytes > {max_size} bytes"
+                assert response_size <= max_size, (
+                    f"Response too large for {endpoint}: {response_size} bytes > {max_size} bytes"
+                )
 
     def test_concurrent_user_isolation(self, client: TestClient, test_users):
         """Test that concurrent users don't interfere with each other's performance."""
@@ -698,7 +697,7 @@ class TestB6ThroughputAndScalability:
 
         fake_users_db.update(test_users)
 
-        def user_session(username: str) -> List[float]:
+        def user_session(username: str) -> list[float]:
             """Simulate a user session and return response times."""
             # Login
             login_response = client.post(
@@ -772,9 +771,9 @@ class TestB6ThroughputAndScalability:
         for user, times in user_response_times.items():
             if times:  # If user had successful operations
                 avg_time = statistics.mean(times)
-                assert (
-                    avg_time < 3.0
-                ), f"User {user} experienced poor performance: {avg_time:.3f}s avg"
+                assert avg_time < 3.0, (
+                    f"User {user} experienced poor performance: {avg_time:.3f}s avg"
+                )
 
         # Check that users had similar performance (no interference)
         valid_avg_times = [
@@ -786,9 +785,9 @@ class TestB6ThroughputAndScalability:
             avg_of_avgs = statistics.mean(valid_avg_times)
 
             # Performance variance between users should be reasonable
-            assert (
-                time_variance / avg_of_avgs < 0.5
-            ), "Too much performance variance between concurrent users"
+            assert time_variance / avg_of_avgs < 0.5, (
+                "Too much performance variance between concurrent users"
+            )
 
 
 @pytest.mark.performance
@@ -847,7 +846,7 @@ class TestB6LoadTestingScenarios:
                     start = time.time()
 
                     if scenario["method"] == "POST":
-                        response = client.post(
+                        client.post(
                             scenario["endpoint"],
                             json=scenario["data"],
                             headers=auth_headers[
@@ -858,7 +857,7 @@ class TestB6LoadTestingScenarios:
                         )
                     else:  # GET
                         endpoint = scenario["endpoint"].format(user_id * 10 + req_num)
-                        response = client.get(
+                        client.get(
                             endpoint,
                             headers=auth_headers["instructor1"],
                         )
@@ -894,18 +893,18 @@ class TestB6LoadTestingScenarios:
         for scenario_name, results in simulation_results.items():
             if "nclex" in scenario_name or "study_guide" in scenario_name:
                 # Content generation should be under 3s even under load
-                assert (
-                    results["avg_response_time"] < 3.0
-                ), f"{scenario_name} average response time too high: {results['avg_response_time']:.3f}s"
-                assert (
-                    results["p95_response_time"] < 6.0
-                ), f"{scenario_name} P95 response time too high: {results['p95_response_time']:.3f}s"
+                assert results["avg_response_time"] < 3.0, (
+                    f"{scenario_name} average response time too high: {results['avg_response_time']:.3f}s"
+                )
+                assert results["p95_response_time"] < 6.0, (
+                    f"{scenario_name} P95 response time too high: {results['p95_response_time']:.3f}s"
+                )
 
             elif "analytics" in scenario_name:
                 # Analytics should be faster
-                assert (
-                    results["avg_response_time"] < 1.0
-                ), f"{scenario_name} average response time too high: {results['avg_response_time']:.3f}s"
+                assert results["avg_response_time"] < 1.0, (
+                    f"{scenario_name} average response time too high: {results['avg_response_time']:.3f}s"
+                )
 
     def test_stress_failure_recovery(self, client: TestClient, auth_headers):
         """Test B.6 endpoints recovery from stress conditions."""
@@ -940,7 +939,7 @@ class TestB6LoadTestingScenarios:
             return responses
 
         # Apply stress
-        stress_results = stress_endpoint()
+        stress_endpoint()
 
         # Wait for recovery period
         time.sleep(2)
