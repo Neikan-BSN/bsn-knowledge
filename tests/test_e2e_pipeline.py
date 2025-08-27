@@ -59,9 +59,9 @@ class TestE2EPipeline:
                 "ragnostic_processing_time", processing_time
             )
 
-            assert ragnostic_response.status_code == 200, (
-                f"RAGnostic processing failed: {ragnostic_response.text}"
-            )
+            assert (
+                ragnostic_response.status_code == 200
+            ), f"RAGnostic processing failed: {ragnostic_response.text}"
             ragnostic_result = ragnostic_response.json()
 
             # Validate enrichment quality
@@ -92,9 +92,9 @@ class TestE2EPipeline:
                 "nclex_generation_time", generation_time
             )
 
-            assert bsn_response.status_code == 200, (
-                f"NCLEX generation failed: {bsn_response.text}"
-            )
+            assert (
+                bsn_response.status_code == 200
+            ), f"NCLEX generation failed: {bsn_response.text}"
             nclex_result = bsn_response.json()
 
             # Validate NCLEX question quality
@@ -117,9 +117,9 @@ class TestE2EPipeline:
                     for concept in ragnostic_result["medical_concepts"]
                     if concept.get("preferred_name", "").lower() in question_text
                 )
-                assert medical_terms_found > 0, (
-                    "Questions should incorporate medical concepts from RAGnostic"
-                )
+                assert (
+                    medical_terms_found > 0
+                ), "Questions should incorporate medical concepts from RAGnostic"
 
             # Performance validation
             total_pipeline_time = time.time() - start_time
@@ -131,9 +131,9 @@ class TestE2EPipeline:
             max_acceptable_time = (
                 performance_benchmarks["response_time_ms"]["p95"] / 1000
             )  # Convert to seconds
-            assert total_pipeline_time < max_acceptable_time, (
-                f"Pipeline too slow: {total_pipeline_time:.2f}s > {max_acceptable_time:.2f}s"
-            )
+            assert (
+                total_pipeline_time < max_acceptable_time
+            ), f"Pipeline too slow: {total_pipeline_time:.2f}s > {max_acceptable_time:.2f}s"
 
             # Log success metrics
             pipeline_stats = performance_monitoring.calculate_statistics(
@@ -235,12 +235,12 @@ class TestE2EPipeline:
         # Performance assertions
         assert success_rate >= 95.0, f"Success rate too low: {success_rate:.1f}% < 95%"
         if response_times:
-            assert avg_response_time < 2.0, (
-                f"Average response time too high: {avg_response_time:.2f}s"
-            )
-            assert p95_response_time < 5.0, (
-                f"P95 response time too high: {p95_response_time:.2f}s"
-            )
+            assert (
+                avg_response_time < 2.0
+            ), f"Average response time too high: {avg_response_time:.2f}s"
+            assert (
+                p95_response_time < 5.0
+            ), f"P95 response time too high: {p95_response_time:.2f}s"
 
         print("\nConcurrent Load Results:")
         print(f"  Total Requests: {total_requests}")
@@ -419,9 +419,9 @@ class TestResilienceAndFailure:
 
             # At least some requests should succeed (queuing/retry mechanisms)
             success_rate = successful_responses / len(results) * 100
-            assert success_rate >= 70.0, (
-                f"Too many failures under load: {success_rate:.1f}% success rate"
-            )
+            assert (
+                success_rate >= 70.0
+            ), f"Too many failures under load: {success_rate:.1f}% success rate"
 
             print(
                 f"Database stress test: {successful_responses}/{concurrent_requests} successful ({success_rate:.1f}%)"
@@ -463,9 +463,9 @@ class TestResilienceAndFailure:
                     await asyncio.sleep(1)
 
             # Assert recovery within acceptable time
-            assert recovery_attempts < max_attempts, (
-                f"Service failed to recover within {max_attempts} attempts"
-            )
+            assert (
+                recovery_attempts < max_attempts
+            ), f"Service failed to recover within {max_attempts} attempts"
 
             # Step 3: Verify full functionality after recovery
             test_payload = {
@@ -479,9 +479,9 @@ class TestResilienceAndFailure:
                 json=test_payload,
             )
 
-            assert functionality_response.status_code == 200, (
-                "Functionality not restored after recovery"
-            )
+            assert (
+                functionality_response.status_code == 200
+            ), "Functionality not restored after recovery"
 
             print(f"Recovery successful after {recovery_attempts} attempts")
 
@@ -552,9 +552,9 @@ class TestCrossServiceSecurity:
                 )
 
                 # Should either reject (4xx) or safely handle without injection
-                assert response.status_code != 500, (
-                    f"Server error with SQL injection: {sql_payload}"
-                )
+                assert (
+                    response.status_code != 500
+                ), f"Server error with SQL injection: {sql_payload}"
 
                 if response.status_code == 200:
                     # If processed, ensure no sensitive data leaked
@@ -614,9 +614,9 @@ class TestCrossServiceSecurity:
             )
 
             # Should have some rate limited responses
-            assert rate_limited_count > 0, (
-                f"Rate limiting not enforced: {rate_limited_count} blocked out of {burst_requests}"
-            )
+            assert (
+                rate_limited_count > 0
+            ), f"Rate limiting not enforced: {rate_limited_count} blocked out of {burst_requests}"
 
             rate_limit_percentage = rate_limited_count / burst_requests * 100
             print(
@@ -673,6 +673,6 @@ def assert_question_quality(question: dict[str, Any]) -> None:
     # Validate rationale quality
     rationale = question["rationale"]
     assert len(rationale) >= 20, "Rationale should be substantive"
-    assert not rationale.lower().startswith("the answer is"), (
-        "Rationale should explain why, not just state answer"
-    )
+    assert not rationale.lower().startswith(
+        "the answer is"
+    ), "Rationale should explain why, not just state answer"

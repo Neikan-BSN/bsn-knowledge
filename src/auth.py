@@ -85,7 +85,7 @@ fake_users_db = {
         username="student1",
         email="student1@nursing.edu",
         role=UserRole.STUDENT,
-        hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # "password123"
+        hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # "password123"  # noqa: S106
         is_active=True,
     ),
     "instructor1": UserInDB(
@@ -93,7 +93,7 @@ fake_users_db = {
         username="instructor1",
         email="instructor1@nursing.edu",
         role=UserRole.INSTRUCTOR,
-        hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # "password123"
+        hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # "password123"  # noqa: S106
         is_active=True,
     ),
     "admin1": UserInDB(
@@ -101,7 +101,7 @@ fake_users_db = {
         username="admin1",
         email="admin1@nursing.edu",
         role=UserRole.ADMIN,
-        hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # "password123"
+        hashed_password="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # "password123"  # noqa: S106
         is_active=True,
     ),
 }

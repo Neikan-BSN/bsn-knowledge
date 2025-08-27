@@ -71,7 +71,7 @@ async def get_content_service():
     ragnostic_client = RAGnosticClient()
     # OpenAI API key would come from environment/config
     content_service = ContentGenerationService(
-        openai_api_key="your-openai-key",  # Would be injected
+        openai_api_key="your-openai-key",  # Would be injected  # noqa: S106
         ragnostic_client=ragnostic_client,
     )
     return content_service

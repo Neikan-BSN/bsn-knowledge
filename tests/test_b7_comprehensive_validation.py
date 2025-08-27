@@ -102,52 +102,52 @@ class TestB7TestSuiteCompleteness:
 
         # Validate coverage requirements
         for endpoint_name, coverage in endpoint_coverage.items():
-            assert coverage.total_tests >= 10, (
-                f"Insufficient tests for {endpoint_name}: {coverage.total_tests} < 10"
-            )
+            assert (
+                coverage.total_tests >= 10
+            ), f"Insufficient tests for {endpoint_name}: {coverage.total_tests} < 10"
 
-            assert coverage.unit_tests >= 3, (
-                f"Insufficient unit tests for {endpoint_name}: {coverage.unit_tests} < 3"
-            )
+            assert (
+                coverage.unit_tests >= 3
+            ), f"Insufficient unit tests for {endpoint_name}: {coverage.unit_tests} < 3"
 
-            assert coverage.security_tests >= 2, (
-                f"Insufficient security tests for {endpoint_name}: {coverage.security_tests} < 2"
-            )
+            assert (
+                coverage.security_tests >= 2
+            ), f"Insufficient security tests for {endpoint_name}: {coverage.security_tests} < 2"
 
-            assert coverage.performance_tests >= 1, (
-                f"Insufficient performance tests for {endpoint_name}: {coverage.performance_tests} < 1"
-            )
+            assert (
+                coverage.performance_tests >= 1
+            ), f"Insufficient performance tests for {endpoint_name}: {coverage.performance_tests} < 1"
 
     def test_test_suite_quality_metrics(self):
         """Test that test suite meets quality requirements."""
         metrics = self._calculate_test_suite_metrics()
 
         # Validate total test count
-        assert metrics.total_tests >= 100, (
-            f"Insufficient total tests: {metrics.total_tests} < 100"
-        )
+        assert (
+            metrics.total_tests >= 100
+        ), f"Insufficient total tests: {metrics.total_tests} < 100"
 
         # Validate test distribution
-        assert metrics.unit_tests >= 40, (
-            f"Insufficient unit tests: {metrics.unit_tests} < 40"
-        )
+        assert (
+            metrics.unit_tests >= 40
+        ), f"Insufficient unit tests: {metrics.unit_tests} < 40"
 
-        assert metrics.integration_tests >= 20, (
-            f"Insufficient integration tests: {metrics.integration_tests} < 20"
-        )
+        assert (
+            metrics.integration_tests >= 20
+        ), f"Insufficient integration tests: {metrics.integration_tests} < 20"
 
-        assert metrics.performance_tests >= 15, (
-            f"Insufficient performance tests: {metrics.performance_tests} < 15"
-        )
+        assert (
+            metrics.performance_tests >= 15
+        ), f"Insufficient performance tests: {metrics.performance_tests} < 15"
 
-        assert metrics.security_tests >= 25, (
-            f"Insufficient security tests: {metrics.security_tests} < 25"
-        )
+        assert (
+            metrics.security_tests >= 25
+        ), f"Insufficient security tests: {metrics.security_tests} < 25"
 
         # Validate quality score
-        assert metrics.quality_score >= 85.0, (
-            f"Test suite quality score too low: {metrics.quality_score} < 85.0"
-        )
+        assert (
+            metrics.quality_score >= 85.0
+        ), f"Test suite quality score too low: {metrics.quality_score} < 85.0"
 
     def test_performance_benchmark_compliance(self):
         """Test that performance benchmarks meet B.6 requirements."""
@@ -171,9 +171,9 @@ class TestB7TestSuiteCompleteness:
         concurrent_tests = [
             test for test in performance_tests if "concurrent" in test.lower()
         ]
-        assert len(concurrent_tests) >= 3, (
-            f"Insufficient concurrent performance tests: {len(concurrent_tests)} < 3"
-        )
+        assert (
+            len(concurrent_tests) >= 3
+        ), f"Insufficient concurrent performance tests: {len(concurrent_tests)} < 3"
 
         # Validate load testing exists
         load_tests = [
@@ -181,9 +181,9 @@ class TestB7TestSuiteCompleteness:
             for test in performance_tests
             if "load" in test.lower() or "stress" in test.lower()
         ]
-        assert len(load_tests) >= 2, (
-            f"Insufficient load/stress tests: {len(load_tests)} < 2"
-        )
+        assert (
+            len(load_tests) >= 2
+        ), f"Insufficient load/stress tests: {len(load_tests)} < 2"
 
     def test_security_test_coverage_compliance(self):
         """Test that security tests cover all required aspects."""
@@ -206,18 +206,18 @@ class TestB7TestSuiteCompleteness:
                     covered_areas.add(area)
 
         missing_areas = set(required_security_areas) - covered_areas
-        assert len(missing_areas) == 0, (
-            f"Missing security test coverage for: {missing_areas}"
-        )
+        assert (
+            len(missing_areas) == 0
+        ), f"Missing security test coverage for: {missing_areas}"
 
         # Validate B.6 endpoint security coverage
         for endpoint_name in ["nclex", "assessment", "study_guide", "analytics"]:
             endpoint_security_tests = [
                 test for test in security_tests if endpoint_name in test.lower()
             ]
-            assert len(endpoint_security_tests) >= 2, (
-                f"Insufficient security tests for {endpoint_name}: {len(endpoint_security_tests)} < 2"
-            )
+            assert (
+                len(endpoint_security_tests) >= 2
+            ), f"Insufficient security tests for {endpoint_name}: {len(endpoint_security_tests)} < 2"
 
     def test_error_handling_test_completeness(self):
         """Test that error handling tests cover all scenarios."""
@@ -240,18 +240,18 @@ class TestB7TestSuiteCompleteness:
                 for test in error_tests
                 if any(keyword in test.lower() for keyword in scenario.split("_"))
             ]
-            assert len(scenario_tests) >= 1, (
-                f"Missing error handling tests for {scenario}"
-            )
+            assert (
+                len(scenario_tests) >= 1
+            ), f"Missing error handling tests for {scenario}"
 
         # Validate each B.6 endpoint has error handling tests
         for endpoint_name in ["nclex", "assessment", "study_guide", "analytics"]:
             endpoint_error_tests = [
                 test for test in error_tests if endpoint_name in test.lower()
             ]
-            assert len(endpoint_error_tests) >= 2, (
-                f"Insufficient error handling tests for {endpoint_name}"
-            )
+            assert (
+                len(endpoint_error_tests) >= 2
+            ), f"Insufficient error handling tests for {endpoint_name}"
 
     def test_integration_test_workflow_coverage(self):
         """Test that integration tests cover complete workflows."""
@@ -266,17 +266,17 @@ class TestB7TestSuiteCompleteness:
                 for keyword in ["workflow", "integration", "complete"]
             )
         ]
-        assert len(workflow_tests) >= 3, (
-            f"Insufficient workflow integration tests: {len(workflow_tests)} < 3"
-        )
+        assert (
+            len(workflow_tests) >= 3
+        ), f"Insufficient workflow integration tests: {len(workflow_tests)} < 3"
 
         # Check for concurrent usage tests
         concurrent_integration_tests = [
             test for test in integration_tests if "concurrent" in test.lower()
         ]
-        assert len(concurrent_integration_tests) >= 2, (
-            f"Insufficient concurrent integration tests: {len(concurrent_integration_tests)} < 2"
-        )
+        assert (
+            len(concurrent_integration_tests) >= 2
+        ), f"Insufficient concurrent integration tests: {len(concurrent_integration_tests)} < 2"
 
         # Check for cross-endpoint dependency tests
         dependency_tests = [
@@ -716,9 +716,9 @@ class TestB7PerformanceBenchmarkValidation:
                     requirement_tested = True
                     break
 
-            assert requirement_tested, (
-                f"Performance requirement not tested: {requirement} < {max_time}s"
-            )
+            assert (
+                requirement_tested
+            ), f"Performance requirement not tested: {requirement} < {max_time}s"
 
     def test_concurrent_load_testing_implemented(self):
         """Test that concurrent load testing is properly implemented."""
@@ -935,13 +935,13 @@ class TestB7TestSuiteExecution:
                 pytest.fail(f"Cannot import test module {module_name}: {e}")
 
         # Validate test suite size and structure
-        assert importable_modules == len(test_modules), (
-            f"Could not import all test modules: {importable_modules}/{len(test_modules)}"
-        )
+        assert (
+            importable_modules == len(test_modules)
+        ), f"Could not import all test modules: {importable_modules}/{len(test_modules)}"
 
-        assert total_test_methods >= 80, (
-            f"Insufficient test methods found: {total_test_methods} < 80"
-        )
+        assert (
+            total_test_methods >= 80
+        ), f"Insufficient test methods found: {total_test_methods} < 80"
 
     def test_test_suite_performance(self):
         """Test that the test suite itself performs within acceptable bounds."""
@@ -962,9 +962,9 @@ class TestB7TestSuiteExecution:
         ) * 100  # 100 total tests estimate
 
         # Full test suite should complete within 10 minutes
-        assert estimated_full_suite_time < 600, (
-            f"Test suite execution time too long: {estimated_full_suite_time:.1f}s"
-        )
+        assert (
+            estimated_full_suite_time < 600
+        ), f"Test suite execution time too long: {estimated_full_suite_time:.1f}s"
 
     def test_test_isolation_validation(self):
         """Test that tests are properly isolated and don't interfere."""
@@ -1018,9 +1018,9 @@ class TestB7TestSuiteExecution:
                     )
 
         # CI/CD compatibility should be clean
-        assert len(compatibility_issues) == 0, (
-            f"CI/CD compatibility issues found: {compatibility_issues}"
-        )
+        assert (
+            len(compatibility_issues) == 0
+        ), f"CI/CD compatibility issues found: {compatibility_issues}"
 
 
 @pytest.mark.b7_validation
@@ -1040,9 +1040,9 @@ class TestB7DocumentationAndReporting:
             if '"""' not in content[:500]:  # Should have docstring in first 500 chars
                 undocumented_files.append(test_file.name)
 
-        assert len(undocumented_files) == 0, (
-            f"Test files missing documentation: {undocumented_files}"
-        )
+        assert (
+            len(undocumented_files) == 0
+        ), f"Test files missing documentation: {undocumented_files}"
 
     def test_test_reporting_capabilities(self):
         """Test that test results can be properly reported."""
@@ -1092,6 +1092,6 @@ class TestB7DocumentationAndReporting:
                 vulnerability_reporting = True
                 break
 
-        assert vulnerability_reporting, (
-            "Missing security vulnerability reporting capabilities"
-        )
+        assert (
+            vulnerability_reporting
+        ), "Missing security vulnerability reporting capabilities"

@@ -74,7 +74,7 @@ class StudyGuideResponse(BaseModel):
 async def get_content_service():
     ragnostic_client = RAGnosticClient()
     content_service = ContentGenerationService(
-        openai_api_key="your-openai-key",  # Would be injected from config
+        openai_api_key="your-openai-key",  # Would be injected from config  # noqa: S106
         ragnostic_client=ragnostic_client,
     )
     return content_service
