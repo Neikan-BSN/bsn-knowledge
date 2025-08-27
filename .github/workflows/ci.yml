@@ -50,7 +50,7 @@ jobs:
           uv run ruff format src/ tests/
           echo "✅ Format check completed"
           echo "🔍 Running linting check (syntax errors only)..."
-          uv run ruff check src/ tests/ --select F401,F821,E999 --ignore F401
+          uv run ruff check src/ tests/ --select F401,F821 --ignore F401
           echo "✅ Lint check completed"
 
       - name: Type Checking
