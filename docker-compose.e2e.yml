@@ -1,0 +1,821 @@
+# E2E RAGnostic → BSN Knowledge Pipeline Testing Framework
+# Comprehensive multi-service environment for 45-test validation suite
+# Group 1A Infrastructure Provisioning - Step 1.1.1 Implementation
+# Performance Targets: <60s startup, <5s DB connections, <50ms inter-service latency
+
+version: "3.8"
+
+services:
+  # ===========================================
+  # SHARED DATABASE INFRASTRUCTURE
+  # ===========================================
+
+  # PostgreSQL - Shared database for both RAGnostic and BSN Knowledge
+  postgres-e2e:
+    image: postgres:15-alpine
+    container_name: postgres-e2e-pipeline
+    ports:
+      - "5440:5432" # E2E testing port
+    environment:
+      - POSTGRES_MULTIPLE_DATABASES=ragnostic_e2e,bsn_knowledge_e2e
+      - POSTGRES_USER=e2e_user
+      - POSTGRES_PASSWORD=e2e_test_secure_pass
+      - POSTGRES_HOST_AUTH_METHOD=md5
+      - POSTGRES_INITDB_ARGS=--auth-host=md5
+    volumes:
+      - postgres_e2e_data:/var/lib/postgresql/data
+      - ./testing/fixtures/init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh:ro
+      - ./testing/fixtures/ragnostic-schema.sql:/docker-entrypoint-initdb.d/01-ragnostic-schema.sql:ro
+      - ./testing/fixtures/bsn-knowledge-schema.sql:/docker-entrypoint-initdb.d/02-bsn-knowledge-schema.sql:ro
+      - ./testing/fixtures/test-data-seed.sql:/docker-entrypoint-initdb.d/03-test-data-seed.sql:ro
+    restart: "no"
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "pg_isready -U e2e_user -d ragnostic_e2e -h localhost && pg_isready -U e2e_user -d bsn_knowledge_e2e -h localhost"
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+    command: >
+      postgres
+        -c max_connections=400
+        -c shared_buffers=512MB
+        -c effective_cache_size=2GB
+        -c maintenance_work_mem=128MB
+        -c checkpoint_completion_target=0.9
+        -c wal_buffers=32MB
+        -c default_statistics_target=100
+        -c random_page_cost=1.1
+        -c effective_io_concurrency=200
+        -c work_mem=8MB
+        -c min_wal_size=2GB
+        -c max_wal_size=8GB
+        -c log_min_duration_statement=1000
+        -c log_checkpoints=on
+        -c log_connections=on
+        -c log_disconnections=on
+
+  # Redis - Shared cache for both services with multiple databases
+  redis-e2e:
+    image: redis:7-alpine
+    container_name: redis-e2e-pipeline
+    ports:
+      - "6382:6379" # E2E testing port
+    command: >
+      redis-server
+        --appendonly yes
+        --maxmemory 1024mb
+        --maxmemory-policy allkeys-lru
+        --databases 16
+        --tcp-keepalive 300
+        --timeout 300
+    restart: "no"
+    tmpfs:
+      - /data
+      - /tmp
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 2s
+      retries: 10
+      start_period: 10s
+
+  # Qdrant - Vector database for medical content search
+  qdrant-e2e:
+    image: qdrant/qdrant:v1.8.4
+    container_name: qdrant-e2e-pipeline
+    ports:
+      - "6338:6333" # HTTP API
+      - "6339:6334" # gRPC
+    environment:
+      QDRANT__SERVICE__HTTP_PORT: 6333
+      QDRANT__SERVICE__GRPC_PORT: 6334
+      QDRANT__LOG_LEVEL: INFO
+      QDRANT__SERVICE__MAX_REQUEST_SIZE_MB: 64
+      QDRANT__STORAGE__WAL_CAPACITY_MB: 128
+      QDRANT__SERVICE__GRPC_TIMEOUT_MS: 30000
+    restart: "no"
+    tmpfs:
+      - /qdrant/storage
+      - /tmp
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/readyz"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 15s
+
+  # Neo4j - Knowledge graph database for BSN Knowledge
+  neo4j-e2e:
+    image: neo4j:5.15-community
+    container_name: neo4j-e2e-pipeline
+    ports:
+      - "7479:7474" # HTTP
+      - "7690:7687" # Bolt
+    environment:
+      NEO4J_AUTH: neo4j/e2e_neo4j_secure_pass
+      NEO4J_dbms_memory_heap_initial__size: 512M
+      NEO4J_dbms_memory_heap_max__size: 1G
+      NEO4J_dbms_memory_pagecache_size: 512M
+      NEO4J_dbms_default__listen__address: 0.0.0.0
+      NEO4J_dbms_connector_bolt_listen__address: 0.0.0.0:7687
+      NEO4J_dbms_connector_http_listen__address: 0.0.0.0:7474
+      NEO4J_dbms_logs_debug_level: INFO
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*,algo.*
+      NEO4J_dbms_memory_transaction_total_max: 2G
+    volumes:
+      - neo4j_e2e_data:/data
+      - neo4j_e2e_logs:/logs
+      - ./testing/fixtures/neo4j:/import:ro
+    restart: "no"
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test:
+        - "CMD"
+        - "cypher-shell"
+        - "-u"
+        - "neo4j"
+        - "-p"
+        - "e2e_neo4j_secure_pass"
+        - "RETURN 1"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # ===========================================
+  # RAGNOSTIC MICROSERVICES CLUSTER
+  # ===========================================
+
+  # RAGnostic Orchestrator - Main coordination service
+  ragnostic-orchestrator:
+    build:
+      context: /home/user01/projects/RAGnostic
+      dockerfile: docker/orchestrator/Dockerfile
+    container_name: ragnostic-orchestrator-e2e
+    ports:
+      - "8030:8000" # RAGnostic orchestrator
+    environment:
+      - SERVICE_NAME=ragnostic-orchestrator
+      - DATABASE_URL=postgresql://e2e_user:e2e_test_secure_pass@postgres-e2e:5432/ragnostic_e2e
+      - REDIS_URL=redis://redis-e2e:6379/0
+      - QDRANT_URL=http://qdrant-e2e:6333
+      - LOG_LEVEL=INFO
+      - DEBUG=false
+      - ENVIRONMENT=e2e_testing
+
+      # Performance optimization
+      - MAX_WORKERS=4
+      - KEEP_ALIVE_TIMEOUT=65
+      - MAX_REQUESTS=1000
+      - MAX_REQUESTS_JITTER=50
+
+      # Medical processing settings
+      - ENABLE_UMLS_INTEGRATION=true
+      - MEDICAL_ACCURACY_THRESHOLD=0.98
+      - BATCH_PROCESSING_SIZE=50
+      - CONCURRENT_JOBS_LIMIT=10
+
+      # Service URLs for internal communication
+      - CONFIG_SERVICE_URL=http://ragnostic-config:8000
+      - STORAGE_SERVICE_URL=http://ragnostic-storage:8000
+      - NURSING_PROCESSOR_URL=http://ragnostic-nursing-processor:8003
+
+    depends_on:
+      postgres-e2e:
+        condition: service_healthy
+      redis-e2e:
+        condition: service_healthy
+      qdrant-e2e:
+        condition: service_healthy
+    volumes:
+      - ragnostic_orchestrator_logs:/app/logs
+      - ragnostic_orchestrator_temp:/tmp
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+  # RAGnostic Config Service
+  ragnostic-config:
+    build:
+      context: /home/user01/projects/RAGnostic
+      dockerfile: docker/config-service/Dockerfile
+    container_name: ragnostic-config-e2e
+    ports:
+      - "8031:8000" # RAGnostic config service
+    environment:
+      - SERVICE_NAME=ragnostic-config-service
+      - DATABASE_URL=postgresql://e2e_user:e2e_test_secure_pass@postgres-e2e:5432/ragnostic_e2e
+      - REDIS_URL=redis://redis-e2e:6379/1
+      - LOG_LEVEL=INFO
+    depends_on:
+      postgres-e2e:
+        condition: service_healthy
+      redis-e2e:
+        condition: service_healthy
+    volumes:
+      - ragnostic_config_logs:/app/logs
+      - ragnostic_config_temp:/tmp
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 20s
+
+  # RAGnostic Storage Service
+  ragnostic-storage:
+    build:
+      context: /home/user01/projects/RAGnostic
+      dockerfile: docker/storage-service/Dockerfile
+    container_name: ragnostic-storage-e2e
+    ports:
+      - "8032:8000" # RAGnostic storage service
+    environment:
+      - SERVICE_NAME=ragnostic-storage-service
+      - DATABASE_URL=postgresql://e2e_user:e2e_test_secure_pass@postgres-e2e:5432/ragnostic_e2e
+      - REDIS_URL=redis://redis-e2e:6379/2
+      - QDRANT_URL=http://qdrant-e2e:6333
+      - VECTOR_STORE_TYPE=qdrant
+      - LOG_LEVEL=INFO
+
+      # Medical vector optimization
+      - EMBEDDING_MODEL=all-MiniLM-L6-v2
+      - VECTOR_DIMENSION=384
+      - SIMILARITY_THRESHOLD=0.7
+      - MAX_VECTOR_BATCH_SIZE=100
+
+    depends_on:
+      postgres-e2e:
+        condition: service_healthy
+      redis-e2e:
+        condition: service_healthy
+      qdrant-e2e:
+        condition: service_healthy
+    volumes:
+      - ragnostic_storage_logs:/app/logs
+      - ragnostic_storage_temp:/tmp
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 25s
+
+  # RAGnostic Nursing Content Processor
+  ragnostic-nursing-processor:
+    build:
+      context: /home/user01/projects/RAGnostic
+      dockerfile: docker/processors/nursing-content-processor/Dockerfile
+    container_name: ragnostic-nursing-processor-e2e
+    ports:
+      - "8033:8003" # RAGnostic nursing processor
+    environment:
+      - SERVICE_NAME=ragnostic-nursing-processor
+      - DATABASE_URL=postgresql://e2e_user:e2e_test_secure_pass@postgres-e2e:5432/ragnostic_e2e
+      - REDIS_URL=redis://redis-e2e:6379/3
+      - ORCHESTRATOR_URL=http://ragnostic-orchestrator:8000
+      - STORAGE_SERVICE_URL=http://ragnostic-storage:8000
+
+      # Medical processing configuration
+      - PROCESSOR_TYPE=nursing-content
+      - CHUNKING_STRATEGY=clinical
+      - CHUNK_SIZE=1000
+      - OVERLAP_SIZE=200
+      - PRESERVE_MEDICAL_TERMS=true
+      - DETECT_DRUG_NAMES=true
+      - EXTRACT_VITAL_SIGNS=true
+      - ENABLE_MEDICAL_NLP=true
+      - MEDICAL_ACCURACY_THRESHOLD=0.98
+      - MAX_CONCURRENT_SOURCES=8
+      - MAX_FILE_SIZE_MB=200
+
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+          cpus: "1.5"
+        reservations:
+          memory: 2G
+          cpus: "1.0"
+    depends_on:
+      postgres-e2e:
+        condition: service_healthy
+      redis-e2e:
+        condition: service_healthy
+      ragnostic-orchestrator:
+        condition: service_healthy
+    volumes:
+      - ragnostic_nursing_logs:/app/logs
+      - ragnostic_nursing_cache:/app/cache
+      - ragnostic_nursing_temp:/tmp
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 40s
+
+  # RAGnostic API Gateway
+  ragnostic-gateway:
+    build:
+      context: /home/user01/projects/RAGnostic
+      dockerfile: services/api-gateway/Dockerfile
+    container_name: ragnostic-gateway-e2e
+    ports:
+      - "8034:8004" # RAGnostic API gateway
+    environment:
+      - SERVICE_NAME=ragnostic-api-gateway
+      - DATABASE_URL=postgresql://e2e_user:e2e_test_secure_pass@postgres-e2e:5432/ragnostic_e2e
+      - REDIS_URL=redis://redis-e2e:6379/4
+      - ORCHESTRATOR_URL=http://ragnostic-orchestrator:8000
+      - CONFIG_SERVICE_URL=http://ragnostic-config:8000
+      - STORAGE_SERVICE_URL=http://ragnostic-storage:8000
+      - NURSING_PROCESSOR_URL=http://ragnostic-nursing-processor:8003
+
+      # Gateway-specific settings
+      - RATE_LIMIT_PER_MINUTE=1000
+      - MAX_REQUEST_SIZE_MB=100
+      - ENABLE_CORS=true
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8040
+
+    depends_on:
+      ragnostic-orchestrator:
+        condition: service_healthy
+      ragnostic-config:
+        condition: service_healthy
+      ragnostic-storage:
+        condition: service_healthy
+    volumes:
+      - ragnostic_gateway_logs:/app/logs
+      - ragnostic_gateway_temp:/tmp
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/gateway/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 25s
+
+  # ===========================================
+  # BSN KNOWLEDGE SERVICES CLUSTER
+  # ===========================================
+
+  # BSN Knowledge Main API Service
+  bsn-knowledge-api:
+    build:
+      context: /home/user01/projects/bsn_knowledge
+      dockerfile: Dockerfile
+      target: production
+    container_name: bsn-knowledge-api-e2e
+    ports:
+      - "8040:8000" # BSN Knowledge main API
+    environment:
+      - SERVICE_NAME=bsn-knowledge-api
+      - ENVIRONMENT=e2e_testing
+      - LOG_LEVEL=INFO
+      - DEBUG=false
+
+      # Database connections
+      - DATABASE_URL=postgresql://e2e_user:e2e_test_secure_pass@postgres-e2e:5432/bsn_knowledge_e2e
+      - NEO4J_URI=bolt://neo4j-e2e:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=e2e_neo4j_secure_pass
+      - REDIS_URL=redis://redis-e2e:6379/5
+      - QDRANT_URL=http://qdrant-e2e:6333
+
+      # RAGnostic integration
+      - RAGNOSTIC_ORCHESTRATOR_URL=http://ragnostic-orchestrator:8000
+      - RAGNOSTIC_GATEWAY_URL=http://ragnostic-gateway:8004
+      - RAGNOSTIC_API_KEY=e2e_ragnostic_integration_key
+      - ENABLE_RAGNOSTIC_INTEGRATION=true
+
+      # Performance settings
+      - MAX_WORKERS=4
+      - KEEP_ALIVE_TIMEOUT=65
+      - MAX_REQUESTS=800
+      - MAX_REQUESTS_JITTER=40
+
+      # Medical content settings
+      - UMLS_API_KEY=e2e_mock_umls_key
+      - OPENAI_API_KEY=e2e_mock_openai_key
+      - MEDICAL_ACCURACY_THRESHOLD=0.98
+      - NCLEX_GENERATION_ENABLED=true
+
+      # Security settings
+      - JWT_SECRET_KEY=e2e_jwt_secret_key_for_testing_comprehensive_pipeline
+      - API_KEY_ENABLED=true
+      - RATE_LIMITING_ENABLED=true
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8089
+
+    depends_on:
+      postgres-e2e:
+        condition: service_healthy
+      redis-e2e:
+        condition: service_healthy
+      neo4j-e2e:
+        condition: service_healthy
+      qdrant-e2e:
+        condition: service_healthy
+      ragnostic-orchestrator:
+        condition: service_healthy
+      ragnostic-gateway:
+        condition: service_healthy
+    volumes:
+      - bsn_api_logs:/app/logs
+      - bsn_api_temp:/tmp
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 35s
+
+  # BSN Knowledge Analytics Service
+  bsn-knowledge-analytics:
+    build:
+      context: /home/user01/projects/bsn_knowledge
+      dockerfile: docker/analytics-service/Dockerfile
+      target: production
+    container_name: bsn-knowledge-analytics-e2e
+    ports:
+      - "8041:8000" # BSN Knowledge analytics
+    environment:
+      - SERVICE_NAME=bsn-knowledge-analytics
+      - DATABASE_URL=postgresql://e2e_user:e2e_test_secure_pass@postgres-e2e:5432/bsn_knowledge_e2e
+      - NEO4J_URI=bolt://neo4j-e2e:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=e2e_neo4j_secure_pass
+      - REDIS_URL=redis://redis-e2e:6379/6
+      - ANALYTICS_CACHE_TTL=3600
+      - METRICS_COLLECTION_INTERVAL=60
+      - BSN_API_URL=http://bsn-knowledge-api:8000
+    depends_on:
+      postgres-e2e:
+        condition: service_healthy
+      redis-e2e:
+        condition: service_healthy
+      neo4j-e2e:
+        condition: service_healthy
+      bsn-knowledge-api:
+        condition: service_healthy
+    volumes:
+      - bsn_analytics_logs:/app/logs
+      - bsn_analytics_temp:/tmp
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 25s
+
+  # BSN Knowledge Content Processor
+  bsn-knowledge-processor:
+    build:
+      context: /home/user01/projects/bsn_knowledge
+      dockerfile: docker/knowledge-processor/Dockerfile
+      target: production
+    container_name: bsn-knowledge-processor-e2e
+    ports:
+      - "8042:8000" # BSN Knowledge processor
+    environment:
+      - SERVICE_NAME=bsn-knowledge-processor
+      - NEO4J_URI=bolt://neo4j-e2e:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=e2e_neo4j_secure_pass
+      - QDRANT_URL=http://qdrant-e2e:6333
+      - REDIS_URL=redis://redis-e2e:6379/7
+
+      # Processing configuration
+      - PROCESSOR_TYPE=medical_terminology
+      - BATCH_SIZE=100
+      - MAX_CONCURRENT_PROCESSES=6
+      - PROCESSING_TIMEOUT=300
+
+      # Medical NLP settings
+      - ENABLE_SCISPACY=true
+      - ENABLE_MEDICAL_NER=true
+      - MODEL_CACHE_SIZE=2000
+
+      # RAGnostic integration for content processing
+      - RAGNOSTIC_STORAGE_URL=http://ragnostic-storage:8000
+      - RAGNOSTIC_NURSING_PROCESSOR_URL=http://ragnostic-nursing-processor:8003
+
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "2.0"
+        reservations:
+          memory: 2G
+          cpus: "1.0"
+    depends_on:
+      neo4j-e2e:
+        condition: service_healthy
+      qdrant-e2e:
+        condition: service_healthy
+      redis-e2e:
+        condition: service_healthy
+      ragnostic-storage:
+        condition: service_healthy
+    volumes:
+      - bsn_processor_logs:/app/logs
+      - bsn_processor_cache:/app/cache
+      - bsn_processor_temp:/tmp
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 40s
+
+  # ===========================================
+  # MOCK EXTERNAL SERVICES
+  # ===========================================
+
+  # Mock UMLS API Service
+  umls-mock:
+    build:
+      context: ./tests/framework/mocks/umls
+      dockerfile: Dockerfile
+    container_name: umls-mock-e2e
+    ports:
+      - "8050:8000" # Mock UMLS API
+    environment:
+      - SERVICE_NAME=umls-mock
+      - LOG_LEVEL=INFO
+      - MOCK_RESPONSE_DELAY_MS=100
+      - ERROR_RATE=0.01 # 1% error rate for resilience testing
+      - MEDICAL_ACCURACY_SIMULATION=0.99 # 99% accuracy simulation
+    volumes:
+      - ./testing/fixtures/umls:/app/fixtures:ro
+      - umls_mock_logs:/app/logs
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Mock OpenAI API Service
+  openai-mock:
+    build:
+      context: ./tests/framework/mocks/openai
+      dockerfile: Dockerfile
+    container_name: openai-mock-e2e
+    ports:
+      - "8051:8000" # Mock OpenAI API
+    environment:
+      - SERVICE_NAME=openai-mock
+      - LOG_LEVEL=INFO
+      - MOCK_RESPONSE_DELAY_MS=300
+      - ERROR_RATE=0.005 # 0.5% error rate
+      - GENERATION_QUALITY_SIMULATION=0.95
+    volumes:
+      - openai_mock_logs:/app/logs
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ===========================================
+  # TESTING AND MONITORING INFRASTRUCTURE
+  # ===========================================
+
+  # E2E Test Orchestrator
+  e2e-test-orchestrator:
+    build:
+      context: ./tests/framework/orchestrator
+      dockerfile: Dockerfile
+    container_name: e2e-test-orchestrator
+    environment:
+      - SERVICE_NAME=e2e-test-orchestrator
+      - BSN_KNOWLEDGE_URL=http://bsn-knowledge-api:8000
+      - BSN_ANALYTICS_URL=http://bsn-knowledge-analytics:8000
+      - BSN_PROCESSOR_URL=http://bsn-knowledge-processor:8000
+      - RAGNOSTIC_ORCHESTRATOR_URL=http://ragnostic-orchestrator:8000
+      - RAGNOSTIC_GATEWAY_URL=http://ragnostic-gateway:8004
+      - RAGNOSTIC_STORAGE_URL=http://ragnostic-storage:8000
+      - RAGNOSTIC_NURSING_URL=http://ragnostic-nursing-processor:8003
+
+      # Database connections for direct testing
+      - POSTGRES_URL=postgresql://e2e_user:e2e_test_secure_pass@postgres-e2e:5432/bsn_knowledge_e2e
+      - RAGNOSTIC_POSTGRES_URL=postgresql://e2e_user:e2e_test_secure_pass@postgres-e2e:5432/ragnostic_e2e
+      - REDIS_URL=redis://redis-e2e:6379/10
+      - NEO4J_URL=bolt://neo4j-e2e:7687
+      - QDRANT_URL=http://qdrant-e2e:6333
+
+      # Test execution configuration
+      - TEST_RESULTS_PATH=/app/results
+      - PARALLEL_WORKERS=6
+      - TEST_TIMEOUT_SECONDS=600
+      - PERFORMANCE_BASELINE_PATH=/app/baselines
+      - MEDICAL_ACCURACY_THRESHOLD=0.98
+      - E2E_PIPELINE_TIMEOUT_SECONDS=120
+
+    depends_on:
+      bsn-knowledge-api:
+        condition: service_healthy
+      ragnostic-orchestrator:
+        condition: service_healthy
+      ragnostic-gateway:
+        condition: service_healthy
+    volumes:
+      - ./tests:/app/tests:ro
+      - ./testing/fixtures:/app/fixtures:ro
+      - e2e_test_results:/app/results
+      - e2e_test_logs:/app/logs
+      - e2e_baselines:/app/baselines
+    restart: "no"
+    profiles:
+      - test-execution
+
+  # Performance Monitoring - Prometheus
+  prometheus-e2e:
+    image: prom/prometheus:latest
+    container_name: prometheus-e2e
+    ports:
+      - "9091:9090" # Prometheus web UI
+    volumes:
+      - ./testing/monitoring/prometheus-e2e.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_e2e_data:/prometheus
+    restart: "no"
+    profiles:
+      - monitoring
+
+  # Performance Visualization - Grafana
+  grafana-e2e:
+    image: grafana/grafana:latest
+    container_name: grafana-e2e
+    ports:
+      - "3001:3000" # Grafana web UI
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=e2e_admin_secure
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_e2e_data:/var/lib/grafana
+      - ./testing/monitoring/grafana-e2e:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus-e2e
+    restart: "no"
+    profiles:
+      - monitoring
+
+  # Load Testing Infrastructure - Locust Master
+  locust-master-e2e:
+    build:
+      context: ./tests/framework/load
+      dockerfile: Dockerfile
+    container_name: locust-master-e2e
+    ports:
+      - "8089:8089" # Locust web UI
+    environment:
+      - LOCUST_MODE=master
+      - LOCUST_MASTER_BIND_HOST=0.0.0.0
+      - LOCUST_MASTER_BIND_PORT=5557
+      - TARGET_BSN_HOST=http://bsn-knowledge-api:8000
+      - TARGET_RAGNOSTIC_HOST=http://ragnostic-gateway:8004
+      - CONCURRENT_USERS=100
+      - SPAWN_RATE=10
+      - TEST_DURATION=600
+    depends_on:
+      - bsn-knowledge-api
+      - ragnostic-gateway
+    volumes:
+      - ./tests/framework/load/locustfiles:/app/locustfiles:ro
+      - ./testing/fixtures:/app/fixtures:ro
+      - locust_e2e_reports:/app/reports
+    restart: "no"
+    profiles:
+      - load-testing
+
+  # Load Testing Workers
+  locust-worker-e2e:
+    build:
+      context: ./tests/framework/load
+      dockerfile: Dockerfile
+    environment:
+      - LOCUST_MODE=worker
+      - LOCUST_MASTER_HOST=locust-master-e2e
+      - LOCUST_MASTER_PORT=5557
+      - TARGET_BSN_HOST=http://bsn-knowledge-api:8000
+      - TARGET_RAGNOSTIC_HOST=http://ragnostic-gateway:8004
+    depends_on:
+      - locust-master-e2e
+      - bsn-knowledge-api
+      - ragnostic-gateway
+    volumes:
+      - ./tests/framework/load/locustfiles:/app/locustfiles:ro
+      - ./testing/fixtures:/app/fixtures:ro
+    restart: "no"
+    profiles:
+      - load-testing
+    deploy:
+      replicas: 4
+
+# ===========================================
+# VOLUME DEFINITIONS
+# ===========================================
+
+volumes:
+  # Database volumes
+  postgres_e2e_data:
+    driver: local
+  neo4j_e2e_data:
+    driver: local
+  neo4j_e2e_logs:
+    driver: local
+
+  # RAGnostic service volumes
+  ragnostic_orchestrator_logs:
+    driver: local
+  ragnostic_orchestrator_temp:
+    driver: local
+  ragnostic_config_logs:
+    driver: local
+  ragnostic_config_temp:
+    driver: local
+  ragnostic_storage_logs:
+    driver: local
+  ragnostic_storage_temp:
+    driver: local
+  ragnostic_nursing_logs:
+    driver: local
+  ragnostic_nursing_cache:
+    driver: local
+  ragnostic_nursing_temp:
+    driver: local
+  ragnostic_gateway_logs:
+    driver: local
+  ragnostic_gateway_temp:
+    driver: local
+
+  # BSN Knowledge service volumes
+  bsn_api_logs:
+    driver: local
+  bsn_api_temp:
+    driver: local
+  bsn_analytics_logs:
+    driver: local
+  bsn_analytics_temp:
+    driver: local
+  bsn_processor_logs:
+    driver: local
+  bsn_processor_cache:
+    driver: local
+  bsn_processor_temp:
+    driver: local
+
+  # Mock service volumes
+  umls_mock_logs:
+    driver: local
+  openai_mock_logs:
+    driver: local
+
+  # Testing infrastructure volumes
+  e2e_test_results:
+    driver: local
+  e2e_test_logs:
+    driver: local
+  e2e_baselines:
+    driver: local
+
+  # Monitoring volumes
+  prometheus_e2e_data:
+    driver: local
+  grafana_e2e_data:
+    driver: local
+  locust_e2e_reports:
+    driver: local
+
+# ===========================================
+# NETWORK CONFIGURATION
+# ===========================================
+
+networks:
+  default:
+    name: e2e-ragnostic-bsn-pipeline-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1

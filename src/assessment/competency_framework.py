@@ -204,7 +204,7 @@ class AACNCompetencyFramework:
                 "C0025080",
                 "C0013850",
                 "C0018684",
-            ],  # Medical Informatics, Electronic Records, Healthcare Technology
+            ],  # Medical Informatics, Electronic Records, Healthcare Technology - Standard UMLS codes  # noqa: E501
         )
 
         # Domain 6: Healthcare Systems

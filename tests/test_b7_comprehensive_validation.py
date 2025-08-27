@@ -25,7 +25,7 @@ from fastapi.testclient import TestClient
 
 
 @dataclass
-class TestSuiteMetrics:
+class SuiteMetrics:
     """Container for test suite quality metrics."""
 
     total_tests: int
@@ -427,7 +427,7 @@ class TestB7TestSuiteCompleteness:
             coverage_percentage=coverage_percentage,
         )
 
-    def _calculate_test_suite_metrics(self) -> TestSuiteMetrics:
+    def _calculate_test_suite_metrics(self) -> SuiteMetrics:
         """Calculate comprehensive test suite metrics."""
         test_files = list(self.test_directory.glob("test_*.py"))
 
@@ -473,7 +473,7 @@ class TestB7TestSuiteCompleteness:
 
         quality_score = sum(quality_factors.values()) / len(quality_factors)
 
-        return TestSuiteMetrics(
+        return SuiteMetrics(
             total_tests=total_tests,
             unit_tests=unit_tests,
             integration_tests=integration_tests,

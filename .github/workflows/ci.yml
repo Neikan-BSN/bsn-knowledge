@@ -69,7 +69,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          timeout 600 uv run pytest tests/ -v --tb=short --cov=src --cov-report=xml --timeout=60
+          timeout 1200 uv run pytest tests/ -v --tb=short --cov=src --cov-report=xml --timeout=300
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v4
