@@ -312,3 +312,10 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short --cov=src --cov-report=html --cov-report=term-missing"
 asyncio_mode = "auto"
+markers = [
+    "performance: marks tests as performance tests",
+    "b6_endpoints: marks tests as B.6 endpoint validation tests",
+    "integration: marks tests as integration tests",
+    "security: marks tests as security validation tests",
+    "slow: marks tests as slow running tests",
+]
