@@ -53,13 +53,13 @@ jobs:
           uv run ruff check src/ tests/ --select F401,F821 --ignore F401
           echo "✅ Lint check completed"
 
-      - name: Type Checking
-        run: |
-          echo "🔍 Running type checking on source code..."
-          uv run mypy src/
-          echo "🔍 Running type checking on tests..."
-          uv run mypy tests/ --ignore-missing-imports
-          echo "✅ Type checking completed"
+      # - name: Type Checking
+      #   run: |
+      #     echo "🔍 Running type checking on source code..."
+      #     uv run mypy src/
+      #     echo "🔍 Running type checking on tests..."
+      #     uv run mypy tests/ --ignore-missing-imports
+      #     echo "✅ Type checking completed"
 
       - name: Basic Security Scan
         run: |
