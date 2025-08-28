@@ -29,13 +29,13 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# Add project root to path
-project_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(project_root))
-
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+
+# Add project root to path
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
 
 # Configure logging
 logging.basicConfig(

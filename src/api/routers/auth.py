@@ -136,10 +136,10 @@ async def refresh_token(refresh_token: str) -> Token:
 
         return create_auth_tokens(user)
 
-    except HTTPException:
+    except HTTPException as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
-        )
+        ) from e
 
 
 @router.post("/logout")

@@ -720,7 +720,7 @@ class TestServiceCommunicationTests:
                             service_health_status[endpoint]["health_status"] = (
                                 health_data["status"]
                             )
-                    except:
+                    except (ValueError, KeyError):
                         pass  # Non-JSON response acceptable
 
             except Exception as e:
@@ -962,7 +962,7 @@ class TestServiceCommunicationTests:
                             "has_context": "context" in error_data
                             or "field" in error_data,
                         }
-                    except:
+                    except (ValueError, TypeError, KeyError):
                         error_result["error_structure"] = {"parseable": False}
 
                 error_handling_results.append(error_result)
@@ -1295,7 +1295,7 @@ class TestServiceCommunicationTests:
                             "has_status": "status" in data,
                             "keys": list(data.keys()) if isinstance(data, dict) else [],
                         }
-                    except:
+                    except (ValueError, TypeError, KeyError):
                         # Non-JSON response (e.g., Prometheus format)
                         monitoring_results[endpoint]["format"] = "non_json"
 

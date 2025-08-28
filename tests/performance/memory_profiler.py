@@ -633,7 +633,7 @@ class AdvancedMemoryProfiler:
         try:
             with open(f"/proc/{psutil.Process().pid}/oom_score") as f:
                 return int(f.read().strip())
-        except:
+        except (OSError, ValueError):
             return 0
 
     def _estimate_db_connections(self) -> int:

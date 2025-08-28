@@ -441,7 +441,7 @@ async def rate_limit_middleware(request: Request, call_next):
         if credentials:
             token_data = verify_token(credentials.credentials)
             user_id = token_data.user_id or hash(token_data.username)
-    except:
+    except Exception:
         # If not authenticated, use IP-based rate limiting
         user_id = hash(request.client.host) if request.client else 0
 

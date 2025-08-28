@@ -54,7 +54,7 @@ jobs:
           uv run ruff check src/ tests/ --fix || echo "⚠️ Some linting issues found and fixed"
           echo "🔍 Checking for critical remaining issues..."
           # Only fail on critical issues that couldn't be auto-fixed
-          CRITICAL_ERRORS=$(uv run ruff check src/ tests/ --select=F,E9 --output-format=json 2>/dev/null | jq -s 'length')
+          CRITICAL_ERRORS=$(uv run ruff check src/ tests/ --select=F,E9 --output-format=json 2>/dev/null | jq 'length')
           if [ "$CRITICAL_ERRORS" -gt 0 ]; then
             echo "❌ Critical errors found that require manual fixing"
             uv run ruff check src/ tests/ --select=F,E9
@@ -81,7 +81,7 @@ jobs:
       - name: Run Tests
         run: |
           echo "🧪 Running test suite with optimized timeouts and better error handling..."
-          timeout 2400 uv run pytest tests/ -v --tb=short --cov=src --cov-report=xml --timeout=600 --maxfail=5 -x
+          timeout 1800 uv run pytest tests/ -v --tb=short --cov=src --cov-report=xml --timeout=300 --maxfail=3 -x --disable-warnings
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v4
