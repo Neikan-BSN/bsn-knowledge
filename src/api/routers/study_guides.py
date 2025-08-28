@@ -148,8 +148,8 @@ async def create_study_guide(
     except Exception as e:
         logger.error(f"Study guide creation failed: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"Study guide generation failed: {str(e) from e}"
-        )
+            status_code=500, detail=f"Study guide generation failed: {str(e)}"
+        ) from e
 
 
 @router.post("/personalized", response_model=StudyGuideResponse)
@@ -203,8 +203,8 @@ async def create_personalized_study_guide(
     except Exception as e:
         logger.error(f"Personalized study guide creation failed: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"Personalized guide generation failed: {str(e) from e}"
-        )
+            status_code=500, detail=f"Personalized guide generation failed: {str(e)}"
+        ) from e
 
 
 @router.post("/competency-focused", response_model=StudyGuideResponse)
@@ -221,7 +221,7 @@ async def create_competency_focused_guide(
         # Parse competency framework
         try:
             competency = CompetencyFramework(request.competency)
-        except ValueError:
+        except ValueError as e:
             raise HTTPException(
                 status_code=400,
                 detail=f"Unknown competency framework: {request.competency}",
@@ -267,8 +267,8 @@ async def create_competency_focused_guide(
     except Exception as e:
         logger.error(f"Competency-focused guide creation failed: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"Competency guide generation failed: {str(e) from e}"
-        )
+            status_code=500, detail=f"Competency guide generation failed: {str(e)}"
+        ) from e
 
 
 @router.post("/customize/{guide_id}", response_model=StudyGuideResponse)
@@ -285,11 +285,13 @@ async def customize_study_guide(
         # For now, return a placeholder response indicating customization capability
         raise HTTPException(
             status_code=501, detail="Guide customization requires storage integration"
-        ) from e
+        )
 
     except Exception as e:
         logger.error(f"Study guide customization failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Customization failed: {str(e) from e}")
+        raise HTTPException(
+            status_code=500, detail=f"Customization failed: {str(e)}"
+        ) from e
 
 
 @router.get("/topics", response_model=list[str])
@@ -338,7 +340,7 @@ async def get_study_guide(guide_id: str):
     Get specific study guide by ID (placeholder - would integrate with storage)
     """
     # This would retrieve from database/storage
-    raise HTTPException(status_code=404, detail="Study guide not found") from e
+    raise HTTPException(status_code=404, detail="Study guide not found")
 
 
 @router.post("/create", response_model=StudyGuideResponse)
@@ -359,8 +361,8 @@ async def create_study_guide_endpoint(
     except Exception as e:
         logger.error(f"Study guide creation failed: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"Study guide creation failed: {str(e) from e}"
-        )
+            status_code=500, detail=f"Study guide creation failed: {str(e)}"
+        ) from e
 
 
 @router.get("/health")

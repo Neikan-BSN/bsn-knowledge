@@ -80,8 +80,8 @@ async def assess_competency_endpoint(
     except Exception as e:
         logger.error(f"Competency assessment endpoint failed: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"Competency assessment failed: {str(e) from e}"
-        )
+            status_code=500, detail=f"Competency assessment failed: {str(e)}"
+        ) from e
 
 
 @router.post("/competency/assess", response_model=CompetencyAssessmentResult)
@@ -118,10 +118,12 @@ async def assess_competency(
 
     except ValueError as e:
         logger.warning(f"Invalid competency assessment request: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e) from e)
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         logger.error(f"Error assessing competency: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to assess competency") from e
+        raise HTTPException(
+            status_code=500, detail="Failed to assess competency"
+        ) from e
 
 
 @router.post("/competency/assess/bulk")
@@ -181,7 +183,9 @@ async def assess_competencies_bulk(
 
     except Exception as e:
         logger.error(f"Error in bulk competency assessment: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to process bulk assessment") from e
+        raise HTTPException(
+            status_code=500, detail="Failed to process bulk assessment"
+        ) from e
 
 
 @router.get("/competency/profile/{student_id}", response_model=StudentCompetencyProfile)
@@ -276,7 +280,9 @@ async def analyze_competency_gaps(
 
     except Exception as e:
         logger.error(f"Error analyzing competency gaps: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to analyze competency gaps") from e
+        raise HTTPException(
+            status_code=500, detail="Failed to analyze competency gaps"
+        ) from e
 
 
 @router.post("/learning-path/generate", response_model=LearningPathRecommendation)
@@ -310,7 +316,9 @@ async def generate_learning_path(
 
     except Exception as e:
         logger.error(f"Error generating learning path: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to generate learning path") from e
+        raise HTTPException(
+            status_code=500, detail="Failed to generate learning path"
+        ) from e
 
 
 @router.get("/competencies/available")
@@ -360,7 +368,9 @@ async def get_available_competencies(
 
     except Exception as e:
         logger.error(f"Error retrieving competencies: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to retrieve competencies") from e
+        raise HTTPException(
+            status_code=500, detail="Failed to retrieve competencies"
+        ) from e
 
 
 @router.get("/domains")

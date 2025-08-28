@@ -128,11 +128,13 @@ async def create_quiz(
         else:
             raise HTTPException(
                 status_code=400, detail=f"Quiz type {request.quiz_type} not supported"
-            ) from e
+            )
 
     except Exception as e:
         logger.error(f"Quiz creation failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Quiz generation failed: {str(e) from e}")
+        raise HTTPException(
+            status_code=500, detail=f"Quiz generation failed: {str(e)}"
+        ) from e
 
 
 @router.post("/clinical-scenarios", response_model=QuizResponse)
@@ -182,8 +184,8 @@ async def create_clinical_scenario_quiz(
     except Exception as e:
         logger.error(f"Clinical scenario quiz creation failed: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"Clinical quiz generation failed: {str(e) from e}"
-        )
+            status_code=500, detail=f"Clinical quiz generation failed: {str(e)}"
+        ) from e
 
 
 @router.post("/validate/{quiz_id}", response_model=QuizValidationResponse)
@@ -213,7 +215,9 @@ async def validate_quiz(
 
     except Exception as e:
         logger.error(f"Quiz validation failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Validation failed: {str(e) from e}")
+        raise HTTPException(
+            status_code=500, detail=f"Validation failed: {str(e)}"
+        ) from e
 
 
 @router.get("/categories", response_model=list[str])
@@ -228,7 +232,9 @@ async def get_quiz_categories(
         return await generator.get_available_categories()
     except Exception as e:
         logger.error(f"Failed to get categories: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to retrieve categories") from e
+        raise HTTPException(
+            status_code=500, detail="Failed to retrieve categories"
+        ) from e
 
 
 @router.get("/", response_model=list[QuizResponse])
@@ -246,7 +252,7 @@ async def get_quiz(quiz_id: str):
     Get specific quiz by ID (placeholder - would integrate with storage)
     """
     # This would retrieve from database/storage
-    raise HTTPException(status_code=404, detail="Quiz not found") from e
+    raise HTTPException(status_code=404, detail="Quiz not found")
 
 
 @router.post("/nclex/generate", response_model=QuizResponse)
@@ -270,8 +276,8 @@ async def generate_nclex_questions(
     except Exception as e:
         logger.error(f"NCLEX generation failed: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"NCLEX question generation failed: {str(e) from e}"
-        )
+            status_code=500, detail=f"NCLEX question generation failed: {str(e)}"
+        ) from e
 
 
 @router.get("/health")

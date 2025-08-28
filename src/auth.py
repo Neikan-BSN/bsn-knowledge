@@ -187,8 +187,8 @@ def verify_token(token: str, token_type: str = "access") -> TokenData:
             username=username, user_id=user_id, role=role, scopes=scopes
         )
         return token_data
-    except jwt.PyJWTError:
-        raise credentials_exception
+    except jwt.PyJWTError as e:
+        raise credentials_exception from e
 
 
 async def get_current_user(
@@ -200,7 +200,7 @@ async def get_current_user(
             from .api.error_handlers import AuthenticationError
 
             raise AuthenticationError("Authentication required")
-        except ImportError:
+        except ImportError as e:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Authentication required",
@@ -214,7 +214,7 @@ async def get_current_user(
             from .api.error_handlers import AuthenticationError
 
             raise AuthenticationError("User not found")
-        except ImportError:
+        except ImportError as e:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User not found",
@@ -226,7 +226,7 @@ async def get_current_user(
             from .api.error_handlers import AuthenticationError
 
             raise AuthenticationError("User account is inactive")
-        except ImportError:
+        except ImportError as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
             ) from e
@@ -260,7 +260,7 @@ def require_role(required_role: str):
                     raise HTTPException(
                         status_code=status.HTTP_403_FORBIDDEN,
                         detail=f"Insufficient permissions. Required role: {required_role}",
-                    ) from e
+                    )
             return await func(*args, **kwargs)
 
         return wrapper
@@ -284,7 +284,7 @@ def require_any_role(required_roles: list[str]):
                 if user.role not in required_roles and user.role != UserRole.ADMIN:
                     raise HTTPException(
                         status_code=status.HTTP_403_FORBIDDEN,
-                        detail=f"Insufficient permissions. Required roles: {', '.join(required_roles) from e}",
+                        detail=f"Insufficient permissions. Required roles: {', '.join(required_roles)}",
                     )
             return await func(*args, **kwargs)
 
@@ -299,7 +299,7 @@ async def get_current_active_user(
 ) -> User:
     """Get current active user"""
     if not current_user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user") from e
+        raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
 
@@ -310,7 +310,7 @@ async def get_current_student(current_user: User = Depends(get_current_user)) ->
             from .api.error_handlers import AuthorizationError
 
             raise AuthorizationError("Student access required")
-        except ImportError:
+        except ImportError as e:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="Student access required"
             ) from e
@@ -326,7 +326,7 @@ async def get_current_instructor(
             from .api.error_handlers import AuthorizationError
 
             raise AuthorizationError("Instructor access required")
-        except ImportError:
+        except ImportError as e:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Instructor access required",
@@ -341,7 +341,7 @@ async def get_current_admin(current_user: User = Depends(get_current_user)) -> U
             from .api.error_handlers import AuthorizationError
 
             raise AuthorizationError("Administrator access required")
-        except ImportError:
+        except ImportError as e:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Administrator access required",
