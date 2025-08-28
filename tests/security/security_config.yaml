@@ -1,0 +1,337 @@
+# Comprehensive Security Testing Configuration
+# for RAGnostic → BSN Knowledge Pipeline
+
+security_framework:
+  name: "BSN Knowledge Security Validation Suite"
+  version: "1.0.0"
+  compliance_standards:
+    - hipaa
+    - ferpa
+    - gdpr
+    - sox
+    - owasp_top10
+  medical_accuracy_threshold: 0.98
+  performance_impact_threshold: 0.1 # Max 10% performance impact
+
+test_categories:
+  SEC-001:
+    name: "Authentication Security Testing"
+    description: "JWT validation, token lifecycle, bypass prevention"
+    priority: "critical"
+    medical_focus: "user access control for medical content"
+    test_files:
+      - "auth_security_tests.py"
+    success_criteria:
+      - "100% authentication bypass prevention"
+      - "Secure JWT token lifecycle management"
+      - "Cross-service authentication security"
+      - "Session management security"
+    performance_target: "<50ms authentication overhead"
+
+  SEC-002:
+    name: "Input Validation and Sanitization"
+    description: "SQL injection, XSS, command injection prevention"
+    priority: "critical"
+    medical_focus: "medical content input sanitization"
+    test_files:
+      - "injection_prevention_tests.py"
+    success_criteria:
+      - "Zero injection vulnerabilities"
+      - "Comprehensive input sanitization"
+      - "Medical content integrity >98%"
+      - "Encoding attack prevention"
+    performance_target: "<25ms input validation overhead"
+
+  SEC-003:
+    name: "Authorization and Access Control"
+    description: "RBAC implementation, privilege escalation prevention"
+    priority: "critical"
+    medical_focus: "medical data access control"
+    test_files:
+      - "access_control_tests.py"
+    success_criteria:
+      - "Comprehensive RBAC implementation"
+      - "Zero unauthorized access incidents"
+      - "Proper permission isolation"
+      - "Cross-service authorization"
+    performance_target: "<10ms authorization decisions"
+
+  SEC-004:
+    name: "Data Encryption in Transit"
+    description: "TLS validation, certificate management, key security"
+    priority: "high"
+    medical_focus: "medical data transmission security"
+    test_files:
+      - "data_protection_tests.py::TestDataEncryptionInTransit"
+    success_criteria:
+      - "End-to-end encryption validation"
+      - "Secure key management"
+      - "TLS 1.3 implementation"
+      - "Certificate validation"
+    performance_target: "Minimal encryption overhead"
+
+  SEC-005:
+    name: "Security Headers and CORS Validation"
+    description: "HTTP security headers, CORS configuration, CSP"
+    priority: "medium"
+    medical_focus: "web application security for medical platforms"
+    test_files:
+      - "security_headers_tests.py"
+    success_criteria:
+      - "Comprehensive security header implementation"
+      - "Proper CORS configuration"
+      - "Browser security enforcement"
+      - "Content security policy"
+    performance_target: "No significant response time impact"
+
+  SEC-006:
+    name: "SQL Injection Prevention"
+    description: "Parameterized queries, ORM security, database protection"
+    priority: "critical"
+    medical_focus: "medical database security"
+    test_files:
+      - "injection_prevention_tests.py::TestSQLInjectionPrevention"
+    success_criteria:
+      - "Zero SQL injection vulnerabilities"
+      - "Secure database access patterns"
+      - "Comprehensive database security"
+      - "Error handling security"
+    performance_target: "Optimal query performance with security"
+
+  SEC-007:
+    name: "Security Audit Logging"
+    description: "Security event logging, compliance reporting, audit trails"
+    priority: "high"
+    medical_focus: "medical data access audit compliance"
+    test_files:
+      - "audit_logging_tests.py"
+    success_criteria:
+      - "Comprehensive security event logging"
+      - "Tamper-proof audit trails"
+      - "Compliance-ready reporting"
+      - "Cross-service audit coordination"
+    performance_target: "Efficient logging with minimal overhead"
+
+  DOS-PROTECTION:
+    name: "Rate Limiting and DoS Protection"
+    description: "API rate limits, burst protection, resource exhaustion prevention"
+    priority: "high"
+    medical_focus: "medical content generation abuse prevention"
+    test_files:
+      - "rate_limiting_dos_tests.py"
+    success_criteria:
+      - "Effective API rate limiting"
+      - "Burst traffic protection"
+      - "Resource exhaustion prevention"
+      - "Medical content abuse protection"
+    performance_target: "Legitimate traffic not impacted"
+
+  CROSS-SERVICE:
+    name: "Cross-Service Security"
+    description: "Service-to-service security, communication channels, data integrity"
+    priority: "high"
+    medical_focus: "RAGnostic-BSN Knowledge secure integration"
+    test_files:
+      - "cross_service_security_tests.py"
+    success_criteria:
+      - "Secure service-to-service authentication"
+      - "Encrypted communication channels"
+      - "Data integrity across services"
+      - "Medical data protection compliance"
+    performance_target: "Minimal cross-service communication overhead"
+
+security_levels:
+  basic:
+    description: "Essential security validation"
+    included_tests:
+      - "SEC-001"
+      - "SEC-002"
+      - "SEC-003"
+      - "SEC-006"
+    test_intensity: "light"
+    payload_counts:
+      authentication_bypass: 10
+      injection_payloads: 25
+      authorization_matrix: "small"
+    concurrent_testing: false
+    timing_attack_tests: false
+
+  standard:
+    description: "Comprehensive security validation"
+    included_tests:
+      - "SEC-001"
+      - "SEC-002"
+      - "SEC-003"
+      - "SEC-004"
+      - "SEC-005"
+      - "SEC-006"
+      - "SEC-007"
+      - "DOS-PROTECTION"
+      - "CROSS-SERVICE"
+    test_intensity: "medium"
+    payload_counts:
+      authentication_bypass: 50
+      injection_payloads: 100
+      authorization_matrix: "medium"
+    concurrent_testing: true
+    timing_attack_tests: true
+
+  enterprise:
+    description: "Maximum security validation with advanced testing"
+    included_tests: "all"
+    test_intensity: "maximum"
+    payload_counts:
+      authentication_bypass: 200
+      injection_payloads: 500
+      authorization_matrix: "large"
+    concurrent_testing: true
+    timing_attack_tests: true
+    advanced_evasion_tests: true
+    zero_day_simulation: true
+    penetration_testing: true
+
+compliance_mappings:
+  hipaa:
+    description: "Health Insurance Portability and Accountability Act"
+    required_tests:
+      - "SEC-001" # Access controls
+      - "SEC-003" # Authorization
+      - "SEC-004" # Encryption
+      - "SEC-007" # Audit trails
+    validation_criteria:
+      - "Medical data access controls implemented"
+      - "Comprehensive audit trails maintained"
+      - "Encryption requirements met"
+      - "Data breach prevention validated"
+
+  ferpa:
+    description: "Family Educational Rights and Privacy Act"
+    required_tests:
+      - "SEC-003" # Educational record access control
+      - "SEC-007" # Educational record access logging
+    validation_criteria:
+      - "Educational records protection compliant"
+      - "Student data access controlled"
+      - "Privacy controls implemented"
+
+  gdpr:
+    description: "General Data Protection Regulation"
+    required_tests:
+      - "SEC-002" # Input validation and data protection
+      - "SEC-004" # Data encryption
+      - "SEC-007" # Audit trails
+    validation_criteria:
+      - "Data protection by design implemented"
+      - "Consent management compliant"
+      - "Data subject rights supported"
+
+  owasp_top10:
+    description: "OWASP Top 10 Web Application Security Risks"
+    required_tests:
+      - "SEC-001" # Broken authentication
+      - "SEC-002" # Injection attacks
+      - "SEC-003" # Broken access control
+      - "SEC-004" # Security misconfiguration
+      - "SEC-005" # Security headers
+    validation_criteria:
+      - "OWASP Top 10 vulnerabilities prevented"
+      - "Web application security best practices"
+
+medical_security_requirements:
+  content_protection:
+    description: "Medical content accuracy and protection"
+    requirements:
+      - "Medical terminology accuracy >98%"
+      - "Clinical content validation"
+      - "Educational appropriateness filtering"
+      - "PHI detection and sanitization"
+    test_integration:
+      - "Medical content in all input validation tests"
+      - "Clinical scenario security testing"
+      - "UMLS terminology protection"
+
+  cross_service_medical:
+    description: "Medical data security across RAGnostic-BSN Knowledge"
+    requirements:
+      - "Medical data integrity in transit"
+      - "Clinical content classification security"
+      - "Medical accuracy preservation"
+      - "HIPAA compliance across services"
+    test_integration:
+      - "Medical data in cross-service tests"
+      - "Clinical accuracy validation"
+      - "Medical metadata protection"
+
+performance_requirements:
+  response_time_targets:
+    authentication: "<50ms per request"
+    authorization: "<10ms per decision"
+    input_validation: "<25ms per request"
+    security_middleware: "<100ms total overhead"
+
+  throughput_targets:
+    concurrent_users: ">100 simultaneous users"
+    api_requests: ">1000 requests per minute"
+    database_queries: ">500 queries per second"
+
+  resource_utilization:
+    cpu_limit: "<70% under normal load"
+    memory_limit: "<80% of allocated memory"
+    database_connections: "<80% of pool capacity"
+
+reporting:
+  output_formats:
+    - "console_summary"
+    - "json_detailed"
+    - "html_dashboard"
+    - "compliance_report"
+
+  compliance_reporting:
+    hipaa_report: true
+    ferpa_report: true
+    gdpr_report: true
+    owasp_report: true
+
+  metrics_tracking:
+    - "security_score_trends"
+    - "vulnerability_detection_rates"
+    - "performance_impact_analysis"
+    - "compliance_status_tracking"
+
+integration:
+  ci_cd:
+    github_actions: true
+    quality_gates: 4
+    automated_reporting: true
+    failure_notifications: true
+
+  monitoring:
+    real_time_alerts: true
+    security_dashboards: true
+    audit_log_analysis: true
+    threat_detection: true
+
+tools_and_dependencies:
+  pytest_plugins:
+    - "pytest-security"
+    - "pytest-httpx"
+    - "pytest-asyncio"
+    - "pytest-mock"
+
+  security_tools:
+    - "bandit" # Python security analysis
+    - "semgrep" # Static analysis
+    - "safety" # Dependency scanning
+    - "owasp-zap" # Web security scanner
+
+  performance_tools:
+    - "locust" # Load testing
+    - "wrk" # HTTP benchmarking
+    - "artillery" # Performance testing
+    - "k6" # Modern load testing
+
+maintenance:
+  update_frequency: "monthly"
+  security_review: "quarterly"
+  compliance_audit: "annually"
+  threat_model_review: "bi-annually"
