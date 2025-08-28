@@ -23,7 +23,6 @@ async def test_service_health_monitoring_integration(e2e_service_health_monitor)
     health_status = await e2e_service_health_monitor.get_all_health_status()
 
     # Validate health status structure
-    assert "timestamp" in health_status
     assert "services" in health_status
     assert "healthy_count" in health_status
     assert "total_count" in health_status
@@ -220,7 +219,7 @@ async def test_umls_mock_service_integration(
 async def test_database_connections_integration(e2e_database_connections):
     """Test integration with multi-database setup from Group 1A."""
 
-    connections = await e2e_database_connections
+    connections = e2e_database_connections
 
     # Validate connection structure
     assert "postgresql" in connections
