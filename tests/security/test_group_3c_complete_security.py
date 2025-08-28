@@ -469,39 +469,39 @@ class TestGroup3CCompleteSecurityValidation:
         summary = validation_report["group_3c_validation_report"]
 
         # Verify 300+ security scenarios were tested
-        assert summary["total_scenarios_tested"] >= 300, (
-            f"Insufficient security scenarios tested: {summary['total_scenarios_tested']} < 300"
-        )
+        assert (
+            summary["total_scenarios_tested"] >= 300
+        ), f"Insufficient security scenarios tested: {summary['total_scenarios_tested']} < 300"
 
         # Verify zero critical vulnerabilities
-        assert summary["total_vulnerabilities_found"] == 0, (
-            f"Critical vulnerabilities found: {summary['total_vulnerabilities_found']}"
-        )
+        assert (
+            summary["total_vulnerabilities_found"] == 0
+        ), f"Critical vulnerabilities found: {summary['total_vulnerabilities_found']}"
 
         # Verify 100% authentication bypass prevention
-        assert summary["overall_security_effectiveness"] >= 99.9, (
-            f"Security effectiveness below target: {summary['overall_security_effectiveness']:.2f}% < 99.9%"
-        )
+        assert (
+            summary["overall_security_effectiveness"] >= 99.9
+        ), f"Security effectiveness below target: {summary['overall_security_effectiveness']:.2f}% < 99.9%"
 
         # Verify medical data protection >99.9%
-        assert summary["medical_data_protection_score"] >= 99.9, (
-            f"Medical data protection below target: {summary['medical_data_protection_score']:.2f}% < 99.9%"
-        )
+        assert (
+            summary["medical_data_protection_score"] >= 99.9
+        ), f"Medical data protection below target: {summary['medical_data_protection_score']:.2f}% < 99.9%"
 
         # Verify enterprise compliance
-        assert summary["enterprise_compliance_status"] == "PASSED", (
-            f"Enterprise compliance failed: {summary['enterprise_compliance_status']}"
-        )
+        assert (
+            summary["enterprise_compliance_status"] == "PASSED"
+        ), f"Enterprise compliance failed: {summary['enterprise_compliance_status']}"
 
         # Verify HIPAA compliance
-        assert summary["hipaa_compliance"] == "VALIDATED", (
-            f"HIPAA compliance not validated: {summary['hipaa_compliance']}"
-        )
+        assert (
+            summary["hipaa_compliance"] == "VALIDATED"
+        ), f"HIPAA compliance not validated: {summary['hipaa_compliance']}"
 
         # Verify FERPA compliance
-        assert summary["ferpa_compliance"] == "VALIDATED", (
-            f"FERPA compliance not validated: {summary['ferpa_compliance']}"
-        )
+        assert (
+            summary["ferpa_compliance"] == "VALIDATED"
+        ), f"FERPA compliance not validated: {summary['ferpa_compliance']}"
 
         # Verify security grade
         assert summary["security_grade"] in [
@@ -521,19 +521,19 @@ class TestGroup3CCompleteSecurityValidation:
         )
 
         # Verify comprehensive header testing
-        assert headers_results["scenarios_tested"] >= 20, (
-            f"Insufficient header scenarios tested: {headers_results['scenarios_tested']} < 20"
-        )
+        assert (
+            headers_results["scenarios_tested"] >= 20
+        ), f"Insufficient header scenarios tested: {headers_results['scenarios_tested']} < 20"
 
         # Verify no critical header vulnerabilities
-        assert headers_results["vulnerabilities_found"] == 0, (
-            f"Header vulnerabilities found: {headers_results['vulnerabilities_found']}"
-        )
+        assert (
+            headers_results["vulnerabilities_found"] == 0
+        ), f"Header vulnerabilities found: {headers_results['vulnerabilities_found']}"
 
         # Verify high compliance score
-        assert headers_results["compliance_score"] >= 95.0, (
-            f"Header compliance below target: {headers_results['compliance_score']:.1f}% < 95%"
-        )
+        assert (
+            headers_results["compliance_score"] >= 95.0
+        ), f"Header compliance below target: {headers_results['compliance_score']:.1f}% < 95%"
 
     def test_sec_006_comprehensive_injection_prevention(
         self, client: TestClient, auth_headers: dict[str, dict[str, str]]
@@ -547,19 +547,19 @@ class TestGroup3CCompleteSecurityValidation:
         )
 
         # Verify comprehensive injection testing
-        assert injection_results["scenarios_tested"] >= 50, (
-            f"Insufficient injection scenarios tested: {injection_results['scenarios_tested']} < 50"
-        )
+        assert (
+            injection_results["scenarios_tested"] >= 50
+        ), f"Insufficient injection scenarios tested: {injection_results['scenarios_tested']} < 50"
 
         # Verify complete injection prevention
-        assert injection_results["vulnerabilities_found"] == 0, (
-            f"Injection vulnerabilities found: {injection_results['vulnerabilities_found']}"
-        )
+        assert (
+            injection_results["vulnerabilities_found"] == 0
+        ), f"Injection vulnerabilities found: {injection_results['vulnerabilities_found']}"
 
         # Verify 100% prevention rate
-        assert injection_results["prevention_rate"] >= 99.9, (
-            f"Injection prevention below target: {injection_results['prevention_rate']:.1f}% < 99.9%"
-        )
+        assert (
+            injection_results["prevention_rate"] >= 99.9
+        ), f"Injection prevention below target: {injection_results['prevention_rate']:.1f}% < 99.9%"
 
     def test_enterprise_penetration_testing(
         self, client: TestClient, auth_headers: dict[str, dict[str, str]]
@@ -573,19 +573,19 @@ class TestGroup3CCompleteSecurityValidation:
         )
 
         # Verify 300+ penetration testing scenarios
-        assert pentest_results["total_scenarios"] >= 300, (
-            f"Insufficient penetration scenarios: {pentest_results['total_scenarios']} < 300"
-        )
+        assert (
+            pentest_results["total_scenarios"] >= 300
+        ), f"Insufficient penetration scenarios: {pentest_results['total_scenarios']} < 300"
 
         # Verify no successful attacks
-        assert pentest_results["successful_attacks"] == 0, (
-            f"Successful penetration attacks: {pentest_results['successful_attacks']}"
-        )
+        assert (
+            pentest_results["successful_attacks"] == 0
+        ), f"Successful penetration attacks: {pentest_results['successful_attacks']}"
 
         # Verify high security effectiveness
-        assert pentest_results["security_effectiveness"] >= 99.9, (
-            f"Security effectiveness below target: {pentest_results['security_effectiveness']:.1f}% < 99.9%"
-        )
+        assert (
+            pentest_results["security_effectiveness"] >= 99.9
+        ), f"Security effectiveness below target: {pentest_results['security_effectiveness']:.1f}% < 99.9%"
 
     def test_medical_data_protection_validation(
         self, client: TestClient, auth_headers: dict[str, dict[str, str]]
@@ -599,24 +599,24 @@ class TestGroup3CCompleteSecurityValidation:
         )
 
         # Verify comprehensive medical data testing
-        assert medical_results["protection_tests"] >= 15, (
-            f"Insufficient medical protection tests: {medical_results['protection_tests']} < 15"
-        )
+        assert (
+            medical_results["protection_tests"] >= 15
+        ), f"Insufficient medical protection tests: {medical_results['protection_tests']} < 15"
 
         # Verify no privacy violations
-        assert medical_results["privacy_violations"] == 0, (
-            f"Medical privacy violations found: {medical_results['privacy_violations']}"
-        )
+        assert (
+            medical_results["privacy_violations"] == 0
+        ), f"Medical privacy violations found: {medical_results['privacy_violations']}"
 
         # Verify >99.9% confidentiality score
-        assert medical_results["confidentiality_score"] >= 99.9, (
-            f"Medical confidentiality below target: {medical_results['confidentiality_score']:.1f}% < 99.9%"
-        )
+        assert (
+            medical_results["confidentiality_score"] >= 99.9
+        ), f"Medical confidentiality below target: {medical_results['confidentiality_score']:.1f}% < 99.9%"
 
         # Verify >99.9% integrity score
-        assert medical_results["integrity_score"] >= 99.9, (
-            f"Medical integrity below target: {medical_results['integrity_score']:.1f}% < 99.9%"
-        )
+        assert (
+            medical_results["integrity_score"] >= 99.9
+        ), f"Medical integrity below target: {medical_results['integrity_score']:.1f}% < 99.9%"
 
 
 if __name__ == "__main__":

@@ -59,9 +59,9 @@ class TestAuthenticationEventLogging:
                     "test_password" not in log for log in log_calls
                 )
 
-                assert success_logged or user_logged, (
-                    "Successful login not properly logged"
-                )
+                assert (
+                    success_logged or user_logged
+                ), "Successful login not properly logged"
                 assert password_not_logged, "Password leaked in authentication logs"
 
     def test_failed_login_attempt_logging(self, client: TestClient):
@@ -667,9 +667,9 @@ class TestAuditLogIntegrity:
                     ]
 
                     for pattern in sensitive_patterns:
-                        assert not re.search(pattern, log_entry, re.IGNORECASE), (
-                            f"Sensitive data in log: {pattern}"
-                        )
+                        assert not re.search(
+                            pattern, log_entry, re.IGNORECASE
+                        ), f"Sensitive data in log: {pattern}"
 
     def test_log_timing_consistency(self, client: TestClient, auth_headers):
         """Test that log entries have consistent timing."""
@@ -684,9 +684,9 @@ class TestAuditLogIntegrity:
             # Logs should be generated within reasonable time window
             # This is more of a performance check for logging overhead
             operation_time = end_time - start_time
-            assert operation_time < 1.0, (
-                "Logging causing significant performance impact"
-            )
+            assert (
+                operation_time < 1.0
+            ), "Logging causing significant performance impact"
 
     def test_log_completeness(self, client: TestClient, test_users):
         """Test that all security-relevant events are logged."""
@@ -805,9 +805,9 @@ class TestComplianceReporting:
 
                     # At least some HIPAA elements should be present
                     hipaa_compliance_elements = sum(hipaa_elements.values())
-                    assert hipaa_compliance_elements >= 2, (
-                        "Insufficient HIPAA audit elements"
-                    )
+                    assert (
+                        hipaa_compliance_elements >= 2
+                    ), "Insufficient HIPAA audit elements"
 
     def test_ferpa_audit_trail_generation(self, client: TestClient, auth_headers):
         """Test FERPA-compliant audit trail for educational records."""
@@ -844,9 +844,9 @@ class TestComplianceReporting:
                 }
 
                 ferpa_compliance_elements = sum(ferpa_elements.values())
-                assert ferpa_compliance_elements >= 2, (
-                    "Insufficient FERPA audit elements"
-                )
+                assert (
+                    ferpa_compliance_elements >= 2
+                ), "Insufficient FERPA audit elements"
 
     def test_cross_service_audit_coordination(self, client: TestClient, auth_headers):
         """Test cross-service audit log coordination."""
@@ -916,9 +916,9 @@ class TestComplianceReporting:
         # Validate report structure
         required_sections = ["report_period", "audit_events", "compliance_metrics"]
         for section in required_sections:
-            assert section in compliance_report_structure, (
-                f"Missing compliance report section: {section}"
-            )
+            assert (
+                section in compliance_report_structure
+            ), f"Missing compliance report section: {section}"
 
         # Validate audit event categories
         required_event_types = [
@@ -929,6 +929,6 @@ class TestComplianceReporting:
         ]
 
         for event_type in required_event_types:
-            assert event_type in compliance_report_structure["audit_events"], (
-                f"Missing audit event type: {event_type}"
-            )
+            assert (
+                event_type in compliance_report_structure["audit_events"]
+            ), f"Missing audit event type: {event_type}"

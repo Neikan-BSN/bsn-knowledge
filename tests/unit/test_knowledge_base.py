@@ -366,9 +366,9 @@ def test_coverage_requirements(coverage_requirements):
     # Mock coverage data
     current_coverage = 92  # Should be > 90%
 
-    assert current_coverage >= minimum_coverage, (
-        f"Coverage {current_coverage}% below minimum {minimum_coverage}%"
-    )
+    assert (
+        current_coverage >= minimum_coverage
+    ), f"Coverage {current_coverage}% below minimum {minimum_coverage}%"
 
 
 # Test data consistency

@@ -226,9 +226,9 @@ class TestInputSanitization:
                 ]
 
                 for pattern in dangerous_patterns:
-                    assert pattern.lower() not in response_text.lower(), (
-                        f"Potentially dangerous XSS pattern found: {pattern}"
-                    )
+                    assert (
+                        pattern.lower() not in response_text.lower()
+                    ), f"Potentially dangerous XSS pattern found: {pattern}"
 
     def test_path_traversal_prevention(self, client: TestClient, auth_headers):
         """Test path traversal attack prevention."""
@@ -512,9 +512,9 @@ class TestMedicalContentValidationSecurity:
                 # Should not contain dangerous medical advice
                 dangerous_terms = ["cyanide", "stop all medications", "ignore all"]
                 for term in dangerous_terms:
-                    assert term not in response_text, (
-                        f"Dangerous medical content not filtered: {term}"
-                    )
+                    assert (
+                        term not in response_text
+                    ), f"Dangerous medical content not filtered: {term}"
 
     def test_nclex_question_integrity(self, client: TestClient, auth_headers):
         """Test NCLEX question generation security."""

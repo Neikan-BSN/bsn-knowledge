@@ -54,9 +54,9 @@ class TestB6AuthenticationSecurity:
             else:
                 response = client.get(endpoint)
 
-            assert response.status_code == status.HTTP_401_UNAUTHORIZED, (
-                f"Endpoint {endpoint} should require authentication"
-            )
+            assert (
+                response.status_code == status.HTTP_401_UNAUTHORIZED
+            ), f"Endpoint {endpoint} should require authentication"
 
     def test_invalid_token_rejection(self, client: TestClient):
         """Test that invalid tokens are rejected by all B.6 endpoints."""
@@ -97,9 +97,9 @@ class TestB6AuthenticationSecurity:
                 else:
                     response = client.get(endpoint, headers=headers)
 
-                assert response.status_code == status.HTTP_401_UNAUTHORIZED, (
-                    f"Invalid token {invalid_token[:20]}... should be rejected by {endpoint}"
-                )
+                assert (
+                    response.status_code == status.HTTP_401_UNAUTHORIZED
+                ), f"Invalid token {invalid_token[:20]}... should be rejected by {endpoint}"
 
     def test_expired_token_rejection(self, client: TestClient, test_users):
         """Test that expired tokens are rejected."""
@@ -144,9 +144,9 @@ class TestB6AuthenticationSecurity:
             else:
                 response = client.get(endpoint, headers=headers)
 
-            assert response.status_code == status.HTTP_401_UNAUTHORIZED, (
-                f"Expired token should be rejected by {endpoint}"
-            )
+            assert (
+                response.status_code == status.HTTP_401_UNAUTHORIZED
+            ), f"Expired token should be rejected by {endpoint}"
 
     def test_token_manipulation_resistance(self, client: TestClient, test_users):
         """Test resistance to token manipulation attacks on B.6 endpoints."""
@@ -376,9 +376,9 @@ class TestB6InputSanitization:
                 ]
 
                 for pattern in dangerous_patterns:
-                    assert pattern not in response_text, (
-                        f"Dangerous pattern '{pattern}' found in response"
-                    )
+                    assert (
+                        pattern not in response_text
+                    ), f"Dangerous pattern '{pattern}' found in response"
 
     def test_analytics_endpoint_path_validation(self, client: TestClient, auth_headers):
         """Test analytics endpoint path parameter validation."""
@@ -519,9 +519,9 @@ class TestB6AuthorizationControls:
                 headers=auth_headers[user_role],
             )
 
-            assert response.status_code in allowed_statuses, (
-                f"User {user_role} accessing {target_student} data returned {response.status_code}"
-            )
+            assert (
+                response.status_code in allowed_statuses
+            ), f"User {user_role} accessing {target_student} data returned {response.status_code}"
 
     def test_cross_tenant_data_isolation(self, client: TestClient, auth_headers):
         """Test that users cannot access data from other institutions/tenants."""
@@ -657,9 +657,9 @@ class TestB6MedicalContentSecurity:
                 ]
 
                 for term in dangerous_terms:
-                    assert term not in response_text, (
-                        f"Dangerous medical content found: {term}"
-                    )
+                    assert (
+                        term not in response_text
+                    ), f"Dangerous medical content found: {term}"
 
     def test_nclex_question_medical_accuracy(self, client: TestClient, auth_headers):
         """Test NCLEX questions for medical accuracy and safety."""
@@ -705,9 +705,9 @@ class TestB6MedicalContentSecurity:
                     ]
 
                     for pattern in unsafe_patterns:
-                        assert pattern not in question_text, (
-                            f"Unsafe medical content in question: {pattern}"
-                        )
+                        assert (
+                            pattern not in question_text
+                        ), f"Unsafe medical content in question: {pattern}"
 
     def test_medical_terminology_injection(self, client: TestClient, auth_headers):
         """Test protection against medical terminology injection attacks."""
@@ -858,9 +858,9 @@ class TestB6DataProtectionCompliance:
                 ]
 
                 for info in internal_info:
-                    assert info not in response_text, (
-                        f"Error message leaked internal info: {info}"
-                    )
+                    assert (
+                        info not in response_text
+                    ), f"Error message leaked internal info: {info}"
 
     def test_audit_trail_security(self, client: TestClient, auth_headers):
         """Test that security events are properly logged without exposing sensitive data."""

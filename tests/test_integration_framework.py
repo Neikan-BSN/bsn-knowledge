@@ -996,9 +996,9 @@ class TestServiceCommunicationTests:
                 f"Error handling success rate: {error_handling_success_rate:.1%}"
             )
 
-            assert error_handling_success_rate > 0.5, (
-                "At least 50% of error scenarios should be handled correctly"
-            )
+            assert (
+                error_handling_success_rate > 0.5
+            ), "At least 50% of error scenarios should be handled correctly"
 
     @pytest.mark.asyncio
     async def test_int_009_timeout_retry_pattern_validation(
@@ -1144,9 +1144,9 @@ class TestServiceCommunicationTests:
         for result in api_timeout_results:
             if not result.get("timed_out", False):
                 # Non-timeout responses should be reasonably fast
-                assert result["elapsed_time"] < 10.0, (
-                    f"Response took too long: {result['elapsed_time']:.2f}s"
-                )
+                assert (
+                    result["elapsed_time"] < 10.0
+                ), f"Response took too long: {result['elapsed_time']:.2f}s"
 
     @pytest.mark.asyncio
     async def test_int_010_cross_service_logging_monitoring(
@@ -1316,9 +1316,9 @@ class TestServiceCommunicationTests:
         trace_logs = [
             log for log in observability.logs if log.get("trace_id") == trace_id
         ]
-        assert len(trace_logs) >= 2, (
-            "Should have logs from multiple services with same trace ID"
-        )
+        assert (
+            len(trace_logs) >= 2
+        ), "Should have logs from multiple services with same trace ID"
 
         # Verify trace completion
         completed_traces = [
@@ -1340,9 +1340,9 @@ class TestServiceCommunicationTests:
             for result in monitoring_results.values()
             if result.get("available", False)
         )
-        assert available_monitoring > 0, (
-            "At least one monitoring endpoint should be available"
-        )
+        assert (
+            available_monitoring > 0
+        ), "At least one monitoring endpoint should be available"
 
 
 if __name__ == "__main__":

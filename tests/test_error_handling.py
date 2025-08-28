@@ -671,18 +671,18 @@ class TestErrorRecovery:
 
         response_text = response.text.lower()
         for sensitive_term in sensitive_data_indicators:
-            assert sensitive_term not in response_text, (
-                f"Sensitive term '{sensitive_term}' found in error response"
-            )
+            assert (
+                sensitive_term not in response_text
+            ), f"Sensitive term '{sensitive_term}' found in error response"
 
         # Test validation error
         response = client.post("/api/v1/auth/login", json={})
         response_text = response.text.lower()
 
         for sensitive_term in sensitive_data_indicators:
-            assert sensitive_term not in response_text, (
-                f"Sensitive term '{sensitive_term}' found in validation error"
-            )
+            assert (
+                sensitive_term not in response_text
+            ), f"Sensitive term '{sensitive_term}' found in validation error"
 
 
 @pytest.mark.endpoints

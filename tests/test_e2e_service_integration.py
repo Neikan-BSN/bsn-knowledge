@@ -33,9 +33,9 @@ async def test_service_health_monitoring_integration(e2e_service_health_monitor)
 
     # In E2E mode, all services should be healthy (from Group 1A success)
     if TEST_CONFIG["E2E_MODE"]:
-        assert health_status["healthy_count"] == health_status["total_count"], (
-            f"Expected all {expected_service_count} services healthy, got {health_status['healthy_count']}"
-        )
+        assert (
+            health_status["healthy_count"] == health_status["total_count"]
+        ), f"Expected all {expected_service_count} services healthy, got {health_status['healthy_count']}"
 
     # Validate individual service health
     service_results = health_status["services"]
@@ -46,9 +46,9 @@ async def test_service_health_monitoring_integration(e2e_service_health_monitor)
         assert "status" in service_result
 
         if TEST_CONFIG["E2E_MODE"]:
-            assert service_result["status"] == "healthy", (
-                f"Service {service_result['service']} not healthy: {service_result}"
-            )
+            assert (
+                service_result["status"] == "healthy"
+            ), f"Service {service_result['service']} not healthy: {service_result}"
 
 
 @pytest.mark.e2e
@@ -75,12 +75,12 @@ async def test_ragnostic_service_integration(
 
     if TEST_CONFIG["E2E_MODE"]:
         # Real E2E validation
-        assert response.status_code == 200, (
-            f"RAGnostic Orchestrator health check failed: {response.status_code}"
-        )
-        assert response_time <= 200, (
-            f"RAGnostic Orchestrator response time {response_time}ms exceeds 200ms"
-        )
+        assert (
+            response.status_code == 200
+        ), f"RAGnostic Orchestrator health check failed: {response.status_code}"
+        assert (
+            response_time <= 200
+        ), f"RAGnostic Orchestrator response time {response_time}ms exceeds 200ms"
     else:
         # Mock validation
         assert response.status_code == 200
@@ -95,12 +95,12 @@ async def test_ragnostic_service_integration(
     performance_monitor_e2e.record_service_response("ragnostic_storage", response_time)
 
     if TEST_CONFIG["E2E_MODE"]:
-        assert response.status_code == 200, (
-            f"RAGnostic Storage health check failed: {response.status_code}"
-        )
-        assert response_time <= 200, (
-            f"RAGnostic Storage response time {response_time}ms exceeds 200ms"
-        )
+        assert (
+            response.status_code == 200
+        ), f"RAGnostic Storage health check failed: {response.status_code}"
+        assert (
+            response_time <= 200
+        ), f"RAGnostic Storage response time {response_time}ms exceeds 200ms"
 
     # Test RAGnostic Nursing Processor
     processor_url = E2E_SERVICES_CONFIG["ragnostic_nursing_processor"]["url"]
@@ -114,12 +114,12 @@ async def test_ragnostic_service_integration(
     )
 
     if TEST_CONFIG["E2E_MODE"]:
-        assert response.status_code == 200, (
-            f"RAGnostic Processor health check failed: {response.status_code}"
-        )
-        assert response_time <= 200, (
-            f"RAGnostic Processor response time {response_time}ms exceeds 200ms"
-        )
+        assert (
+            response.status_code == 200
+        ), f"RAGnostic Processor health check failed: {response.status_code}"
+        assert (
+            response_time <= 200
+        ), f"RAGnostic Processor response time {response_time}ms exceeds 200ms"
 
     performance_monitor_e2e.stop()
     performance_monitor_e2e.assert_performance_targets()
@@ -145,12 +145,12 @@ async def test_bsn_knowledge_service_integration(
     performance_monitor_e2e.record_service_response("bsn_knowledge", response_time)
 
     if TEST_CONFIG["E2E_MODE"]:
-        assert response.status_code == 200, (
-            f"BSN Knowledge API health check failed: {response.status_code}"
-        )
-        assert response_time <= 200, (
-            f"BSN Knowledge API response time {response_time}ms exceeds 200ms"
-        )
+        assert (
+            response.status_code == 200
+        ), f"BSN Knowledge API health check failed: {response.status_code}"
+        assert (
+            response_time <= 200
+        ), f"BSN Knowledge API response time {response_time}ms exceeds 200ms"
 
     # Test BSN Analytics service
     analytics_url = E2E_SERVICES_CONFIG["bsn_analytics"]["url"]
@@ -162,12 +162,12 @@ async def test_bsn_knowledge_service_integration(
     performance_monitor_e2e.record_service_response("bsn_analytics", response_time)
 
     if TEST_CONFIG["E2E_MODE"]:
-        assert response.status_code == 200, (
-            f"BSN Analytics health check failed: {response.status_code}"
-        )
-        assert response_time <= 200, (
-            f"BSN Analytics response time {response_time}ms exceeds 200ms"
-        )
+        assert (
+            response.status_code == 200
+        ), f"BSN Analytics health check failed: {response.status_code}"
+        assert (
+            response_time <= 200
+        ), f"BSN Analytics response time {response_time}ms exceeds 200ms"
 
     performance_monitor_e2e.stop()
     performance_monitor_e2e.assert_performance_targets()
@@ -189,9 +189,9 @@ async def test_umls_mock_service_integration(
     response = await e2e_pipeline_client.get(f"{umls_url}/health")
 
     if TEST_CONFIG["E2E_MODE"]:
-        assert response.status_code == 200, (
-            f"UMLS Mock service health check failed: {response.status_code}"
-        )
+        assert (
+            response.status_code == 200
+        ), f"UMLS Mock service health check failed: {response.status_code}"
 
     # Test medical terminology validation
     test_terms = [
@@ -202,15 +202,15 @@ async def test_umls_mock_service_integration(
     accuracy = medical_accuracy_validator.validate_umls_terminology(test_terms)
 
     # Should meet Group 1A baseline of 99.5% accuracy
-    assert accuracy >= TEST_CONFIG["MEDICAL_ACCURACY_THRESHOLD"], (
-        f"UMLS accuracy {accuracy:.3f} below required {TEST_CONFIG['MEDICAL_ACCURACY_THRESHOLD']}"
-    )
+    assert (
+        accuracy >= TEST_CONFIG["MEDICAL_ACCURACY_THRESHOLD"]
+    ), f"UMLS accuracy {accuracy:.3f} below required {TEST_CONFIG['MEDICAL_ACCURACY_THRESHOLD']}"
 
     # Validate accuracy meets Group 1A established baseline
     if TEST_CONFIG["E2E_MODE"]:
-        assert accuracy >= 0.995, (
-            f"UMLS accuracy {accuracy:.3f} below Group 1A baseline of 99.5%"
-        )
+        assert (
+            accuracy >= 0.995
+        ), f"UMLS accuracy {accuracy:.3f} below Group 1A baseline of 99.5%"
 
 
 @pytest.mark.e2e
@@ -236,9 +236,9 @@ async def test_database_connections_integration(e2e_database_connections):
 
         # In E2E mode, connections should be real async engines
         if TEST_CONFIG["E2E_MODE"]:
-            assert hasattr(pg_connections[db_name], "dispose"), (
-                f"Invalid PostgreSQL connection for {db_name}"
-            )
+            assert hasattr(
+                pg_connections[db_name], "dispose"
+            ), f"Invalid PostgreSQL connection for {db_name}"
 
 
 @pytest.mark.e2e
@@ -266,12 +266,12 @@ async def test_service_response_time_baselines(
 
             if TEST_CONFIG["E2E_MODE"]:
                 # Validate against Group 1A baseline (82.5ms avg, 156ms max)
-                assert response_time <= 200, (
-                    f"Service {service_name} response time {response_time:.1f}ms exceeds 200ms baseline"
-                )
-                assert response.status_code == 200, (
-                    f"Service {service_name} health check failed: {response.status_code}"
-                )
+                assert (
+                    response_time <= 200
+                ), f"Service {service_name} response time {response_time:.1f}ms exceeds 200ms baseline"
+                assert (
+                    response.status_code == 200
+                ), f"Service {service_name} health check failed: {response.status_code}"
 
         except Exception as e:
             if TEST_CONFIG["E2E_MODE"]:
@@ -284,15 +284,15 @@ async def test_service_response_time_baselines(
 
     # Validate overall performance targets
     if TEST_CONFIG["E2E_MODE"]:
-        assert report["performance_targets_met"], (
-            f"Performance targets not met: {report['execution_time_ms']:.1f}ms > {TEST_CONFIG['PERFORMANCE_TARGET_MS']}ms"
-        )
+        assert report[
+            "performance_targets_met"
+        ], f"Performance targets not met: {report['execution_time_ms']:.1f}ms > {TEST_CONFIG['PERFORMANCE_TARGET_MS']}ms"
 
         # Validate service response times meet Group 1A baselines
         for service, response_time in report["service_response_times"].items():
-            assert response_time <= 200, (
-                f"Service {service} response time {response_time:.1f}ms exceeds 200ms Group 1A baseline"
-            )
+            assert (
+                response_time <= 200
+            ), f"Service {service} response time {response_time:.1f}ms exceeds 200ms Group 1A baseline"
 
 
 @pytest.mark.e2e
@@ -302,12 +302,12 @@ async def test_orchestration_framework_integration(e2e_test_orchestrator):
     """Test integration with E2E test orchestration framework."""
 
     # Validate orchestrator is properly configured
-    assert hasattr(e2e_test_orchestrator, "config"), (
-        "Orchestrator missing configuration"
-    )
-    assert hasattr(e2e_test_orchestrator, "health_checker"), (
-        "Orchestrator missing health checker"
-    )
+    assert hasattr(
+        e2e_test_orchestrator, "config"
+    ), "Orchestrator missing configuration"
+    assert hasattr(
+        e2e_test_orchestrator, "health_checker"
+    ), "Orchestrator missing health checker"
     assert hasattr(e2e_test_orchestrator, "executor"), "Orchestrator missing executor"
     assert hasattr(e2e_test_orchestrator, "reporter"), "Orchestrator missing reporter"
 
@@ -317,24 +317,24 @@ async def test_orchestration_framework_integration(e2e_test_orchestrator):
     if TEST_CONFIG["E2E_MODE"]:
         assert "services" in config, "Orchestrator missing services configuration"
         assert "max_workers" in config, "Orchestrator missing max_workers configuration"
-        assert "medical_accuracy_threshold" in config, (
-            "Orchestrator missing medical accuracy threshold"
-        )
-        assert "performance_target_ms" in config, (
-            "Orchestrator missing performance target"
-        )
+        assert (
+            "medical_accuracy_threshold" in config
+        ), "Orchestrator missing medical accuracy threshold"
+        assert (
+            "performance_target_ms" in config
+        ), "Orchestrator missing performance target"
 
         # Validate medical accuracy threshold from Group 1A
-        assert config["medical_accuracy_threshold"] >= 0.98, (
-            f"Medical accuracy threshold too low: {config['medical_accuracy_threshold']}"
-        )
+        assert (
+            config["medical_accuracy_threshold"] >= 0.98
+        ), f"Medical accuracy threshold too low: {config['medical_accuracy_threshold']}"
 
         # Validate services match Group 1A infrastructure
         expected_services = set(E2E_SERVICES_CONFIG.keys())
         actual_services = set(config["services"].keys())
-        assert expected_services == actual_services, (
-            f"Service mismatch. Expected: {expected_services}, Got: {actual_services}"
-        )
+        assert (
+            expected_services == actual_services
+        ), f"Service mismatch. Expected: {expected_services}, Got: {actual_services}"
 
 
 @pytest.mark.e2e
@@ -369,9 +369,9 @@ async def test_inter_service_communication(
         total_communication_time = (time.time() - start_time) * 1000
 
         # Should meet Group 1A inter-service communication baseline (42.3ms)
-        assert total_communication_time <= 100, (
-            f"Inter-service communication {total_communication_time:.1f}ms exceeds 100ms target"
-        )
+        assert (
+            total_communication_time <= 100
+        ), f"Inter-service communication {total_communication_time:.1f}ms exceeds 100ms target"
 
         performance_monitor_e2e.record_service_response(
             "inter_service_communication", total_communication_time
@@ -399,9 +399,9 @@ async def test_medical_accuracy_validation_framework(medical_accuracy_validator)
     umls_accuracy = medical_accuracy_validator.validate_umls_terminology(medical_terms)
 
     # Should exceed Group 1A baseline of 99.5%
-    assert umls_accuracy >= TEST_CONFIG["MEDICAL_ACCURACY_THRESHOLD"], (
-        f"UMLS accuracy {umls_accuracy:.3f} below required threshold"
-    )
+    assert (
+        umls_accuracy >= TEST_CONFIG["MEDICAL_ACCURACY_THRESHOLD"]
+    ), f"UMLS accuracy {umls_accuracy:.3f} below required threshold"
 
     # Test NCLEX question quality validation
     sample_questions = [
@@ -422,15 +422,15 @@ async def test_medical_accuracy_validation_framework(medical_accuracy_validator)
         sample_questions
     )
 
-    assert quality_results["meets_standards"], (
-        f"NCLEX question quality below standards: {quality_results['quality_score']:.2f}"
-    )
+    assert quality_results[
+        "meets_standards"
+    ], f"NCLEX question quality below standards: {quality_results['quality_score']:.2f}"
 
     # Test overall medical accuracy
     overall_accuracy = medical_accuracy_validator.get_overall_medical_accuracy()
-    assert overall_accuracy >= TEST_CONFIG["MEDICAL_ACCURACY_THRESHOLD"], (
-        f"Overall medical accuracy {overall_accuracy:.3f} below required threshold"
-    )
+    assert (
+        overall_accuracy >= TEST_CONFIG["MEDICAL_ACCURACY_THRESHOLD"]
+    ), f"Overall medical accuracy {overall_accuracy:.3f} below required threshold"
 
     # Assert all medical accuracy requirements are met
     medical_accuracy_validator.assert_medical_accuracy_requirements()

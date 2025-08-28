@@ -1127,15 +1127,15 @@ async def test_group_3b_advanced_database_performance():
     results = await tester.run_advanced_database_performance_test()
 
     # Validate performance targets
-    assert results["queries_per_second"] >= 500, (
-        f"Database performance target not met: {results['queries_per_second']:.1f} < 500 queries/sec"
-    )
-    assert results["medical_accuracy_percent"] >= 98.0, (
-        f"Medical accuracy target not met: {results['medical_accuracy_percent']:.1f}% < 98%"
-    )
-    assert results["success_rate_percent"] >= 95.0, (
-        f"Success rate too low: {results['success_rate_percent']:.1f}% < 95%"
-    )
+    assert (
+        results["queries_per_second"] >= 500
+    ), f"Database performance target not met: {results['queries_per_second']:.1f} < 500 queries/sec"
+    assert (
+        results["medical_accuracy_percent"] >= 98.0
+    ), f"Medical accuracy target not met: {results['medical_accuracy_percent']:.1f}% < 98%"
+    assert (
+        results["success_rate_percent"] >= 95.0
+    ), f"Success rate too low: {results['success_rate_percent']:.1f}% < 95%"
 
 
 @pytest.mark.asyncio
@@ -1145,15 +1145,15 @@ async def test_group_3b_advanced_network_latency():
     results = await tester.run_advanced_network_latency_test()
 
     # Validate network latency targets
-    assert results["ragnostic_bsn_latency_ms"] <= 50, (
-        f"Network latency target not met: {results['ragnostic_bsn_latency_ms']:.1f}ms > 50ms"
-    )
-    assert results["service_communication_p95_ms"] <= 200, (
-        f"P95 latency target not met: {results['service_communication_p95_ms']:.1f}ms > 200ms"
-    )
-    assert results["network_resilience_score"] >= 0.8, (
-        f"Network resilience too low: {results['network_resilience_score']:.3f} < 0.8"
-    )
+    assert (
+        results["ragnostic_bsn_latency_ms"] <= 50
+    ), f"Network latency target not met: {results['ragnostic_bsn_latency_ms']:.1f}ms > 50ms"
+    assert (
+        results["service_communication_p95_ms"] <= 200
+    ), f"P95 latency target not met: {results['service_communication_p95_ms']:.1f}ms > 200ms"
+    assert (
+        results["network_resilience_score"] >= 0.8
+    ), f"Network resilience too low: {results['network_resilience_score']:.3f} < 0.8"
 
 
 @pytest.mark.asyncio
@@ -1163,15 +1163,15 @@ async def test_group_3b_context7_integration():
     results = await tester.run_context7_integration_test()
 
     # Validate Context7 integration
-    assert results["k6_load_test_score"] >= 0.7, (
-        f"k6 integration score too low: {results['k6_load_test_score']:.3f} < 0.7"
-    )
-    assert results["prometheus_metrics_collected"] >= 50, (
-        f"Too few Prometheus metrics: {results['prometheus_metrics_collected']} < 50"
-    )
-    assert results["jaeger_traces_analyzed"] >= 20, (
-        f"Too few Jaeger traces: {results['jaeger_traces_analyzed']} < 20"
-    )
+    assert (
+        results["k6_load_test_score"] >= 0.7
+    ), f"k6 integration score too low: {results['k6_load_test_score']:.3f} < 0.7"
+    assert (
+        results["prometheus_metrics_collected"] >= 50
+    ), f"Too few Prometheus metrics: {results['prometheus_metrics_collected']} < 50"
+    assert (
+        results["jaeger_traces_analyzed"] >= 20
+    ), f"Too few Jaeger traces: {results['jaeger_traces_analyzed']} < 20"
 
 
 @pytest.mark.asyncio
@@ -1182,18 +1182,18 @@ async def test_group_3b_comprehensive_performance_suite():
 
     # Validate comprehensive performance targets
     assert result.all_targets_met, "Not all Group 3B performance targets were met"
-    assert result.database_queries_per_second >= 500, (
-        f"Database performance: {result.database_queries_per_second:.1f} < 500 queries/sec"
-    )
-    assert result.ragnostic_bsn_latency_ms <= 50, (
-        f"Network latency: {result.ragnostic_bsn_latency_ms:.1f}ms > 50ms"
-    )
-    assert result.medical_data_accuracy_percent >= 98.0, (
-        f"Medical accuracy: {result.medical_data_accuracy_percent:.1f}% < 98%"
-    )
-    assert result.concurrent_user_capacity >= 150, (
-        f"Concurrent users: {result.concurrent_user_capacity} < 150"
-    )
+    assert (
+        result.database_queries_per_second >= 500
+    ), f"Database performance: {result.database_queries_per_second:.1f} < 500 queries/sec"
+    assert (
+        result.ragnostic_bsn_latency_ms <= 50
+    ), f"Network latency: {result.ragnostic_bsn_latency_ms:.1f}ms > 50ms"
+    assert (
+        result.medical_data_accuracy_percent >= 98.0
+    ), f"Medical accuracy: {result.medical_data_accuracy_percent:.1f}% < 98%"
+    assert (
+        result.concurrent_user_capacity >= 150
+    ), f"Concurrent users: {result.concurrent_user_capacity} < 150"
 
 
 if __name__ == "__main__":
