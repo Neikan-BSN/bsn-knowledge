@@ -4,21 +4,21 @@ Provides fixtures for authentication, database setup, and mock services.
 """
 
 import asyncio
+import os
 import time
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
 from typing import Any
 from unittest.mock import AsyncMock
-import os
 
+import httpx
+import psutil
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-import httpx
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.pool import StaticPool
-import psutil
 
 from src.api.main import app
 from src.auth import (
@@ -483,9 +483,9 @@ def performance_monitor():
             return 0.0
 
         def assert_within_threshold(self, threshold_seconds: float):
-            assert (
-                self.duration <= threshold_seconds
-            ), f"Operation took {self.duration:.3f}s, exceeds threshold of {threshold_seconds}s"
+            assert self.duration <= threshold_seconds, (
+                f"Operation took {self.duration:.3f}s, exceeds threshold of {threshold_seconds}s"
+            )
 
     return PerformanceMonitor()
 
@@ -714,15 +714,15 @@ def performance_monitor_e2e():
         def assert_performance_targets(self):
             """Assert all E2E performance targets are met."""
             # Overall response time target
-            assert (
-                self.duration * 1000 <= TEST_CONFIG["PERFORMANCE_TARGET_MS"]
-            ), f"E2E pipeline took {self.duration*1000:.1f}ms, exceeds {TEST_CONFIG['PERFORMANCE_TARGET_MS']}ms target"
+            assert self.duration * 1000 <= TEST_CONFIG["PERFORMANCE_TARGET_MS"], (
+                f"E2E pipeline took {self.duration * 1000:.1f}ms, exceeds {TEST_CONFIG['PERFORMANCE_TARGET_MS']}ms target"
+            )
 
             # Service response time targets (from Group 1A baseline: 82.5ms avg)
             for service, response_time in self.service_response_times.items():
-                assert (
-                    response_time <= 200
-                ), f"Service {service} response time {response_time:.1f}ms exceeds 200ms target"
+                assert response_time <= 200, (
+                    f"Service {service} response time {response_time:.1f}ms exceeds 200ms target"
+                )
 
         def assert_medical_accuracy_targets(self):
             """Assert medical accuracy requirements are met."""
@@ -735,9 +735,9 @@ def performance_monitor_e2e():
                 if not result["meets_threshold"]
             ]
 
-            assert (
-                len(failed_validations) == 0
-            ), f"Medical accuracy failed for: {[f['type'] for f in failed_validations]}"
+            assert len(failed_validations) == 0, (
+                f"Medical accuracy failed for: {[f['type'] for f in failed_validations]}"
+            )
 
         def get_system_metrics(self):
             """Get current system performance metrics."""
@@ -887,9 +887,9 @@ def medical_accuracy_validator():
             """Assert all medical accuracy requirements are met."""
             overall_accuracy = self.get_overall_medical_accuracy()
 
-            assert (
-                overall_accuracy >= TEST_CONFIG["MEDICAL_ACCURACY_THRESHOLD"]
-            ), f"Medical accuracy {overall_accuracy:.3f} below required {TEST_CONFIG['MEDICAL_ACCURACY_THRESHOLD']}"
+            assert overall_accuracy >= TEST_CONFIG["MEDICAL_ACCURACY_THRESHOLD"], (
+                f"Medical accuracy {overall_accuracy:.3f} below required {TEST_CONFIG['MEDICAL_ACCURACY_THRESHOLD']}"
+            )
 
             # Check individual UMLS validations
             for validation in self.umls_validations:

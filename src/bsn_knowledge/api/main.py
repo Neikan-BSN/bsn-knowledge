@@ -212,7 +212,7 @@ async def create_medical_term(term_data: dict[str, Any]) -> dict[str, Any]:
             if field not in term_data:
                 raise HTTPException(
                     status_code=400, detail=f"Missing required field: {field}"
-                ) from e
+                )
 
         # Mock creation - would implement actual Neo4j creation
         created_term = {

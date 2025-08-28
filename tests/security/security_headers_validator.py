@@ -23,7 +23,7 @@ Compliance Standards:
 
 import re
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastapi.testclient import TestClient
 
@@ -37,8 +37,8 @@ class SecurityHeadersValidator:
         self.compliance_issues = []
 
     def validate_comprehensive_security_headers(
-        self, client: TestClient, endpoints: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+        self, client: TestClient, endpoints: list[str] | None = None
+    ) -> dict[str, Any]:
         """Execute comprehensive security headers validation."""
 
         if endpoints is None:
@@ -82,7 +82,7 @@ class SecurityHeadersValidator:
 
     def _validate_endpoint_headers(
         self, client: TestClient, endpoint: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Validate security headers for a specific endpoint."""
         result = {
             "endpoint": endpoint,
@@ -116,7 +116,7 @@ class SecurityHeadersValidator:
 
     def _get_endpoint_responses(
         self, client: TestClient, endpoint: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get responses for different HTTP methods."""
         responses = {}
 
@@ -153,7 +153,7 @@ class SecurityHeadersValidator:
 
     def _validate_response_headers(
         self, response, endpoint: str, method: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Validate security headers in a response."""
         result = {
             "method": method,
@@ -202,8 +202,8 @@ class SecurityHeadersValidator:
         return result
 
     def _validate_csp_header(
-        self, headers: Dict, header_name: str, endpoint: str, method: str
-    ) -> Dict[str, Any]:
+        self, headers: dict, header_name: str, endpoint: str, method: str
+    ) -> dict[str, Any]:
         """Validate Content Security Policy header."""
         csp_header = headers.get(header_name, "")
 
@@ -271,8 +271,8 @@ class SecurityHeadersValidator:
         }
 
     def _validate_hsts_header(
-        self, headers: Dict, header_name: str, endpoint: str, method: str
-    ) -> Dict[str, Any]:
+        self, headers: dict, header_name: str, endpoint: str, method: str
+    ) -> dict[str, Any]:
         """Validate HTTP Strict Transport Security header."""
         hsts_header = headers.get(header_name, "")
 
@@ -327,8 +327,8 @@ class SecurityHeadersValidator:
         }
 
     def _validate_xframe_header(
-        self, headers: Dict, header_name: str, endpoint: str, method: str
-    ) -> Dict[str, Any]:
+        self, headers: dict, header_name: str, endpoint: str, method: str
+    ) -> dict[str, Any]:
         """Validate X-Frame-Options header."""
         xframe_header = headers.get(header_name, "")
 
@@ -364,8 +364,8 @@ class SecurityHeadersValidator:
         }
 
     def _validate_content_type_options_header(
-        self, headers: Dict, header_name: str, endpoint: str, method: str
-    ) -> Dict[str, Any]:
+        self, headers: dict, header_name: str, endpoint: str, method: str
+    ) -> dict[str, Any]:
         """Validate X-Content-Type-Options header."""
         header_value = headers.get(header_name, "")
 
@@ -393,8 +393,8 @@ class SecurityHeadersValidator:
         }
 
     def _validate_referrer_policy_header(
-        self, headers: Dict, header_name: str, endpoint: str, method: str
-    ) -> Dict[str, Any]:
+        self, headers: dict, header_name: str, endpoint: str, method: str
+    ) -> dict[str, Any]:
         """Validate Referrer Policy header for medical privacy."""
         referrer_header = headers.get(header_name, "")
 
@@ -435,8 +435,8 @@ class SecurityHeadersValidator:
         }
 
     def _validate_permissions_policy_header(
-        self, headers: Dict, header_name: str, endpoint: str, method: str
-    ) -> Dict[str, Any]:
+        self, headers: dict, header_name: str, endpoint: str, method: str
+    ) -> dict[str, Any]:
         """Validate Permissions Policy header."""
         permissions_header = headers.get(header_name, "")
 
@@ -476,8 +476,8 @@ class SecurityHeadersValidator:
         }
 
     def _validate_cors_origin_header(
-        self, headers: Dict, header_name: str, endpoint: str, method: str
-    ) -> Dict[str, Any]:
+        self, headers: dict, header_name: str, endpoint: str, method: str
+    ) -> dict[str, Any]:
         """Validate CORS Access-Control-Allow-Origin header."""
         cors_origin = headers.get(header_name, "")
 
@@ -530,8 +530,8 @@ class SecurityHeadersValidator:
         }
 
     def _validate_cache_control_header(
-        self, headers: Dict, header_name: str, endpoint: str, method: str
-    ) -> Dict[str, Any]:
+        self, headers: dict, header_name: str, endpoint: str, method: str
+    ) -> dict[str, Any]:
         """Validate Cache-Control header for sensitive endpoints."""
         cache_header = headers.get(header_name, "")
 
@@ -585,7 +585,7 @@ class SecurityHeadersValidator:
             "recommendations": recommendations,
         }
 
-    def _check_server_information_disclosure(self, headers: Dict) -> Dict[str, Any]:
+    def _check_server_information_disclosure(self, headers: dict) -> dict[str, Any]:
         """Check for server information disclosure in headers."""
         information_headers = [
             "Server",
@@ -630,7 +630,7 @@ class SecurityHeadersValidator:
             "recommendations": recommendations,
         }
 
-    def _parse_csp_header(self, csp_header: str) -> Dict[str, List[str]]:
+    def _parse_csp_header(self, csp_header: str) -> dict[str, list[str]]:
         """Parse Content Security Policy header into directives."""
         directives = {}
 
@@ -659,8 +659,8 @@ class SecurityHeadersValidator:
 
 
 def validate_security_headers_comprehensive(
-    client: TestClient, endpoints: Optional[List[str]] = None
-) -> Dict[str, Any]:
+    client: TestClient, endpoints: list[str] | None = None
+) -> dict[str, Any]:
     """Comprehensive security headers validation for Group 3C."""
     validator = SecurityHeadersValidator()
     return validator.validate_comprehensive_security_headers(client, endpoints)
@@ -669,7 +669,7 @@ def validate_security_headers_comprehensive(
 # Medical Platform Specific Security Headers Validation
 
 
-def validate_medical_platform_security_headers(client: TestClient) -> Dict[str, Any]:
+def validate_medical_platform_security_headers(client: TestClient) -> dict[str, Any]:
     """Validate medical platform specific security headers."""
     medical_endpoints = [
         "/api/v1/nclex/generate",

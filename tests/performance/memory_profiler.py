@@ -15,15 +15,15 @@ Features:
 import asyncio
 import gc
 import logging
-import psutil
 import statistics
 import tracemalloc
+import weakref
 from collections import deque
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
-from concurrent.futures import ThreadPoolExecutor
-import weakref
+
+import psutil
 
 # Configure logging
 logging.basicConfig(
@@ -52,9 +52,9 @@ class AdvancedMemorySnapshot:
     gc_freed_memory_mb: float
 
     # Advanced profiling
-    tracemalloc_current_mb: Optional[float]
-    tracemalloc_peak_mb: Optional[float]
-    tracemalloc_top_allocations: List[Dict]
+    tracemalloc_current_mb: float | None
+    tracemalloc_peak_mb: float | None
+    tracemalloc_top_allocations: list[dict]
 
     # Resource tracking
     file_descriptors_open: int
@@ -87,10 +87,10 @@ class MemoryLeakPattern:
     confidence_score: float  # 0.0 to 1.0
     growth_rate_mb_per_hour: float
     leak_source: str
-    affected_components: List[str]
-    correlation_metrics: Dict[str, float]
+    affected_components: list[str]
+    correlation_metrics: dict[str, float]
     severity_level: str  # 'low', 'medium', 'high', 'critical'
-    prediction_hours_to_oom: Optional[float]
+    prediction_hours_to_oom: float | None
 
 
 @dataclass
@@ -112,11 +112,11 @@ class MemoryProfilingResults:
 
     # Test configuration
     total_test_duration_hours: float
-    phases_executed: List[EnduranceTestPhase]
+    phases_executed: list[EnduranceTestPhase]
     monitoring_interval_seconds: int
 
     # Memory analysis
-    memory_leak_patterns: List[MemoryLeakPattern]
+    memory_leak_patterns: list[MemoryLeakPattern]
     baseline_memory_mb: float
     peak_memory_mb: float
     final_memory_mb: float
@@ -130,15 +130,15 @@ class MemoryProfilingResults:
 
     # Breaking point analysis
     breaking_point_detected: bool
-    breaking_point_memory_mb: Optional[float]
-    breaking_point_operations_per_sec: Optional[int]
-    system_recovery_time_seconds: Optional[float]
+    breaking_point_memory_mb: float | None
+    breaking_point_operations_per_sec: int | None
+    system_recovery_time_seconds: float | None
 
     # Medical accuracy correlation
     accuracy_vs_memory_correlation: float
     min_accuracy_during_pressure: float
-    accuracy_degradation_points: List[
-        Tuple[datetime, float, float]
+    accuracy_degradation_points: list[
+        tuple[datetime, float, float]
     ]  # timestamp, memory_mb, accuracy
 
     # Resource management
@@ -155,7 +155,7 @@ class MemoryProfilingResults:
     # Advanced diagnostics
     memory_fragmentation_score: float
     heap_utilization_efficiency: float
-    swap_usage_patterns: Dict[str, float]
+    swap_usage_patterns: dict[str, float]
 
     # Quality gates
     meets_8hour_endurance_target: bool
@@ -194,7 +194,7 @@ class MLMemoryLeakDetector:
         """Add memory sample for analysis."""
         self.memory_history.append((timestamp, memory_mb))
 
-    def detect_leak_patterns(self) -> List[MemoryLeakPattern]:
+    def detect_leak_patterns(self) -> list[MemoryLeakPattern]:
         """Detect memory leak patterns using ML techniques."""
         if len(self.memory_history) < 20:
             return []
@@ -223,7 +223,7 @@ class MLMemoryLeakDetector:
 
         return patterns
 
-    def _detect_linear_growth(self) -> Optional[MemoryLeakPattern]:
+    def _detect_linear_growth(self) -> MemoryLeakPattern | None:
         """Detect linear memory growth pattern."""
         if len(self.memory_history) < 10:
             return None
@@ -285,7 +285,7 @@ class MLMemoryLeakDetector:
 
         return None
 
-    def _detect_exponential_growth(self) -> Optional[MemoryLeakPattern]:
+    def _detect_exponential_growth(self) -> MemoryLeakPattern | None:
         """Detect exponential memory growth pattern."""
         if len(self.memory_history) < 20:
             return None
@@ -313,7 +313,7 @@ class MLMemoryLeakDetector:
 
             # Estimate time to OOM for exponential growth
             current_memory = memory_values[-1]
-            available_memory = 8192 - current_memory
+            8192 - current_memory
 
             hours_to_oom = None
             if avg_growth_rate > 1.0 and current_memory > 0:
@@ -340,7 +340,7 @@ class MLMemoryLeakDetector:
 
         return None
 
-    def _detect_cyclical_pattern(self) -> Optional[MemoryLeakPattern]:
+    def _detect_cyclical_pattern(self) -> MemoryLeakPattern | None:
         """Detect cyclical memory usage patterns."""
         if len(self.memory_history) < 50:
             return None
@@ -374,7 +374,7 @@ class MLMemoryLeakDetector:
 
         return None
 
-    def _detect_sporadic_leaks(self) -> Optional[MemoryLeakPattern]:
+    def _detect_sporadic_leaks(self) -> MemoryLeakPattern | None:
         """Detect sporadic memory leak spikes."""
         if len(self.memory_history) < 30:
             return None
@@ -431,9 +431,9 @@ class AdvancedMemoryProfiler:
         self.max_snapshots = max_snapshots
 
         # Monitoring state
-        self.snapshots: List[AdvancedMemorySnapshot] = []
+        self.snapshots: list[AdvancedMemorySnapshot] = []
         self.monitoring_active = False
-        self.monitor_task: Optional[asyncio.Task] = None
+        self.monitor_task: asyncio.Task | None = None
 
         # ML-based leak detection
         self.ml_detector = MLMemoryLeakDetector() if enable_ml_detection else None
@@ -453,7 +453,7 @@ class AdvancedMemoryProfiler:
         logger.info(f"  ML detection: {enable_ml_detection}")
         logger.info(f"  Max snapshots: {max_snapshots}")
 
-    def _capture_baseline_resources(self) -> Dict:
+    def _capture_baseline_resources(self) -> dict:
         """Capture baseline resource state."""
         process = psutil.Process()
 
@@ -631,7 +631,7 @@ class AdvancedMemoryProfiler:
     def _get_oom_score(self) -> int:
         """Get OOM killer score (Linux-specific)."""
         try:
-            with open(f"/proc/{psutil.Process().pid}/oom_score", "r") as f:
+            with open(f"/proc/{psutil.Process().pid}/oom_score") as f:
                 return int(f.read().strip())
         except:
             return 0
@@ -673,14 +673,14 @@ class AdvancedMemoryProfiler:
         for alert in alerts:
             logger.warning(f"Memory Alert: {alert}")
 
-    def analyze_memory_patterns(self) -> List[MemoryLeakPattern]:
+    def analyze_memory_patterns(self) -> list[MemoryLeakPattern]:
         """Analyze memory patterns for leaks."""
         if not self.ml_detector or len(self.snapshots) < 10:
             return []
 
         return self.ml_detector.detect_leak_patterns()
 
-    def generate_memory_report(self) -> Dict:
+    def generate_memory_report(self) -> dict:
         """Generate comprehensive memory analysis report."""
         if not self.snapshots:
             return {"error": "No memory snapshots available"}
@@ -795,7 +795,7 @@ async def run_memory_profiling_test(
     duration_hours: float = 2.0,
     monitoring_interval: int = 30,
     enable_ml_detection: bool = True,
-) -> Dict:
+) -> dict:
     """Run advanced memory profiling test."""
     profiler = AdvancedMemoryProfiler(
         monitoring_interval_seconds=monitoring_interval,

@@ -16,11 +16,9 @@ import statistics
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
 
 import aiohttp
 import psutil
-
 from performance_benchmarks import benchmark_manager
 
 # Configure logging
@@ -44,7 +42,7 @@ class NetworkCall:
     processing_time_ms: float  # Server processing time
     success: bool
     status_code: int
-    error_message: Optional[str]
+    error_message: str | None
     retry_count: int
     payload_size_bytes: int
     response_size_bytes: int
@@ -68,8 +66,8 @@ class NetworkLatencyResults:
 
     # Test Configuration
     test_duration_minutes: float
-    network_conditions_tested: List[str]
-    services_tested: List[str]
+    network_conditions_tested: list[str]
+    services_tested: list[str]
     total_network_calls: int
 
     # Internal Service Communication
@@ -83,12 +81,12 @@ class NetworkLatencyResults:
     external_api_avg_latency_ms: float
     external_api_p95_latency_ms: float
     external_api_timeout_rate: float
-    umls_api_performance: Dict[str, float]
-    openai_api_performance: Dict[str, float]
+    umls_api_performance: dict[str, float]
+    openai_api_performance: dict[str, float]
 
     # Network Condition Impact
-    baseline_performance: Dict[str, float]
-    degraded_performance: Dict[str, float]
+    baseline_performance: dict[str, float]
+    degraded_performance: dict[str, float]
     network_resilience_score: float
     packet_loss_tolerance: float
 
@@ -149,7 +147,7 @@ class NetworkLatencyTester:
         self.simulate_network_conditions = simulate_network_conditions
 
         # Test state tracking
-        self.network_calls: List[NetworkCall] = []
+        self.network_calls: list[NetworkCall] = []
         self.network_conditions = self._define_network_conditions()
 
         # Network monitoring
@@ -161,7 +159,7 @@ class NetworkLatencyTester:
         logger.info(f"  Test Duration: {test_duration_minutes} minutes")
         logger.info(f"  Simulate Network Conditions: {simulate_network_conditions}")
 
-    def _define_network_conditions(self) -> List[NetworkCondition]:
+    def _define_network_conditions(self) -> list[NetworkCondition]:
         """Define various network conditions for testing."""
         return [
             NetworkCondition(
@@ -260,7 +258,7 @@ class NetworkLatencyTester:
 
         return results
 
-    async def _test_baseline_network_performance(self) -> Dict:
+    async def _test_baseline_network_performance(self) -> dict:
         """Test baseline network performance under optimal conditions."""
         logger.info("Testing baseline internal and external service communication...")
 
@@ -288,7 +286,7 @@ class NetworkLatencyTester:
 
     async def _test_internal_service_communication(
         self, session: aiohttp.ClientSession
-    ) -> List[NetworkCall]:
+    ) -> list[NetworkCall]:
         """Test communication between internal services."""
         calls = []
 
@@ -344,7 +342,7 @@ class NetworkLatencyTester:
 
     async def _test_external_api_communication(
         self, session: aiohttp.ClientSession
-    ) -> List[NetworkCall]:
+    ) -> list[NetworkCall]:
         """Test communication with external APIs."""
         calls = []
 
@@ -392,7 +390,7 @@ class NetworkLatencyTester:
     async def _execute_network_call(
         self,
         session: aiohttp.ClientSession,
-        scenario: Dict,
+        scenario: dict,
         service_type: str,
         call_id: str,
     ) -> NetworkCall:
@@ -443,7 +441,7 @@ class NetworkLatencyTester:
                                     0.5 * (attempt + 1)
                                 )  # Exponential backoff
 
-                except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+                except (TimeoutError, aiohttp.ClientError) as e:
                     error_message = str(e)
                     retry_count += 1
                     if attempt < 2:
@@ -478,7 +476,7 @@ class NetworkLatencyTester:
             response_size_bytes=response_size,
         )
 
-    async def _test_network_conditions(self) -> Dict:
+    async def _test_network_conditions(self) -> dict:
         """Test performance under various simulated network conditions."""
         condition_results = {}
 
@@ -497,7 +495,7 @@ class NetworkLatencyTester:
 
         return condition_results
 
-    async def _simulate_network_condition(self, condition: NetworkCondition) -> Dict:
+    async def _simulate_network_condition(self, condition: NetworkCondition) -> dict:
         """Simulate specific network conditions and measure impact."""
         calls = []
 
@@ -592,7 +590,7 @@ class NetworkLatencyTester:
             "calls": calls,
         }
 
-    async def _test_timeout_and_retry_patterns(self) -> Dict:
+    async def _test_timeout_and_retry_patterns(self) -> dict:
         """Test timeout handling and retry pattern effectiveness."""
         logger.info("Testing timeout handling and retry patterns...")
 
@@ -654,7 +652,7 @@ class NetworkLatencyTester:
             "retry_pattern_effectiveness": 0.85,  # Simulated effectiveness score
         }
 
-    async def _test_concurrent_connection_impact(self) -> Dict:
+    async def _test_concurrent_connection_impact(self) -> dict:
         """Test impact of concurrent connections on latency."""
         logger.info("Testing concurrent connection impact...")
 
@@ -734,7 +732,7 @@ class NetworkLatencyTester:
             "concurrency_impact_percent": concurrency_impact,
         }
 
-    async def _test_bandwidth_optimization(self) -> Dict:
+    async def _test_bandwidth_optimization(self) -> dict:
         """Test bandwidth usage optimization."""
         logger.info("Testing bandwidth usage and optimization...")
 
@@ -813,11 +811,11 @@ class NetworkLatencyTester:
 
     async def _analyze_network_latency_results(
         self,
-        baseline_results: Dict,
-        condition_results: Dict,
-        timeout_results: Dict,
-        concurrency_results: Dict,
-        bandwidth_results: Dict,
+        baseline_results: dict,
+        condition_results: dict,
+        timeout_results: dict,
+        concurrency_results: dict,
+        bandwidth_results: dict,
     ) -> NetworkLatencyResults:
         """Analyze comprehensive network latency test results."""
 
@@ -891,7 +889,7 @@ class NetworkLatencyTester:
         # Find worst performing condition
         worst_condition = None
         worst_latency = 0
-        for condition_name, result in condition_results.items():
+        for _condition_name, result in condition_results.items():
             if result["avg_latency"] > worst_latency:
                 worst_latency = result["avg_latency"]
                 worst_condition = result

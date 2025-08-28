@@ -39,10 +39,10 @@ SECURITY_TEST_LEVELS = {
 # Import all security test modules for convenience
 try:
     from . import (
-        access_control_tests,
-        auth_security_tests,
-        data_protection_tests,
-        injection_prevention_tests,
+        access_control_tests,  # noqa: F401
+        auth_security_tests,  # noqa: F401
+        data_protection_tests,  # noqa: F401
+        injection_prevention_tests,  # noqa: F401
     )
 except ImportError:
     # Handle import errors gracefully during development

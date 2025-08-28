@@ -208,7 +208,9 @@ class RAGnosticClient:
                             raise Exception(
                                 f"RAGnostic API error: {e.response.status_code}"
                             ) from e
-                        raise ConnectionError("Failed to connect to RAGnostic service") from e
+                        raise ConnectionError(
+                            "Failed to connect to RAGnostic service"
+                        ) from e
 
                     # Exponential backoff
                     wait_time = 2**attempt

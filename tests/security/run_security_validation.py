@@ -27,7 +27,7 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import pytest
 from rich.console import Console
@@ -48,10 +48,10 @@ class SecurityTestRunner:
     def run_security_tests(
         self,
         level: str = "standard",
-        compliance: List[str] = None,
-        output_file: Optional[str] = None,
+        compliance: list[str] = None,
+        output_file: str | None = None,
         verbose: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Execute comprehensive security test suite.
 
@@ -151,7 +151,7 @@ class SecurityTestRunner:
 
         return report
 
-    def _get_test_config(self, level: str, compliance: List[str]) -> Dict[str, Any]:
+    def _get_test_config(self, level: str, compliance: list[str]) -> dict[str, Any]:
         """Generate test configuration based on security level and compliance."""
         base_config = {
             "security_level": level,
@@ -197,7 +197,7 @@ class SecurityTestRunner:
 
         return base_config
 
-    def _run_authentication_tests(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    def _run_authentication_tests(self, config: dict[str, Any]) -> dict[str, Any]:
         """Execute SEC-001: Authentication Security Testing."""
         # Run pytest for authentication tests
         pytest_args = [
@@ -227,7 +227,7 @@ class SecurityTestRunner:
             "performance_impact": "minimal",
         }
 
-    def _run_input_validation_tests(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    def _run_input_validation_tests(self, config: dict[str, Any]) -> dict[str, Any]:
         """Execute SEC-002: Input Validation and Sanitization."""
         pytest_args = [
             "tests/security/injection_prevention_tests.py",
@@ -254,7 +254,7 @@ class SecurityTestRunner:
             "payload_count_tested": config.get("injection_payload_count", 0),
         }
 
-    def _run_authorization_tests(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    def _run_authorization_tests(self, config: dict[str, Any]) -> dict[str, Any]:
         """Execute SEC-003: Authorization and Access Control."""
         pytest_args = [
             "tests/security/access_control_tests.py",
@@ -279,7 +279,7 @@ class SecurityTestRunner:
             "authorization_matrix": config.get("authorization_matrix_size", "unknown"),
         }
 
-    def _run_encryption_tests(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    def _run_encryption_tests(self, config: dict[str, Any]) -> dict[str, Any]:
         """Execute SEC-004: Data Encryption in Transit."""
         pytest_args = [
             "tests/security/data_protection_tests.py::TestDataEncryptionInTransit",
@@ -303,7 +303,7 @@ class SecurityTestRunner:
             "key_management": "secure",
         }
 
-    def _run_security_headers_tests(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    def _run_security_headers_tests(self, config: dict[str, Any]) -> dict[str, Any]:
         """Execute SEC-005: Security Headers and CORS Validation."""
         # Create dedicated security headers test
         pytest_args = [
@@ -328,7 +328,7 @@ class SecurityTestRunner:
             "content_type_validation": "secured",
         }
 
-    def _run_injection_tests(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    def _run_injection_tests(self, config: dict[str, Any]) -> dict[str, Any]:
         """Execute SEC-006: SQL Injection Prevention (Comprehensive)."""
         pytest_args = [
             "tests/security/injection_prevention_tests.py::TestSQLInjectionPrevention",
@@ -355,7 +355,7 @@ class SecurityTestRunner:
             "second_order_prevention": "validated",
         }
 
-    def _run_audit_logging_tests(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    def _run_audit_logging_tests(self, config: dict[str, Any]) -> dict[str, Any]:
         """Execute SEC-007: Security Audit Logging."""
         # Create dedicated audit logging test
         pytest_args = [
@@ -381,7 +381,7 @@ class SecurityTestRunner:
             "cross_service_audit": "coordinated",
         }
 
-    def _run_dos_protection_tests(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    def _run_dos_protection_tests(self, config: dict[str, Any]) -> dict[str, Any]:
         """Execute Rate Limiting and DoS Protection Tests."""
         pytest_args = [
             "tests/security/rate_limiting_dos_tests.py",
@@ -409,7 +409,7 @@ class SecurityTestRunner:
             "bypass_prevention": "comprehensive",
         }
 
-    def _run_cross_service_tests(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    def _run_cross_service_tests(self, config: dict[str, Any]) -> dict[str, Any]:
         """Execute Cross-Service Security Tests."""
         pytest_args = [
             "tests/security/cross_service_security_tests.py",
@@ -437,8 +437,8 @@ class SecurityTestRunner:
         }
 
     def _generate_security_report(
-        self, level: str, compliance: List[str]
-    ) -> Dict[str, Any]:
+        self, level: str, compliance: list[str]
+    ) -> dict[str, Any]:
         """Generate comprehensive security validation report."""
         # Calculate overall security score
         passed_tests = sum(
@@ -525,7 +525,7 @@ class SecurityTestRunner:
 
         return report
 
-    def _calculate_auth_metrics(self) -> Dict[str, Any]:
+    def _calculate_auth_metrics(self) -> dict[str, Any]:
         """Calculate authentication security metrics."""
         auth_results = self.test_results.get("SEC-001", {})
         return {
@@ -543,7 +543,7 @@ class SecurityTestRunner:
             else 0,
         }
 
-    def _calculate_validation_metrics(self) -> Dict[str, Any]:
+    def _calculate_validation_metrics(self) -> dict[str, Any]:
         """Calculate input validation metrics."""
         input_results = self.test_results.get("SEC-002", {})
         return {
@@ -561,7 +561,7 @@ class SecurityTestRunner:
             else 0,
         }
 
-    def _calculate_authz_metrics(self) -> Dict[str, Any]:
+    def _calculate_authz_metrics(self) -> dict[str, Any]:
         """Calculate authorization metrics."""
         authz_results = self.test_results.get("SEC-003", {})
         return {
@@ -576,7 +576,7 @@ class SecurityTestRunner:
             else 0,
         }
 
-    def _calculate_encryption_metrics(self) -> Dict[str, Any]:
+    def _calculate_encryption_metrics(self) -> dict[str, Any]:
         """Calculate encryption metrics."""
         encrypt_results = self.test_results.get("SEC-004", {})
         return {
@@ -591,7 +591,7 @@ class SecurityTestRunner:
             else 0,
         }
 
-    def _calculate_headers_metrics(self) -> Dict[str, Any]:
+    def _calculate_headers_metrics(self) -> dict[str, Any]:
         """Calculate security headers metrics."""
         headers_results = self.test_results.get("SEC-005", {})
         return {
@@ -606,7 +606,7 @@ class SecurityTestRunner:
             else 0,
         }
 
-    def _calculate_injection_metrics(self) -> Dict[str, Any]:
+    def _calculate_injection_metrics(self) -> dict[str, Any]:
         """Calculate injection prevention metrics."""
         injection_results = self.test_results.get("SEC-006", {})
         return {
@@ -621,7 +621,7 @@ class SecurityTestRunner:
             else 0,
         }
 
-    def _calculate_audit_metrics(self) -> Dict[str, Any]:
+    def _calculate_audit_metrics(self) -> dict[str, Any]:
         """Calculate audit logging metrics."""
         audit_results = self.test_results.get("SEC-007", {})
         return {
@@ -636,7 +636,7 @@ class SecurityTestRunner:
             else 0,
         }
 
-    def _calculate_dos_metrics(self) -> Dict[str, Any]:
+    def _calculate_dos_metrics(self) -> dict[str, Any]:
         """Calculate DoS protection metrics."""
         dos_results = self.test_results.get("DOS-PROTECTION", {})
         return {
@@ -654,7 +654,7 @@ class SecurityTestRunner:
             else 0,
         }
 
-    def _calculate_cross_service_metrics(self) -> Dict[str, Any]:
+    def _calculate_cross_service_metrics(self) -> dict[str, Any]:
         """Calculate cross-service security metrics."""
         cross_results = self.test_results.get("CROSS-SERVICE", {})
         return {
@@ -672,7 +672,7 @@ class SecurityTestRunner:
             else 0,
         }
 
-    def _validate_compliance(self, standards: List[str]) -> Dict[str, Any]:
+    def _validate_compliance(self, standards: list[str]) -> dict[str, Any]:
         """Validate compliance with security standards."""
         compliance_results = {}
 
@@ -688,7 +688,7 @@ class SecurityTestRunner:
 
         return compliance_results
 
-    def _check_hipaa_compliance(self) -> Dict[str, Any]:
+    def _check_hipaa_compliance(self) -> dict[str, Any]:
         """Check HIPAA compliance for medical data protection."""
         return {
             "medical_data_protection": "compliant",
@@ -698,7 +698,7 @@ class SecurityTestRunner:
             "data_breach_prevention": "validated",
         }
 
-    def _check_ferpa_compliance(self) -> Dict[str, Any]:
+    def _check_ferpa_compliance(self) -> dict[str, Any]:
         """Check FERPA compliance for educational records."""
         return {
             "educational_records_protection": "compliant",
@@ -707,7 +707,7 @@ class SecurityTestRunner:
             "consent_management": "tracked",
         }
 
-    def _check_gdpr_compliance(self) -> Dict[str, Any]:
+    def _check_gdpr_compliance(self) -> dict[str, Any]:
         """Check GDPR compliance for data privacy."""
         return {
             "data_protection_by_design": "implemented",
@@ -716,7 +716,7 @@ class SecurityTestRunner:
             "breach_notification": "automated",
         }
 
-    def _check_sox_compliance(self) -> Dict[str, Any]:
+    def _check_sox_compliance(self) -> dict[str, Any]:
         """Check SOX compliance for financial controls."""
         return {
             "internal_controls": "documented",
@@ -725,7 +725,7 @@ class SecurityTestRunner:
             "change_management": "controlled",
         }
 
-    def _generate_security_recommendations(self) -> List[Dict[str, Any]]:
+    def _generate_security_recommendations(self) -> list[dict[str, Any]]:
         """Generate security improvement recommendations."""
         recommendations = []
 
@@ -754,7 +754,7 @@ class SecurityTestRunner:
 
         return recommendations
 
-    def _save_results(self, report: Dict[str, Any], output_file: str):
+    def _save_results(self, report: dict[str, Any], output_file: str):
         """Save detailed security results to file."""
         output_path = Path(output_file)
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -764,7 +764,7 @@ class SecurityTestRunner:
 
         self.console.print(f"📄 Detailed results saved to: {output_path}")
 
-    def _display_security_summary(self, report: Dict[str, Any], verbose: bool):
+    def _display_security_summary(self, report: dict[str, Any], verbose: bool):
         """Display security validation summary."""
         summary = report["security_validation_report"]
 

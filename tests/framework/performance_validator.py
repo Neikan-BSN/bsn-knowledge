@@ -13,7 +13,7 @@ import logging
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Any
 
 # Configure logging
 logging.basicConfig(
@@ -54,9 +54,9 @@ class PerformanceValidationResult:
     performance_degradation_acceptable: bool
 
     # Validation Summary
-    critical_issues: List[str]
-    warnings: List[str]
-    recommendations: List[str]
+    critical_issues: list[str]
+    warnings: list[str]
+    recommendations: list[str]
 
 
 class AdvancedPerformanceValidator:
@@ -77,9 +77,9 @@ class AdvancedPerformanceValidator:
 
     async def validate_group_3b_performance(
         self,
-        database_results: Dict[str, Any],
-        network_results: Dict[str, Any],
-        context7_results: Dict[str, Any],
+        database_results: dict[str, Any],
+        network_results: dict[str, Any],
+        context7_results: dict[str, Any],
     ) -> PerformanceValidationResult:
         """Validate Group 3B advanced performance testing results."""
         logger.info("Starting Group 3B Advanced Performance Validation...")
@@ -120,8 +120,8 @@ class AdvancedPerformanceValidator:
         return validation_result
 
     async def _validate_database_performance(
-        self, results: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, results: dict[str, Any]
+    ) -> dict[str, Any]:
         """Validate database performance against Group 3B targets."""
         validation = {
             "qps_achieved": results.get("queries_per_second", 0),
@@ -180,8 +180,8 @@ class AdvancedPerformanceValidator:
         return validation
 
     async def _validate_network_latency(
-        self, results: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, results: dict[str, Any]
+    ) -> dict[str, Any]:
         """Validate network latency against Group 3B targets."""
         validation = {
             "cross_service_latency_ms": results.get("ragnostic_bsn_latency_ms", 0),
@@ -256,8 +256,8 @@ class AdvancedPerformanceValidator:
         return validation
 
     async def _validate_context7_integration(
-        self, results: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, results: dict[str, Any]
+    ) -> dict[str, Any]:
         """Validate Context7 integration (k6, prometheus, jaeger)."""
         validation = {
             "k6_score": results.get("k6_load_test_score", 0),
@@ -329,9 +329,9 @@ class AdvancedPerformanceValidator:
 
     async def _compile_validation_results(
         self,
-        database_validation: Dict[str, Any],
-        network_validation: Dict[str, Any],
-        context7_validation: Dict[str, Any],
+        database_validation: dict[str, Any],
+        network_validation: dict[str, Any],
+        context7_validation: dict[str, Any],
         duration_minutes: float,
     ) -> PerformanceValidationResult:
         """Compile comprehensive validation results."""
@@ -402,8 +402,8 @@ class AdvancedPerformanceValidator:
         )
 
     def _generate_recommendations(
-        self, db_val: Dict, net_val: Dict, ctx_val: Dict
-    ) -> List[str]:
+        self, db_val: dict, net_val: dict, ctx_val: dict
+    ) -> list[str]:
         """Generate performance improvement recommendations."""
         recommendations = []
 
@@ -575,7 +575,7 @@ class PerformanceTargetValidator:
     @staticmethod
     def validate_database_qps(
         actual_qps: float, target_qps: int = 500
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Validate database queries per second target."""
         meets_target = actual_qps >= target_qps
 
@@ -590,7 +590,7 @@ class PerformanceTargetValidator:
     @staticmethod
     def validate_cross_service_latency(
         actual_ms: float, target_ms: int = 50
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Validate cross-service communication latency target."""
         meets_target = actual_ms <= target_ms
 
@@ -607,7 +607,7 @@ class PerformanceTargetValidator:
     @staticmethod
     def validate_medical_accuracy(
         actual_percent: float, target_percent: float = 98.0
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Validate medical accuracy preservation target."""
         meets_target = actual_percent >= target_percent
 
@@ -622,7 +622,7 @@ class PerformanceTargetValidator:
     @staticmethod
     def validate_concurrent_user_capacity(
         actual_users: int, target_users: int = 150
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Validate concurrent user capacity target."""
         meets_target = actual_users >= target_users
 

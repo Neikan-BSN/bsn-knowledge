@@ -7,13 +7,12 @@ and performance metrics collection during test execution.
 """
 
 import asyncio
-import time
 import statistics
-from typing import List
+import time
 
 import pytest
 
-from tests.conftest import TEST_CONFIG, E2E_SERVICES_CONFIG
+from tests.conftest import E2E_SERVICES_CONFIG, TEST_CONFIG
 
 
 @pytest.mark.e2e
@@ -23,18 +22,18 @@ async def test_performance_monitoring_integration(performance_monitor_e2e):
     """Test performance monitoring framework integration with Group 1A baselines."""
 
     # Test performance monitor initialization
-    assert hasattr(
-        performance_monitor_e2e, "start"
-    ), "Performance monitor missing start method"
-    assert hasattr(
-        performance_monitor_e2e, "stop"
-    ), "Performance monitor missing stop method"
-    assert hasattr(
-        performance_monitor_e2e, "record_service_response"
-    ), "Performance monitor missing service response recording"
-    assert hasattr(
-        performance_monitor_e2e, "assert_performance_targets"
-    ), "Performance monitor missing target assertion"
+    assert hasattr(performance_monitor_e2e, "start"), (
+        "Performance monitor missing start method"
+    )
+    assert hasattr(performance_monitor_e2e, "stop"), (
+        "Performance monitor missing stop method"
+    )
+    assert hasattr(performance_monitor_e2e, "record_service_response"), (
+        "Performance monitor missing service response recording"
+    )
+    assert hasattr(performance_monitor_e2e, "assert_performance_targets"), (
+        "Performance monitor missing target assertion"
+    )
 
     # Test performance monitoring cycle
     performance_monitor_e2e.start()
@@ -57,20 +56,20 @@ async def test_performance_monitoring_integration(performance_monitor_e2e):
 
     # Validate report structure
     assert "execution_time_ms" in report, "Missing execution time in performance report"
-    assert (
-        "service_response_times" in report
-    ), "Missing service response times in report"
+    assert "service_response_times" in report, (
+        "Missing service response times in report"
+    )
     assert "system_metrics" in report, "Missing system metrics in report"
     assert "performance_targets_met" in report, "Missing performance target validation"
 
     # Validate service response times recorded correctly
     for service_name, expected_time in test_operations:
-        assert (
-            service_name in report["service_response_times"]
-        ), f"Service {service_name} not found in performance report"
-        assert (
-            report["service_response_times"][service_name] == expected_time
-        ), f"Incorrect response time recorded for {service_name}"
+        assert service_name in report["service_response_times"], (
+            f"Service {service_name} not found in performance report"
+        )
+        assert report["service_response_times"][service_name] == expected_time, (
+            f"Incorrect response time recorded for {service_name}"
+        )
 
     # Test performance target assertions with Group 1A baselines
     performance_monitor_e2e.assert_performance_targets()
@@ -121,9 +120,9 @@ async def test_service_response_time_baseline_validation(
                     f"{baseline_metrics['target_max_response_ms']}ms target"
                 )
 
-                assert (
-                    response.status_code == 200
-                ), f"Service {service_name} health check failed: {response.status_code}"
+                assert response.status_code == 200, (
+                    f"Service {service_name} health check failed: {response.status_code}"
+                )
 
         except Exception as e:
             if TEST_CONFIG["E2E_MODE"]:
@@ -145,13 +144,13 @@ async def test_service_response_time_baseline_validation(
 
         if TEST_CONFIG["E2E_MODE"]:
             # Compare against Group 1A baselines
-            assert (
-                avg_response_time <= baseline_metrics["target_max_response_ms"]
-            ), f"Average response time {avg_response_time:.1f}ms exceeds target"
+            assert avg_response_time <= baseline_metrics["target_max_response_ms"], (
+                f"Average response time {avg_response_time:.1f}ms exceeds target"
+            )
 
-            assert (
-                max_response_time <= baseline_metrics["target_max_response_ms"]
-            ), f"Maximum response time {max_response_time:.1f}ms exceeds target"
+            assert max_response_time <= baseline_metrics["target_max_response_ms"], (
+                f"Maximum response time {max_response_time:.1f}ms exceeds target"
+            )
 
         # Performance regression test - should be within reasonable range of baselines
         performance_variance = abs(
@@ -220,9 +219,9 @@ async def test_locust_load_testing_framework_integration():
     for scenario in locust_config["scenarios"]:
         required_fields = ["name", "endpoint", "method", "weight"]
         for field in required_fields:
-            assert (
-                field in scenario
-            ), f"Missing {field} in scenario {scenario.get('name', 'unknown')}"
+            assert field in scenario, (
+                f"Missing {field} in scenario {scenario.get('name', 'unknown')}"
+            )
 
         assert scenario["method"] in [
             "GET",
@@ -230,9 +229,9 @@ async def test_locust_load_testing_framework_integration():
             "PUT",
             "DELETE",
         ], f"Invalid HTTP method: {scenario['method']}"
-        assert (
-            0 < scenario["weight"] <= 100
-        ), f"Invalid weight for scenario {scenario['name']}: {scenario['weight']}"
+        assert 0 < scenario["weight"] <= 100, (
+            f"Invalid weight for scenario {scenario['name']}: {scenario['weight']}"
+        )
 
     # Simulate load testing execution
     if TEST_CONFIG["E2E_MODE"]:
@@ -257,18 +256,18 @@ async def test_locust_load_testing_framework_integration():
         }
 
     # Validate load test results meet performance targets
-    assert (
-        load_test_results["failure_rate"] <= 0.05
-    ), f"Load test failure rate {load_test_results['failure_rate']:.3f} exceeds 5% threshold"
+    assert load_test_results["failure_rate"] <= 0.05, (
+        f"Load test failure rate {load_test_results['failure_rate']:.3f} exceeds 5% threshold"
+    )
 
-    assert (
-        load_test_results["average_response_time"] <= 200
-    ), f"Load test average response time {load_test_results['average_response_time']:.1f}ms exceeds 200ms"
+    assert load_test_results["average_response_time"] <= 200, (
+        f"Load test average response time {load_test_results['average_response_time']:.1f}ms exceeds 200ms"
+    )
 
     if TEST_CONFIG["E2E_MODE"]:
-        assert (
-            load_test_results["requests_per_second"] >= 10
-        ), f"Load test throughput {load_test_results['requests_per_second']:.1f} RPS below 10 RPS minimum"
+        assert load_test_results["requests_per_second"] >= 10, (
+            f"Load test throughput {load_test_results['requests_per_second']:.1f} RPS below 10 RPS minimum"
+        )
 
 
 @pytest.mark.e2e
@@ -352,9 +351,9 @@ async def test_performance_regression_testing(performance_monitor_e2e):
         "detailed_analysis": regression_analysis,
     }
 
-    assert regression_report[
-        "overall_performance_acceptable"
-    ], f"Performance regression detected: {regression_report['regressions_detected']} metrics failed"
+    assert regression_report["overall_performance_acceptable"], (
+        f"Performance regression detected: {regression_report['regressions_detected']} metrics failed"
+    )
 
 
 @pytest.mark.e2e
@@ -372,7 +371,7 @@ async def test_concurrent_performance_testing(
     concurrent_users = 10
     requests_per_user = 5
 
-    async def simulate_user_session(user_id: int) -> List[float]:
+    async def simulate_user_session(user_id: int) -> list[float]:
         """Simulate a user session with multiple requests."""
         user_response_times = []
 
@@ -392,9 +391,9 @@ async def test_concurrent_performance_testing(
                 user_response_times.append(response_time)
 
                 if TEST_CONFIG["E2E_MODE"]:
-                    assert (
-                        response.status_code == 200
-                    ), f"User {user_id} request {request_num} failed: {response.status_code}"
+                    assert response.status_code == 200, (
+                        f"User {user_id} request {request_num} failed: {response.status_code}"
+                    )
 
             except Exception:
                 if TEST_CONFIG["E2E_MODE"]:
@@ -454,19 +453,19 @@ async def test_concurrent_performance_testing(
             f"{max_acceptable_avg:.1f}ms threshold (2x baseline)"
         )
 
-        assert (
-            concurrent_max_response <= 1000
-        ), f"Concurrent maximum response time {concurrent_max_response:.1f}ms exceeds 1000ms"
+        assert concurrent_max_response <= 1000, (
+            f"Concurrent maximum response time {concurrent_max_response:.1f}ms exceeds 1000ms"
+        )
 
-        assert (
-            concurrent_p95_response <= 500
-        ), f"Concurrent P95 response time {concurrent_p95_response:.1f}ms exceeds 500ms"
+        assert concurrent_p95_response <= 500, (
+            f"Concurrent P95 response time {concurrent_p95_response:.1f}ms exceeds 500ms"
+        )
 
     # Validate session success rate
     success_rate = successful_sessions / concurrent_users
-    assert (
-        success_rate >= 0.9
-    ), f"Concurrent test success rate {success_rate:.2f} below 90% threshold"
+    assert success_rate >= 0.9, (
+        f"Concurrent test success rate {success_rate:.2f} below 90% threshold"
+    )
 
     performance_monitor_e2e.assert_performance_targets()
 
@@ -509,27 +508,27 @@ async def test_metrics_collection_during_execution(performance_monitor_e2e):
 
     # Test service response time metrics
     for metric_name, expected_value in test_metrics:
-        assert (
-            metric_name in report["service_response_times"]
-        ), f"Missing metric {metric_name} in performance report"
-        assert (
-            report["service_response_times"][metric_name] == expected_value
-        ), f"Incorrect value for metric {metric_name}"
+        assert metric_name in report["service_response_times"], (
+            f"Missing metric {metric_name} in performance report"
+        )
+        assert report["service_response_times"][metric_name] == expected_value, (
+            f"Incorrect value for metric {metric_name}"
+        )
 
     # Test medical accuracy metrics
     assert "medical_accuracy_results" in report, "Missing medical accuracy results"
 
     medical_results = report["medical_accuracy_results"]
-    assert len(medical_results) == len(
-        medical_accuracy_metrics
-    ), "Incorrect number of medical accuracy results"
+    assert len(medical_results) == len(medical_accuracy_metrics), (
+        "Incorrect number of medical accuracy results"
+    )
 
     for result in medical_results:
         assert "type" in result, "Missing type in medical accuracy result"
         assert "accuracy" in result, "Missing accuracy in medical accuracy result"
-        assert (
-            "meets_threshold" in result
-        ), "Missing threshold check in medical accuracy result"
+        assert "meets_threshold" in result, (
+            "Missing threshold check in medical accuracy result"
+        )
 
     # Test system metrics collection
     assert "system_metrics" in report, "Missing system metrics"

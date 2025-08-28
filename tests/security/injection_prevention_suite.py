@@ -23,7 +23,7 @@ Validation Targets:
 
 import time
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from fastapi import status
@@ -40,8 +40,8 @@ class InjectionPreventionSuite:
         self.medical_accuracy_violations = 0
 
     def execute_comprehensive_injection_testing(
-        self, client: TestClient, auth_headers: Dict[str, Dict[str, str]]
-    ) -> Dict[str, Any]:
+        self, client: TestClient, auth_headers: dict[str, dict[str, str]]
+    ) -> dict[str, Any]:
         """Execute comprehensive injection prevention testing."""
 
         test_report = {
@@ -112,8 +112,8 @@ class InjectionPreventionSuite:
         return test_report
 
     def _test_advanced_sql_injection_prevention(
-        self, client: TestClient, auth_headers: Dict
-    ) -> Dict[str, Any]:
+        self, client: TestClient, auth_headers: dict
+    ) -> dict[str, Any]:
         """Test advanced SQL injection prevention patterns."""
         results = {"scenarios": 0, "vulnerabilities": 0, "test_details": []}
 
@@ -206,8 +206,8 @@ class InjectionPreventionSuite:
         return results
 
     def _test_nosql_injection_prevention(
-        self, client: TestClient, auth_headers: Dict
-    ) -> Dict[str, Any]:
+        self, client: TestClient, auth_headers: dict
+    ) -> dict[str, Any]:
         """Test NoSQL injection prevention (MongoDB, Elasticsearch)."""
         results = {"scenarios": 0, "vulnerabilities": 0, "test_details": []}
 
@@ -264,8 +264,8 @@ class InjectionPreventionSuite:
         return results
 
     def _test_comprehensive_xss_prevention(
-        self, client: TestClient, auth_headers: Dict
-    ) -> Dict[str, Any]:
+        self, client: TestClient, auth_headers: dict
+    ) -> dict[str, Any]:
         """Test comprehensive XSS prevention across all contexts."""
         results = {"scenarios": 0, "vulnerabilities": 0, "test_details": []}
 
@@ -350,8 +350,8 @@ class InjectionPreventionSuite:
         return results
 
     def _test_command_injection_prevention(
-        self, client: TestClient, auth_headers: Dict
-    ) -> Dict[str, Any]:
+        self, client: TestClient, auth_headers: dict
+    ) -> dict[str, Any]:
         """Test OS command and template injection prevention."""
         results = {"scenarios": 0, "vulnerabilities": 0, "test_details": []}
 
@@ -423,8 +423,8 @@ class InjectionPreventionSuite:
         return results
 
     def _test_ldap_injection_prevention(
-        self, client: TestClient, auth_headers: Dict
-    ) -> Dict[str, Any]:
+        self, client: TestClient, auth_headers: dict
+    ) -> dict[str, Any]:
         """Test LDAP injection prevention."""
         results = {"scenarios": 0, "vulnerabilities": 0, "test_details": []}
 
@@ -466,8 +466,8 @@ class InjectionPreventionSuite:
         return results
 
     def _test_medical_content_injection_prevention(
-        self, client: TestClient, auth_headers: Dict
-    ) -> Dict[str, Any]:
+        self, client: TestClient, auth_headers: dict
+    ) -> dict[str, Any]:
         """Test injection prevention in medical content contexts."""
         results = {"scenarios": 0, "vulnerabilities": 0, "test_details": []}
 
@@ -518,8 +518,8 @@ class InjectionPreventionSuite:
         return results
 
     def _test_ragnostic_service_injection_prevention(
-        self, client: TestClient, auth_headers: Dict
-    ) -> Dict[str, Any]:
+        self, client: TestClient, auth_headers: dict
+    ) -> dict[str, Any]:
         """Test injection prevention in RAGnostic service interactions."""
         results = {"scenarios": 0, "vulnerabilities": 0, "test_details": []}
 
@@ -544,7 +544,7 @@ class InjectionPreventionSuite:
                 results["scenarios"] += 1
 
                 try:
-                    response = client.post(
+                    client.post(
                         "/api/v1/study-guide/create",
                         json={
                             "topic": f"RAGnostic Search: {payload}",
@@ -580,7 +580,7 @@ class InjectionPreventionSuite:
     def _execute_sql_injection_test(
         self,
         client: TestClient,
-        auth_headers: Dict,
+        auth_headers: dict,
         endpoint_template: str,
         method: str,
         field: str,
@@ -619,7 +619,7 @@ class InjectionPreventionSuite:
             return False
 
     def _execute_nosql_injection_test(
-        self, client: TestClient, auth_headers: Dict, endpoint: str, payload: str
+        self, client: TestClient, auth_headers: dict, endpoint: str, payload: str
     ) -> bool:
         """Execute NoSQL injection test and detect success."""
         try:
@@ -645,7 +645,7 @@ class InjectionPreventionSuite:
     def _execute_xss_test(
         self,
         client: TestClient,
-        auth_headers: Dict,
+        auth_headers: dict,
         endpoint: str,
         field: str,
         payload: str,
@@ -672,7 +672,7 @@ class InjectionPreventionSuite:
             return False
 
     def _execute_command_injection_test(
-        self, client: TestClient, auth_headers: Dict, endpoint: str, payload: str
+        self, client: TestClient, auth_headers: dict, endpoint: str, payload: str
     ) -> bool:
         """Execute command injection test and detect success."""
         try:
@@ -701,7 +701,7 @@ class InjectionPreventionSuite:
             return False
 
     def _execute_medical_injection_test(
-        self, client: TestClient, auth_headers: Dict, endpoint: str, payload: str
+        self, client: TestClient, auth_headers: dict, endpoint: str, payload: str
     ) -> bool:
         """Execute medical content injection test and detect success."""
         try:
@@ -912,7 +912,7 @@ class InjectionPreventionSuite:
 
         return any(pattern in call_data.upper() for pattern in dangerous_patterns)
 
-    def _create_medical_test_data(self, endpoint: str, content: str) -> Dict[str, Any]:
+    def _create_medical_test_data(self, endpoint: str, content: str) -> dict[str, Any]:
         """Create appropriate test data for medical endpoints."""
         base_data = {"competencies": ["AACN_KNOWLEDGE_1"]}
 
@@ -934,8 +934,8 @@ class InjectionPreventionSuite:
 
 
 def execute_comprehensive_injection_prevention_testing(
-    client: TestClient, auth_headers: Dict[str, Dict[str, str]]
-) -> Dict[str, Any]:
+    client: TestClient, auth_headers: dict[str, dict[str, str]]
+) -> dict[str, Any]:
     """Execute comprehensive injection prevention testing for Group 3C."""
     suite = InjectionPreventionSuite()
     return suite.execute_comprehensive_injection_testing(client, auth_headers)

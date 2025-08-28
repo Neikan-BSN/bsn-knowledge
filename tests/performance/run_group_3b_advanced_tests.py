@@ -18,15 +18,16 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 # Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
 
 try:
+    from framework.performance_validator import AdvancedPerformanceValidator
     from performance.test_group_3b_advanced_performance import (
         Group3BAdvancedPerformanceTester,
     )
-    from framework.performance_validator import AdvancedPerformanceValidator
 except ImportError as e:
     logging.error(f"Import error: {e}")
     logging.error(

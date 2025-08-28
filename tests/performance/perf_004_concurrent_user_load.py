@@ -15,12 +15,10 @@ import statistics
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
 
 from locust.env import Environment
 from locust.stats import StatsCSV
 from locust.user import HttpUser, between, task
-
 from performance_benchmarks import benchmark_manager, record_concurrent_users
 
 # Configure logging
@@ -40,8 +38,8 @@ class UserSession:
     last_activity: datetime
     requests_made: int
     errors_encountered: int
-    auth_token: Optional[str]
-    session_data: Dict
+    auth_token: str | None
+    session_data: dict
 
 
 @dataclass
@@ -66,7 +64,7 @@ class ConcurrentUserResults:
     # Error Analysis
     error_rate_percent: float
     success_rate_percent: float
-    error_distribution: Dict[str, int]
+    error_distribution: dict[str, int]
 
     # Session Management
     total_sessions_created: int
@@ -76,9 +74,9 @@ class ConcurrentUserResults:
     auth_failure_rate: float
 
     # Response Time Distribution
-    response_time_distribution: Dict[str, float]
-    slowest_endpoints: List[Dict]
-    fastest_endpoints: List[Dict]
+    response_time_distribution: dict[str, float]
+    slowest_endpoints: list[dict]
+    fastest_endpoints: list[dict]
 
     # Concurrency Analysis
     user_spawn_rate_achieved: float
@@ -145,7 +143,7 @@ class RealisticUserBehavior(HttpUser):
                 self.session_data["authenticated"] = False
                 response.failure(f"Authentication failed: {response.status_code}")
 
-    def _get_user_credentials(self) -> Dict:
+    def _get_user_credentials(self) -> dict:
         """Get user credentials based on user type."""
         user_pools = {
             "student": [
@@ -160,7 +158,7 @@ class RealisticUserBehavior(HttpUser):
         username, password = random.choice(user_pools[self.user_type])
         return {"username": username, "password": password}
 
-    def _get_auth_headers(self) -> Dict[str, str]:
+    def _get_auth_headers(self) -> dict[str, str]:
         """Get authentication headers."""
         if self.auth_token:
             return {"Authorization": f"Bearer {self.auth_token}"}
@@ -408,7 +406,7 @@ class SessionManager:
     """Manages user sessions during concurrent load testing."""
 
     def __init__(self):
-        self.active_sessions: Dict[str, UserSession] = {}
+        self.active_sessions: dict[str, UserSession] = {}
         self.session_stats = {
             "created": 0,
             "active": 0,
@@ -417,7 +415,7 @@ class SessionManager:
         }
 
     def create_session(
-        self, session_id: str, user_type: str, auth_token: Optional[str] = None
+        self, session_id: str, user_type: str, auth_token: str | None = None
     ) -> UserSession:
         """Create a new user session."""
         session = UserSession(
@@ -465,7 +463,7 @@ class SessionManager:
 
         return expired_sessions
 
-    def get_session_statistics(self) -> Dict:
+    def get_session_statistics(self) -> dict:
         """Get session management statistics."""
         avg_duration = 0.0
         if self.session_stats["expired"] > 0:
@@ -627,7 +625,7 @@ class ConcurrentUserTester:
 
             await asyncio.sleep(monitoring_interval)
 
-    def _take_performance_snapshot(self, env: Environment) -> Dict:
+    def _take_performance_snapshot(self, env: Environment) -> dict:
         """Take a performance snapshot."""
         stats = env.stats.total
 
@@ -642,7 +640,7 @@ class ConcurrentUserTester:
             * 100,
         }
 
-    def _collect_final_statistics(self, env: Environment) -> Dict:
+    def _collect_final_statistics(self, env: Environment) -> dict:
         """Collect final test statistics."""
         stats = env.stats.total
         session_stats = self.session_manager.get_session_statistics()
@@ -710,7 +708,7 @@ class ConcurrentUserTester:
         }
 
     async def _analyze_concurrent_user_results(
-        self, final_stats: Dict
+        self, final_stats: dict
     ) -> ConcurrentUserResults:
         """Analyze concurrent user test results."""
         stats = final_stats["locust_stats"]
@@ -850,7 +848,7 @@ class ConcurrentUserTester:
         response_times = [
             snapshot["avg_response_time_ms"] for snapshot in self.performance_data
         ]
-        user_counts = [snapshot["current_users"] for snapshot in self.performance_data]
+        [snapshot["current_users"] for snapshot in self.performance_data]
 
         # Simple correlation check - if response times increase significantly with users
         if len(response_times) >= 10:

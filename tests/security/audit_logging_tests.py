@@ -17,7 +17,7 @@ Audit Coverage:
 import re
 import time
 from datetime import datetime, timedelta
-from typing import Any, Dict
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -59,9 +59,9 @@ class TestAuthenticationEventLogging:
                     "test_password" not in log for log in log_calls
                 )
 
-                assert (
-                    success_logged or user_logged
-                ), "Successful login not properly logged"
+                assert success_logged or user_logged, (
+                    "Successful login not properly logged"
+                )
                 assert password_not_logged, "Password leaked in authentication logs"
 
     def test_failed_login_attempt_logging(self, client: TestClient):
@@ -100,6 +100,7 @@ class TestAuthenticationEventLogging:
 
                 assert failure_logged, "Failed login attempt not logged"
                 assert password_not_logged, "Password leaked in failed login logs"
+                assert username_logged, "Username should be logged for failed attempt"
 
     def test_brute_force_attempt_detection_logging(self, client: TestClient):
         """Test logging of potential brute force attacks."""
@@ -126,7 +127,9 @@ class TestAuthenticationEventLogging:
 
                 # This might not be implemented yet, so we document the expectation
                 # In production, this would be critical security logging
-                pass
+                # For now, we document the requirement but don't fail the test
+                if not brute_force_detected:
+                    pass  # TODO: Implement brute force detection logging
 
     def test_token_refresh_logging(self, client: TestClient, test_users):
         """Test logging of token refresh operations."""
@@ -151,13 +154,13 @@ class TestAuthenticationEventLogging:
                 if mock_logger.info.called:
                     log_calls = [call[0][0] for call in mock_logger.info.call_args_list]
 
-                    refresh_logged = any(
+                    any(
                         "refresh" in log.lower() or "token" in log.lower()
                         for log in log_calls
                     )
 
                     # Should log user context but not token values
-                    user_context_logged = any("admin1" in log for log in log_calls)
+                    any("admin1" in log for log in log_calls)
                     token_not_logged = all(
                         refresh_token not in log for log in log_calls
                     )
@@ -187,13 +190,13 @@ class TestAuthenticationEventLogging:
                 if mock_logger.info.called:
                     log_calls = [call[0][0] for call in mock_logger.info.call_args_list]
 
-                    logout_logged = any(
+                    any(
                         "logout" in log.lower() or "signed out" in log.lower()
                         for log in log_calls
                     )
 
                     # User context should be logged
-                    user_context_logged = any("student1" in log for log in log_calls)
+                    any("student1" in log for log in log_calls)
 
 
 @pytest.mark.security
@@ -216,7 +219,7 @@ class TestAuthorizationEventLogging:
                     call[0][0] for call in mock_logger.warning.call_args_list
                 ]
 
-                access_denied_logged = any(
+                any(
                     "access denied" in log.lower()
                     or "forbidden" in log.lower()
                     or "403" in log
@@ -224,8 +227,8 @@ class TestAuthorizationEventLogging:
                 )
 
                 # Should log user and attempted resource
-                user_logged = any("student1" in log for log in warning_calls)
-                resource_logged = any("users" in log for log in warning_calls)
+                any("student1" in log for log in warning_calls)
+                any("users" in log for log in warning_calls)
 
     def test_privilege_escalation_attempt_logging(
         self, client: TestClient, auth_headers
@@ -248,15 +251,13 @@ class TestAuthorizationEventLogging:
                 ]
 
                 # Should detect suspicious access patterns
-                suspicious_logged = any(
+                any(
                     "suspicious" in log.lower() or "escalation" in log.lower()
                     for log in warning_calls
                 )
 
                 # Path traversal attempts should be logged
-                path_traversal_logged = any(
-                    ".." in log or "traversal" in log.lower() for log in warning_calls
-                )
+                any(".." in log or "traversal" in log.lower() for log in warning_calls)
 
     def test_role_based_access_logging(self, client: TestClient, auth_headers):
         """Test logging of role-based access decisions."""
@@ -272,9 +273,9 @@ class TestAuthorizationEventLogging:
                 headers = auth_headers.get(username, {})
 
                 if method == "GET":
-                    response = client.get(endpoint, headers=headers)
+                    client.get(endpoint, headers=headers)
                 else:
-                    response = client.post(
+                    client.post(
                         endpoint,
                         json={"topic": "Test", "competencies": ["AACN_KNOWLEDGE_1"]},
                         headers=headers,
@@ -285,7 +286,7 @@ class TestAuthorizationEventLogging:
                     log_calls = [call[0][0] for call in mock_logger.info.call_args_list]
 
                     # Should log user role and resource access
-                    role_context_logged = any(
+                    any(
                         username in log
                         and ("role" in log.lower() or "access" in log.lower())
                         for log in log_calls
@@ -318,7 +319,7 @@ class TestAuthorizationEventLogging:
                             call[0][0] for call in mock_logger.info.call_args_list
                         ]
 
-                        cross_service_logged = any(
+                        any(
                             "ragnostic" in log.lower() or "cross-service" in log.lower()
                             for log in log_calls
                         )
@@ -341,15 +342,15 @@ class TestDataAccessLogging:
                 if mock_logger.info.called:
                     log_calls = [call[0][0] for call in mock_logger.info.call_args_list]
 
-                    data_access_logged = any(
+                    any(
                         "profile" in log.lower() or "user data" in log.lower()
                         for log in log_calls
                     )
 
                     # Should log user and data type but not actual data
-                    user_logged = any("student1" in log for log in log_calls)
+                    any("student1" in log for log in log_calls)
                     # Sensitive data (like email) should not be in logs
-                    email_not_logged = all(
+                    all(
                         "@" not in log or "email access" in log.lower()
                         for log in log_calls
                     )
@@ -373,7 +374,7 @@ class TestDataAccessLogging:
                 if mock_logger.info.called:
                     log_calls = [call[0][0] for call in mock_logger.info.call_args_list]
 
-                    medical_access_logged = any(
+                    any(
                         "medical" in log.lower()
                         or "nclex" in log.lower()
                         or "healthcare" in log.lower()
@@ -381,7 +382,7 @@ class TestDataAccessLogging:
                     )
 
                     # Should include compliance context
-                    compliance_logged = any(
+                    any(
                         "hipaa" in log.lower() or "compliance" in log.lower()
                         for log in log_calls
                     )
@@ -390,7 +391,7 @@ class TestDataAccessLogging:
         """Test logging of student analytics access (FERPA compliance)."""
         with patch("src.api.main.logger") as mock_logger:
             # Instructor accessing student analytics
-            response = client.get(
+            client.get(
                 "/api/v1/analytics/student/test_student",
                 headers=auth_headers.get("instructor1", {}),
             )
@@ -406,7 +407,7 @@ class TestDataAccessLogging:
                 all_calls = info_calls + warning_calls
 
                 # Should log educational record access
-                ferpa_logged = any(
+                any(
                     "student record" in log.lower()
                     or "analytics" in log.lower()
                     or "ferpa" in log.lower()
@@ -414,8 +415,8 @@ class TestDataAccessLogging:
                 )
 
                 # Should log instructor identity and student identifier
-                instructor_logged = any("instructor1" in log for log in all_calls)
-                student_logged = any("test_student" in log for log in all_calls)
+                any("instructor1" in log for log in all_calls)
+                any("test_student" in log for log in all_calls)
 
     def test_data_modification_logging(self, client: TestClient, auth_headers):
         """Test logging of data creation and modification events."""
@@ -435,7 +436,7 @@ class TestDataAccessLogging:
                 if mock_logger.info.called:
                     log_calls = [call[0][0] for call in mock_logger.info.call_args_list]
 
-                    creation_logged = any(
+                    any(
                         "create" in log.lower()
                         or "new" in log.lower()
                         or "generated" in log.lower()
@@ -443,10 +444,8 @@ class TestDataAccessLogging:
                     )
 
                     # Should log data type and user
-                    data_type_logged = any(
-                        "study guide" in log.lower() for log in log_calls
-                    )
-                    user_logged = any("student1" in log for log in log_calls)
+                    any("study guide" in log.lower() for log in log_calls)
+                    any("student1" in log for log in log_calls)
 
 
 @pytest.mark.security
@@ -457,7 +456,7 @@ class TestSecurityIncidentLogging:
         """Test logging of injection attack attempts."""
         with patch("src.api.main.logger") as mock_logger:
             # Attempt SQL injection
-            response = client.post(
+            client.post(
                 "/api/v1/study-guide/create",
                 json={
                     "topic": "'; DROP TABLE users; --",
@@ -476,7 +475,7 @@ class TestSecurityIncidentLogging:
                 ]
                 all_calls = warning_calls + error_calls
 
-                injection_logged = any(
+                any(
                     "injection" in log.lower()
                     or "malicious" in log.lower()
                     or "attack" in log.lower()
@@ -484,17 +483,15 @@ class TestSecurityIncidentLogging:
                 )
 
                 # Should log attack pattern without exposing full payload
-                sql_pattern_logged = any("sql" in log.lower() for log in all_calls)
+                any("sql" in log.lower() for log in all_calls)
                 # Full payload should be sanitized in logs
-                payload_not_fully_logged = any(
-                    "DROP TABLE" not in log for log in all_calls
-                )
+                any("DROP TABLE" not in log for log in all_calls)
 
     def test_xss_attempt_logging(self, client: TestClient, auth_headers):
         """Test logging of XSS attack attempts."""
         with patch("src.api.main.logger") as mock_logger:
             # Attempt XSS
-            response = client.post(
+            client.post(
                 "/api/v1/study-guide/create",
                 json={
                     "topic": "<script>alert('xss')</script>",
@@ -509,7 +506,7 @@ class TestSecurityIncidentLogging:
                     call[0][0] for call in mock_logger.warning.call_args_list
                 ]
 
-                xss_logged = any(
+                any(
                     "xss" in log.lower()
                     or "script" in log.lower()
                     or "cross-site" in log.lower()
@@ -517,7 +514,7 @@ class TestSecurityIncidentLogging:
                 )
 
                 # Script tags should be sanitized in logs
-                script_sanitized = any("<script>" not in log for log in warning_calls)
+                any("<script>" not in log for log in warning_calls)
 
     def test_rate_limiting_violation_logging(self, client: TestClient, auth_headers):
         """Test logging of rate limiting violations."""
@@ -540,13 +537,13 @@ class TestSecurityIncidentLogging:
                     call[0][0] for call in mock_logger.warning.call_args_list
                 ]
 
-                rate_limit_logged = any(
+                any(
                     "rate limit" in log.lower() or "too many requests" in log.lower()
                     for log in warning_calls
                 )
 
                 # Should log user and request pattern
-                user_logged = any("student1" in log for log in warning_calls)
+                any("student1" in log for log in warning_calls)
 
     def test_authentication_bypass_attempt_logging(self, client: TestClient):
         """Test logging of authentication bypass attempts."""
@@ -567,7 +564,7 @@ class TestSecurityIncidentLogging:
                     call[0][0] for call in mock_logger.warning.call_args_list
                 ]
 
-                bypass_logged = any(
+                any(
                     "bypass" in log.lower()
                     or "unauthorized" in log.lower()
                     or "suspicious" in log.lower()
@@ -575,9 +572,7 @@ class TestSecurityIncidentLogging:
                 )
 
                 # Should log attack vectors
-                header_manipulation_logged = any(
-                    "header" in log.lower() for log in warning_calls
-                )
+                any("header" in log.lower() for log in warning_calls)
 
 
 @pytest.mark.security
@@ -598,28 +593,28 @@ class TestAdministrativeActionLogging:
                 if mock_logger.info.called:
                     log_calls = [call[0][0] for call in mock_logger.info.call_args_list]
 
-                    user_mgmt_logged = any(
+                    any(
                         "user management" in log.lower()
                         or "admin action" in log.lower()
                         for log in log_calls
                     )
 
                     # Should log admin identity
-                    admin_logged = any("admin1" in log for log in log_calls)
+                    any("admin1" in log for log in log_calls)
 
     def test_system_configuration_logging(self, client: TestClient):
         """Test logging of system configuration changes."""
         with patch("src.api.main.logger") as mock_logger:
             # This would test configuration endpoints if they exist
             # For now, we test the concept with health endpoint
-            response = client.get("/health")
+            client.get("/health")
 
             # System access should be minimally logged
             if mock_logger.info.called:
                 log_calls = [call[0][0] for call in mock_logger.info.call_args_list]
 
                 # Health checks might or might not be logged (depends on verbosity)
-                health_logged = any("health" in log.lower() for log in log_calls)
+                any("health" in log.lower() for log in log_calls)
 
 
 @pytest.mark.security
@@ -654,7 +649,7 @@ class TestAuditLogIntegrity:
                 ),
             ]
 
-            for operation_name, operation_func in operations:
+            for _operation_name, operation_func in operations:
                 operation_func()
 
             # Check log format consistency
@@ -672,13 +667,13 @@ class TestAuditLogIntegrity:
                     ]
 
                     for pattern in sensitive_patterns:
-                        assert not re.search(
-                            pattern, log_entry, re.IGNORECASE
-                        ), f"Sensitive data in log: {pattern}"
+                        assert not re.search(pattern, log_entry, re.IGNORECASE), (
+                            f"Sensitive data in log: {pattern}"
+                        )
 
     def test_log_timing_consistency(self, client: TestClient, auth_headers):
         """Test that log entries have consistent timing."""
-        with patch("src.api.main.logger") as mock_logger:
+        with patch("src.api.main.logger"):
             start_time = time.time()
 
             # Perform operation
@@ -689,9 +684,9 @@ class TestAuditLogIntegrity:
             # Logs should be generated within reasonable time window
             # This is more of a performance check for logging overhead
             operation_time = end_time - start_time
-            assert (
-                operation_time < 1.0
-            ), "Logging causing significant performance impact"
+            assert operation_time < 1.0, (
+                "Logging causing significant performance impact"
+            )
 
     def test_log_completeness(self, client: TestClient, test_users):
         """Test that all security-relevant events are logged."""
@@ -737,7 +732,7 @@ class TestAuditLogIntegrity:
                 ),
             ]
 
-            for event_name, event_func in security_events:
+            for _event_name, event_func in security_events:
                 try:
                     event_func()
                 except Exception:
@@ -757,7 +752,7 @@ class TestAuditLogIntegrity:
             # Exact count depends on implementation
             assert total_log_calls >= 0  # At minimum, no crashes
 
-    def _get_token(self, client: TestClient, test_users: Dict[str, Any]) -> str:
+    def _get_token(self, client: TestClient, test_users: dict[str, Any]) -> str:
         """Helper to get authentication token."""
         fake_users_db.update(test_users)
         response = client.post(
@@ -810,15 +805,15 @@ class TestComplianceReporting:
 
                     # At least some HIPAA elements should be present
                     hipaa_compliance_elements = sum(hipaa_elements.values())
-                    assert (
-                        hipaa_compliance_elements >= 2
-                    ), "Insufficient HIPAA audit elements"
+                    assert hipaa_compliance_elements >= 2, (
+                        "Insufficient HIPAA audit elements"
+                    )
 
     def test_ferpa_audit_trail_generation(self, client: TestClient, auth_headers):
         """Test FERPA-compliant audit trail for educational records."""
         with patch("src.api.main.logger") as mock_logger:
             # Access educational analytics
-            response = client.get(
+            client.get(
                 "/api/v1/analytics/student/test_student",
                 headers=auth_headers.get("instructor1", {}),
             )
@@ -849,9 +844,9 @@ class TestComplianceReporting:
                 }
 
                 ferpa_compliance_elements = sum(ferpa_elements.values())
-                assert (
-                    ferpa_compliance_elements >= 2
-                ), "Insufficient FERPA audit elements"
+                assert ferpa_compliance_elements >= 2, (
+                    "Insufficient FERPA audit elements"
+                )
 
     def test_cross_service_audit_coordination(self, client: TestClient, auth_headers):
         """Test cross-service audit log coordination."""
@@ -879,14 +874,14 @@ class TestComplianceReporting:
                         ]
 
                         # Should include correlation information for cross-service audit
-                        correlation_logged = any(
+                        any(
                             "correlation" in log.lower()
                             or "request-id" in log.lower()
                             or "trace" in log.lower()
                             for log in log_calls
                         )
 
-                        service_interaction_logged = any(
+                        any(
                             "ragnostic" in log.lower()
                             or "external service" in log.lower()
                             for log in log_calls
@@ -921,9 +916,9 @@ class TestComplianceReporting:
         # Validate report structure
         required_sections = ["report_period", "audit_events", "compliance_metrics"]
         for section in required_sections:
-            assert (
-                section in compliance_report_structure
-            ), f"Missing compliance report section: {section}"
+            assert section in compliance_report_structure, (
+                f"Missing compliance report section: {section}"
+            )
 
         # Validate audit event categories
         required_event_types = [
@@ -934,6 +929,6 @@ class TestComplianceReporting:
         ]
 
         for event_type in required_event_types:
-            assert (
-                event_type in compliance_report_structure["audit_events"]
-            ), f"Missing audit event type: {event_type}"
+            assert event_type in compliance_report_structure["audit_events"], (
+                f"Missing audit event type: {event_type}"
+            )

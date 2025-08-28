@@ -16,10 +16,8 @@ import statistics
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Optional
 
 import psutil
-
 from performance_benchmarks import benchmark_manager
 
 # Configure logging
@@ -40,7 +38,7 @@ class DatabaseOperationMetrics:
     end_time: datetime
     duration_ms: float
     success: bool
-    error_message: Optional[str]
+    error_message: str | None
     rows_affected: int
     connection_pool_usage: float
     query_complexity: str  # 'simple', 'moderate', 'complex'
@@ -54,7 +52,7 @@ class DatabasePerformanceResults:
     test_duration_minutes: float
     target_operations_per_minute: int
     concurrent_connections_tested: int
-    databases_tested: List[str]
+    databases_tested: list[str]
 
     # Overall Performance
     total_operations_executed: int
@@ -127,7 +125,7 @@ class DatabasePerformanceTester:
         test_duration_minutes: int = 30,
         target_ops_per_minute: int = 1000,
         max_concurrent_connections: int = 50,
-        databases_to_test: List[str] = None,
+        databases_to_test: list[str] = None,
     ):
         self.test_duration_minutes = test_duration_minutes
         self.target_ops_per_minute = target_ops_per_minute
@@ -135,7 +133,7 @@ class DatabasePerformanceTester:
         self.databases_to_test = databases_to_test or ["postgresql", "redis", "qdrant"]
 
         # Test state tracking
-        self.operation_metrics: List[DatabaseOperationMetrics] = []
+        self.operation_metrics: list[DatabaseOperationMetrics] = []
         self.connection_pool_stats = []
         self.resource_monitor = DatabaseResourceMonitor()
 
@@ -196,7 +194,7 @@ class DatabasePerformanceTester:
 
         return results
 
-    async def _test_individual_databases(self) -> Dict:
+    async def _test_individual_databases(self) -> dict:
         """Test individual database performance."""
         results = {}
 
@@ -212,7 +210,7 @@ class DatabasePerformanceTester:
 
         return results
 
-    async def _test_postgresql_performance(self) -> Dict:
+    async def _test_postgresql_performance(self) -> dict:
         """Test PostgreSQL performance with graph operations."""
         logger.info("Testing PostgreSQL with graph operations and complex queries...")
 
@@ -290,7 +288,7 @@ class DatabasePerformanceTester:
             else 0,
         }
 
-    async def _test_redis_performance(self) -> Dict:
+    async def _test_redis_performance(self) -> dict:
         """Test Redis caching performance."""
         logger.info("Testing Redis caching performance and hit/miss ratios...")
 
@@ -364,7 +362,7 @@ class DatabasePerformanceTester:
             "memory_efficiency": self.redis_simulator.get_memory_efficiency(),
         }
 
-    async def _test_qdrant_performance(self) -> Dict:
+    async def _test_qdrant_performance(self) -> dict:
         """Test Qdrant vector database performance."""
         logger.info("Testing Qdrant vector search and similarity operations...")
 
@@ -430,7 +428,7 @@ class DatabasePerformanceTester:
             "memory_usage_mb": self.qdrant_simulator.get_memory_usage_mb(),
         }
 
-    async def _test_concurrent_database_load(self) -> Dict:
+    async def _test_concurrent_database_load(self) -> dict:
         """Test concurrent load across all databases simultaneously."""
         logger.info("Testing concurrent load across all databases...")
 
@@ -478,20 +476,20 @@ class DatabasePerformanceTester:
             ),
         }
 
-    async def _run_concurrent_postgresql(self) -> Dict:
+    async def _run_concurrent_postgresql(self) -> dict:
         """Run PostgreSQL operations under concurrent load."""
         # Reduced scope for concurrent testing
         return await self._simulate_database_operations(
             "postgresql", 5, self.test_duration_minutes // 2
         )
 
-    async def _run_concurrent_redis(self) -> Dict:
+    async def _run_concurrent_redis(self) -> dict:
         """Run Redis operations under concurrent load."""
         return await self._simulate_database_operations(
             "redis", 15, self.test_duration_minutes // 2
         )
 
-    async def _run_concurrent_qdrant(self) -> Dict:
+    async def _run_concurrent_qdrant(self) -> dict:
         """Run Qdrant operations under concurrent load."""
         return await self._simulate_database_operations(
             "qdrant", 3, self.test_duration_minutes // 2
@@ -499,7 +497,7 @@ class DatabasePerformanceTester:
 
     async def _simulate_database_operations(
         self, db_type: str, max_concurrent: int, duration_minutes: int
-    ) -> Dict:
+    ) -> dict:
         """Simulate database operations for concurrent testing."""
         results = []
         start_time = time.time()
@@ -542,7 +540,7 @@ class DatabasePerformanceTester:
             else 0,
         }
 
-    async def _test_transaction_performance(self) -> Dict:
+    async def _test_transaction_performance(self) -> dict:
         """Test distributed transaction performance."""
         logger.info(
             "Testing distributed transaction performance and rollback scenarios..."
@@ -616,7 +614,7 @@ class DatabasePerformanceTester:
         except Exception:
             return False
 
-    async def _test_connection_pool_performance(self) -> Dict:
+    async def _test_connection_pool_performance(self) -> dict:
         """Test connection pool optimization and management."""
         logger.info("Testing connection pool performance and optimization...")
 
@@ -694,7 +692,7 @@ class DatabasePerformanceTester:
         except Exception:
             return False
 
-    def _calculate_performance_interference(self, concurrent_results: List) -> Dict:
+    def _calculate_performance_interference(self, concurrent_results: list) -> dict:
         """Calculate performance interference between databases under concurrent load."""
         # Simulate interference analysis
         return {
@@ -706,10 +704,10 @@ class DatabasePerformanceTester:
 
     async def _analyze_database_performance_results(
         self,
-        individual_results: Dict,
-        concurrent_results: Dict,
-        transaction_results: Dict,
-        connection_results: Dict,
+        individual_results: dict,
+        concurrent_results: dict,
+        transaction_results: dict,
+        connection_results: dict,
     ) -> DatabasePerformanceResults:
         """Analyze comprehensive database performance results."""
 
@@ -1015,7 +1013,7 @@ class DatabasePerformanceTester:
 class PostgreSQLSimulator:
     """Simulates PostgreSQL database operations."""
 
-    async def execute_operation(self, operation_type: str, base_time_ms: float) -> Dict:
+    async def execute_operation(self, operation_type: str, base_time_ms: float) -> dict:
         """Execute a simulated PostgreSQL operation."""
         start_time = time.time()
 
@@ -1051,7 +1049,7 @@ class RedisSimulator:
         for i in range(key_count):
             self.cache_keys.add(f"key_{i}")
 
-    async def execute_operation(self, operation_type: str, base_time_ms: float) -> Dict:
+    async def execute_operation(self, operation_type: str, base_time_ms: float) -> dict:
         """Execute a simulated Redis operation."""
         start_time = time.time()
 
@@ -1097,7 +1095,7 @@ class QdrantSimulator:
         """Populate vector database for realistic operations."""
         self.vector_count = vector_count
 
-    async def execute_operation(self, operation_type: str, base_time_ms: float) -> Dict:
+    async def execute_operation(self, operation_type: str, base_time_ms: float) -> dict:
         """Execute a simulated Qdrant operation."""
         start_time = time.time()
 
@@ -1191,7 +1189,7 @@ async def run_perf_006_database_performance_test(
     test_duration: int = 30,
     target_ops_per_minute: int = 1000,
     max_connections: int = 50,
-    databases: List[str] = None,
+    databases: list[str] = None,
 ) -> DatabasePerformanceResults:
     """Run PERF-006 database performance testing."""
     tester = DatabasePerformanceTester(

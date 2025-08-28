@@ -28,7 +28,6 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent
@@ -232,7 +231,7 @@ class Group2CPerformanceTestSuite:
             )
             return True
 
-    async def execute_test_case(self, test_id: str, test_info: Dict) -> Dict:
+    async def execute_test_case(self, test_id: str, test_info: dict) -> dict:
         """Execute a single performance test case."""
         test_script = self.performance_dir / test_info["script"]
 
@@ -310,8 +309,8 @@ class Group2CPerformanceTestSuite:
             return result
 
     async def run_performance_tests(
-        self, selected_tests: Optional[List[str]] = None, parallel: bool = False
-    ) -> Dict:
+        self, selected_tests: list[str] | None = None, parallel: bool = False
+    ) -> dict:
         """Run the selected performance tests."""
 
         # Determine which tests to run
@@ -400,7 +399,7 @@ class Group2CPerformanceTestSuite:
 
         return suite_results
 
-    def _calculate_total_duration(self, tests: Dict) -> str:
+    def _calculate_total_duration(self, tests: dict) -> str:
         """Calculate estimated total execution time."""
         duration_map = {
             "15 minutes": 15,
@@ -422,7 +421,7 @@ class Group2CPerformanceTestSuite:
         else:
             return f"{total_minutes}m"
 
-    def generate_performance_report(self, results: Dict) -> None:
+    def generate_performance_report(self, results: dict) -> None:
         """Generate comprehensive performance testing report."""
 
         # Display execution summary

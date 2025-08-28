@@ -15,7 +15,7 @@ import statistics
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any
 
 import psutil
 
@@ -98,7 +98,7 @@ class MedicalDatabaseSimulator:
         self.active_connections = 0
         self.query_history = []
 
-    def _initialize_medical_terminologies(self) -> Dict[str, float]:
+    def _initialize_medical_terminologies(self) -> dict[str, float]:
         """Initialize medical terminologies with accuracy scores."""
         return {
             "cardiovascular_terms": 0.985,
@@ -115,7 +115,7 @@ class MedicalDatabaseSimulator:
 
     async def execute_medical_query(
         self, query_type: str, complexity: str = "medium"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute a medical database query with realistic timing and accuracy."""
         start_time = time.time()
 
@@ -209,7 +209,7 @@ class MedicalDatabaseSimulator:
 
         return final_accuracy
 
-    def get_connection_pool_stats(self) -> Dict[str, Any]:
+    def get_connection_pool_stats(self) -> dict[str, Any]:
         """Get current connection pool statistics."""
         utilization = (self.active_connections / self.connection_pool_size) * 100
 
@@ -285,7 +285,7 @@ class DatabasePerformanceSuite:
 
         return metrics
 
-    async def _measure_baseline_performance(self) -> Dict[str, Any]:
+    async def _measure_baseline_performance(self) -> dict[str, Any]:
         """Measure baseline database performance without load."""
         logger.info("Measuring baseline query performance...")
 
@@ -327,7 +327,7 @@ class DatabasePerformanceSuite:
             "query_types_tested": len(query_types),
         }
 
-    async def _test_high_volume_queries(self) -> Dict[str, Any]:
+    async def _test_high_volume_queries(self) -> dict[str, Any]:
         """Test high-volume query performance targeting >500 QPS."""
         logger.info(
             f"Testing high-volume queries targeting {self.target_queries_per_second} QPS..."
@@ -337,7 +337,7 @@ class DatabasePerformanceSuite:
         test_duration_seconds = (
             self.test_duration_minutes * 60 // 3
         )  # 1/3 of total time
-        target_total_queries = self.target_queries_per_second * test_duration_seconds
+        self.target_queries_per_second * test_duration_seconds
 
         query_types = [
             ("medical_lookup", "simple"),
@@ -397,7 +397,7 @@ class DatabasePerformanceSuite:
             "query_times": [q["query_time_ms"] for q in successful_queries],
         }
 
-    async def _test_concurrent_connections(self) -> Dict[str, Any]:
+    async def _test_concurrent_connections(self) -> dict[str, Any]:
         """Test database performance under concurrent connection load."""
         logger.info("Testing concurrent connection performance...")
 
@@ -455,7 +455,7 @@ class DatabasePerformanceSuite:
             "connection_levels_tested": connection_levels,
         }
 
-    async def _simulate_connection_workload(self, connection_id: int) -> Dict[str, Any]:
+    async def _simulate_connection_workload(self, connection_id: int) -> dict[str, Any]:
         """Simulate workload for a single database connection."""
         queries_executed = 0
         successful_queries = 0
@@ -497,7 +497,7 @@ class DatabasePerformanceSuite:
             "response_times": response_times,
         }
 
-    async def _test_medical_accuracy_under_load(self) -> Dict[str, Any]:
+    async def _test_medical_accuracy_under_load(self) -> dict[str, Any]:
         """Test medical accuracy preservation under database load."""
         logger.info("Testing medical accuracy preservation under load...")
 
@@ -574,7 +574,7 @@ class DatabasePerformanceSuite:
             "scenarios_tested": len(load_scenarios),
         }
 
-    async def _test_batch_processing_performance(self) -> Dict[str, Any]:
+    async def _test_batch_processing_performance(self) -> dict[str, Any]:
         """Test batch processing performance for medical data."""
         logger.info("Testing batch processing performance...")
 
@@ -650,12 +650,12 @@ class DatabasePerformanceSuite:
 
     async def _compile_performance_metrics(
         self,
-        baseline: Dict[str, Any],
-        volume: Dict[str, Any],
-        concurrency: Dict[str, Any],
-        accuracy: Dict[str, Any],
-        batch: Dict[str, Any],
-        resources: Dict[str, Any],
+        baseline: dict[str, Any],
+        volume: dict[str, Any],
+        concurrency: dict[str, Any],
+        accuracy: dict[str, Any],
+        batch: dict[str, Any],
+        resources: dict[str, Any],
     ) -> DatabasePerformanceMetrics:
         """Compile comprehensive performance metrics."""
 
@@ -877,7 +877,7 @@ class DatabaseResourceMonitor:
         self.monitor_task = asyncio.create_task(self._monitoring_loop())
         logger.info("Database resource monitoring started")
 
-    def stop_monitoring(self) -> Dict[str, Any]:
+    def stop_monitoring(self) -> dict[str, Any]:
         """Stop monitoring and return resource statistics."""
         self.monitoring = False
         if self.monitor_task:

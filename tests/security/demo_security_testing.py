@@ -304,7 +304,7 @@ def run_demo_security_tests(level: str):
             ]
         )
 
-    for i, category in enumerate(test_categories, 1):
+    for _i, category in enumerate(test_categories, 1):
         console.print(f"[dim]Running {category}...[/dim]")
         time.sleep(0.3)  # Simulate test execution time
         console.print(f"[green]✓[/green] {category} completed")

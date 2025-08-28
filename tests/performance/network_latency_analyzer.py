@@ -15,8 +15,7 @@ import statistics
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Tuple
-
+from typing import Any
 
 # Configure logging
 logging.basicConfig(
@@ -100,7 +99,7 @@ class NetworkCall:
     response_transfer_ms: float
     success: bool
     status_code: int
-    error_message: Optional[str]
+    error_message: str | None
     retry_count: int
     payload_size_bytes: int
     response_size_bytes: int
@@ -119,7 +118,7 @@ class ServiceCommunicationSimulator:
         self.call_history = []
         self.service_latencies = self._initialize_service_latencies()
 
-    def _initialize_service_latencies(self) -> Dict[str, Dict[str, float]]:
+    def _initialize_service_latencies(self) -> dict[str, dict[str, float]]:
         """Initialize realistic service latency patterns."""
         return {
             "bsn_knowledge": {
@@ -233,12 +232,12 @@ class ServiceCommunicationSimulator:
         return call
 
     async def execute_concurrent_service_calls(
-        self, call_count: int, service_patterns: List[Tuple[str, str, str]]
-    ) -> List[NetworkCall]:
+        self, call_count: int, service_patterns: list[tuple[str, str, str]]
+    ) -> list[NetworkCall]:
         """Execute concurrent service calls to test load impact."""
         tasks = []
 
-        for i in range(call_count):
+        for _i in range(call_count):
             source_service, target_service, endpoint_type = random.choice(
                 service_patterns
             )
@@ -279,7 +278,7 @@ class NetworkLatencyAnalyzer:
         self.ragnostic_url = ragnostic_url
         self.test_duration_minutes = test_duration_minutes
         self.simulator = ServiceCommunicationSimulator(bsn_knowledge_url, ragnostic_url)
-        self.network_calls: List[NetworkCall] = []
+        self.network_calls: list[NetworkCall] = []
 
     async def run_comprehensive_network_latency_analysis(self) -> NetworkLatencyMetrics:
         """Execute comprehensive network latency analysis for Group 3B."""
@@ -322,7 +321,7 @@ class NetworkLatencyAnalyzer:
 
         return metrics
 
-    async def _measure_baseline_cross_service_latency(self) -> Dict[str, Any]:
+    async def _measure_baseline_cross_service_latency(self) -> dict[str, Any]:
         """Measure baseline RAGnostic↔BSN Knowledge communication latency."""
         logger.info("Measuring RAGnostic ↔ BSN Knowledge baseline communication...")
 
@@ -387,7 +386,7 @@ class NetworkLatencyAnalyzer:
             "baseline_calls": baseline_calls,
         }
 
-    async def _test_service_communication_under_load(self) -> Dict[str, Any]:
+    async def _test_service_communication_under_load(self) -> dict[str, Any]:
         """Test service communication performance under concurrent load."""
         logger.info("Testing service communication under concurrent load...")
 
@@ -500,7 +499,7 @@ class NetworkLatencyAnalyzer:
             else 0,
         }
 
-    async def _analyze_external_api_latency(self) -> Dict[str, Any]:
+    async def _analyze_external_api_latency(self) -> dict[str, Any]:
         """Analyze external API integration latency impact."""
         logger.info("Analyzing external API integration latency...")
 
@@ -577,7 +576,7 @@ class NetworkLatencyAnalyzer:
             "openai_api_performance_ms": openai_avg,
         }
 
-    async def _test_network_resilience_patterns(self) -> Dict[str, Any]:
+    async def _test_network_resilience_patterns(self) -> dict[str, Any]:
         """Test network resilience and error handling patterns."""
         logger.info("Testing network resilience patterns...")
 
@@ -657,7 +656,7 @@ class NetworkLatencyAnalyzer:
 
         return statistics.mean(timeout_results)
 
-    async def _test_retry_patterns(self) -> Tuple[float, int, int]:
+    async def _test_retry_patterns(self) -> tuple[float, int, int]:
         """Test retry pattern effectiveness."""
         retry_scenarios = [
             {"max_retries": 3, "backoff": "exponential"},
@@ -692,7 +691,7 @@ class NetworkLatencyAnalyzer:
         overall_score = statistics.mean(scenario_scores)
         return overall_score, total_retries, successful_retries
 
-    async def _test_circuit_breaker(self) -> Tuple[float, int]:
+    async def _test_circuit_breaker(self) -> tuple[float, int]:
         """Test circuit breaker pattern."""
         # Simulate circuit breaker scenarios
         failure_threshold = 5
@@ -731,7 +730,7 @@ class NetworkLatencyAnalyzer:
 
         return resilience_effectiveness.get(test_type, 0.85)
 
-    async def _test_distributed_system_performance(self) -> Dict[str, Any]:
+    async def _test_distributed_system_performance(self) -> dict[str, Any]:
         """Test distributed system performance characteristics."""
         logger.info("Testing distributed system performance...")
 
@@ -788,11 +787,11 @@ class NetworkLatencyAnalyzer:
 
     async def _compile_network_latency_metrics(
         self,
-        baseline: Dict[str, Any],
-        load: Dict[str, Any],
-        external: Dict[str, Any],
-        resilience: Dict[str, Any],
-        distributed: Dict[str, Any],
+        baseline: dict[str, Any],
+        load: dict[str, Any],
+        external: dict[str, Any],
+        resilience: dict[str, Any],
+        distributed: dict[str, Any],
     ) -> NetworkLatencyMetrics:
         """Compile comprehensive network latency metrics."""
 

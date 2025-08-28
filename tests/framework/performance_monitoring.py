@@ -16,18 +16,19 @@ import asyncio
 import json
 import logging
 import statistics
-from collections import deque, defaultdict
+from collections import defaultdict, deque
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Any
-from concurrent.futures import ThreadPoolExecutor
-import psutil
 from enum import Enum
+from typing import Any
+
+import psutil
+from breaking_point_analyzer import BreakingPointAnalyzer, SystemBreakingPoint
+from endurance_testing_suite import EnduranceTestResults, EnduranceTestSuite
 
 # Import Group 3B components
 from memory_profiler import AdvancedMemoryProfiler
-from breaking_point_analyzer import BreakingPointAnalyzer, SystemBreakingPoint
-from endurance_testing_suite import EnduranceTestSuite, EnduranceTestResults
 
 # Configure logging
 logging.basicConfig(
@@ -65,8 +66,8 @@ class PerformanceMetric:
     name: str
     value: float
     unit: str
-    tags: Dict[str, str] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    tags: dict[str, str] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -80,7 +81,7 @@ class PerformanceAlert:
     threshold_value: float
     message: str
     component: str
-    tags: Dict[str, str] = field(default_factory=dict)
+    tags: dict[str, str] = field(default_factory=dict)
     acknowledged: bool = False
     resolved: bool = False
 
@@ -93,7 +94,7 @@ class PerformanceBaseline:
     baseline_value: float
     baseline_established: datetime
     samples_count: int
-    confidence_interval: Tuple[float, float]
+    confidence_interval: tuple[float, float]
     last_updated: datetime
 
     # Regression detection
@@ -125,11 +126,11 @@ class SystemPerformanceState:
     # Predictive indicators
     trend_direction: str  # 'improving', 'stable', 'degrading'
     estimated_capacity_remaining_percent: float
-    time_to_capacity_exhaustion_hours: Optional[float]
+    time_to_capacity_exhaustion_hours: float | None
 
     # Active issues
-    active_alerts: List[PerformanceAlert]
-    performance_bottlenecks: List[str]
+    active_alerts: list[PerformanceAlert]
+    performance_bottlenecks: list[str]
 
 
 class PerformanceThresholds:
@@ -176,7 +177,7 @@ class PerformanceDataCollector:
     def __init__(self, collection_interval_seconds: int = 15):
         self.collection_interval = collection_interval_seconds
         self.collecting = False
-        self.collector_task: Optional[asyncio.Task] = None
+        self.collector_task: asyncio.Task | None = None
         self.metrics_queue = asyncio.Queue()
         self.thread_pool = ThreadPoolExecutor(max_workers=2)
 
@@ -220,7 +221,7 @@ class PerformanceDataCollector:
                 logger.error(f"Error in performance collection loop: {e}")
                 await asyncio.sleep(self.collection_interval)
 
-    async def _collect_system_metrics(self) -> List[PerformanceMetric]:
+    async def _collect_system_metrics(self) -> list[PerformanceMetric]:
         """Collect comprehensive system metrics."""
         timestamp = datetime.now()
         metrics = []
@@ -292,7 +293,7 @@ class PerformanceDataCollector:
 
         return metrics
 
-    async def get_recent_metrics(self, count: int = 100) -> List[PerformanceMetric]:
+    async def get_recent_metrics(self, count: int = 100) -> list[PerformanceMetric]:
         """Get recent metrics from the queue."""
         metrics = []
         for _ in range(min(count, self.metrics_queue.qsize())):
@@ -309,9 +310,9 @@ class PerformanceAnalyzer:
 
     def __init__(self, thresholds: PerformanceThresholds = None):
         self.thresholds = thresholds or PerformanceThresholds()
-        self.baselines: Dict[str, PerformanceBaseline] = {}
-        self.alerts: List[PerformanceAlert] = []
-        self.metric_history: Dict[str, deque] = defaultdict(lambda: deque(maxlen=1000))
+        self.baselines: dict[str, PerformanceBaseline] = {}
+        self.alerts: list[PerformanceAlert] = []
+        self.metric_history: dict[str, deque] = defaultdict(lambda: deque(maxlen=1000))
 
     def add_metric(self, metric: PerformanceMetric):
         """Add metric for analysis."""
@@ -360,7 +361,7 @@ class PerformanceAnalyzer:
 
     def _check_metric_alerts(
         self, metric: PerformanceMetric
-    ) -> Optional[PerformanceAlert]:
+    ) -> PerformanceAlert | None:
         """Check if metric triggers any alerts."""
         alert_level = None
         threshold_value = None
@@ -453,7 +454,7 @@ class PerformanceAnalyzer:
 
         return None
 
-    def detect_performance_regression(self, metric_name: str) -> Dict[str, Any]:
+    def detect_performance_regression(self, metric_name: str) -> dict[str, Any]:
         """Detect performance regression for a specific metric."""
         metric_key = f"response_time_{metric_name}"
 
@@ -573,7 +574,7 @@ class PerformanceAnalyzer:
         else:
             return 0.80
 
-    def _get_current_metric_values(self) -> Dict[str, float]:
+    def _get_current_metric_values(self) -> dict[str, float]:
         """Get current values for key metrics."""
         # Simplified - would get actual recent values from metric history
         return {
@@ -584,7 +585,7 @@ class PerformanceAnalyzer:
             "memory": 72.0,
         }
 
-    def _calculate_performance_trend(self) -> Dict[str, Any]:
+    def _calculate_performance_trend(self) -> dict[str, Any]:
         """Calculate performance trend and capacity estimates."""
         # Simplified trend analysis
         return {
@@ -593,7 +594,7 @@ class PerformanceAnalyzer:
             "time_to_exhaustion": None,
         }
 
-    def _identify_performance_bottlenecks(self) -> List[str]:
+    def _identify_performance_bottlenecks(self) -> list[str]:
         """Identify current performance bottlenecks."""
         bottlenecks = []
 
@@ -644,11 +645,11 @@ class Group3BPerformanceMonitor:
 
         # Monitoring state
         self.monitoring_active = False
-        self.monitor_task: Optional[asyncio.Task] = None
+        self.monitor_task: asyncio.Task | None = None
 
         # Performance history
-        self.performance_states: List[SystemPerformanceState] = []
-        self.endurance_test_results: Optional[EnduranceTestResults] = None
+        self.performance_states: list[SystemPerformanceState] = []
+        self.endurance_test_results: EnduranceTestResults | None = None
 
         logger.info("Group 3B Performance Monitor initialized:")
         logger.info(f"  Collection interval: {collection_interval_seconds}s")
@@ -857,7 +858,7 @@ class Group3BPerformanceMonitor:
         logger.info("Breaking point analysis integration completed")
         return breaking_point
 
-    def get_comprehensive_performance_report(self) -> Dict[str, Any]:
+    def get_comprehensive_performance_report(self) -> dict[str, Any]:
         """Generate comprehensive performance report."""
         current_state = self.performance_states[-1] if self.performance_states else None
 
@@ -1001,7 +1002,7 @@ async def run_complete_group_3b_test_suite(
     ragnostic_url: str = "http://localhost:8001",
     endurance_hours: float = 8.0,
     max_breaking_point_ops: int = 1000,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Run complete Group 3B test suite with integrated monitoring."""
     logger.info("Starting complete Group 3B Advanced Performance Testing Suite...")
 

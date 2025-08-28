@@ -15,15 +15,13 @@ Cross-Service Security Coverage:
 - Medical data protection across services
 """
 
+import asyncio
 import json
 import time
-from typing import Any, Dict, List
-from unittest.mock import AsyncMock, MagicMock, patch
-from urllib.parse import urlparse
+from unittest.mock import MagicMock, patch
 
-import pytest
 import httpx
-from fastapi import status
+import pytest
 from fastapi.testclient import TestClient
 
 
@@ -43,7 +41,7 @@ class TestServiceToServiceAuthentication:
 
         # Test with valid API key
         valid_client = RAGnosticClient(api_key="valid_test_api_key")
-        result = await valid_client.search_content("test query")
+        await valid_client.search_content("test query")
 
         # Verify API key is included in request
         if mock_http_client.return_value.request.called:
@@ -51,13 +49,15 @@ class TestServiceToServiceAuthentication:
             headers = call_args[1].get("headers", {})
 
             # Should include API key in headers
-            assert "Authorization" in headers or "X-API-Key" in headers, \
+            assert "Authorization" in headers or "X-API-Key" in headers, (
                 "API key not included in service-to-service request headers"
+            )
 
             # API key should not be empty
             api_key_header = headers.get("Authorization", headers.get("X-API-Key", ""))
-            assert api_key_header.strip() != "", \
+            assert api_key_header.strip() != "", (
                 "Empty API key in service-to-service authentication"
+            )
 
     @patch("src.services.ragnostic_client.httpx.AsyncClient")
     async def test_invalid_api_key_handling(self, mock_http_client):
@@ -77,16 +77,19 @@ class TestServiceToServiceAuthentication:
         result = await invalid_client.search_content("test query")
 
         # Should handle authentication failure gracefully
-        assert "error" in result, \
+        assert "error" in result, (
             "Service authentication failure not handled gracefully"
+        )
 
         # Should enable fallback mode for graceful degradation
-        assert result.get("fallback_mode") is True, \
+        assert result.get("fallback_mode") is True, (
             "Fallback mode not enabled for authentication failures"
+        )
 
         # Should not expose sensitive authentication details
-        assert "invalid_key" not in str(result), \
+        assert "invalid_key" not in str(result), (
             "Sensitive API key exposed in error response"
+        )
 
     def test_service_authentication_isolation(self, client: TestClient, auth_headers):
         """Test that user authentication tokens are not forwarded to services."""
@@ -96,13 +99,13 @@ class TestServiceToServiceAuthentication:
             mock_client.return_value = mock_instance
 
             # Make user request that triggers service call
-            response = client.post(
+            client.post(
                 "/api/v1/study-guide/create",
                 json={
                     "topic": "Authentication Isolation Test",
                     "competencies": ["AACN_KNOWLEDGE_1"],
                 },
-                headers=auth_headers.get("student1", {})
+                headers=auth_headers.get("student1", {}),
             )
 
             if mock_instance.search_content.called:
@@ -113,12 +116,14 @@ class TestServiceToServiceAuthentication:
                 # Should not contain user's JWT token
                 user_token = auth_headers.get("student1", {}).get("Authorization", "")
                 if user_token:
-                    assert user_token not in call_str, \
+                    assert user_token not in call_str, (
                         "User JWT token leaked to cross-service call"
+                    )
 
                 # Should not contain "Bearer" prefix from user auth
-                assert "Bearer" not in call_str or "service_token" in call_str, \
+                assert "Bearer" not in call_str or "service_token" in call_str, (
                     "User authentication method leaked to service call"
+                )
 
     @patch("src.services.ragnostic_client.httpx.AsyncClient")
     async def test_api_key_rotation_handling(self, mock_http_client):
@@ -148,8 +153,7 @@ class TestServiceToServiceAuthentication:
         result = await client.search_content("test query")
 
         # Should either succeed with retry logic or fail gracefully
-        assert isinstance(result, dict), \
-            "API key rotation not handled properly"
+        assert isinstance(result, dict), "API key rotation not handled properly"
 
     def test_service_identity_verification(self, client: TestClient, auth_headers):
         """Test verification of service identity in cross-service communication."""
@@ -164,7 +168,7 @@ class TestServiceToServiceAuthentication:
                     "service_name": "ragnostic",
                     "service_version": "1.0.0",
                     "instance_id": "ragnostic-instance-1",
-                }
+                },
             }
             mock_client.return_value = mock_instance
 
@@ -174,7 +178,7 @@ class TestServiceToServiceAuthentication:
                     "topic": "Service Identity Test",
                     "competencies": ["AACN_KNOWLEDGE_1"],
                 },
-                headers=auth_headers.get("student1", {})
+                headers=auth_headers.get("student1", {}),
             )
 
             if response.status_code == 200:
@@ -182,14 +186,16 @@ class TestServiceToServiceAuthentication:
                 response_data = response.json()
 
                 # Should not leak service metadata to end users
-                assert "service_metadata" not in str(response_data), \
+                assert "service_metadata" not in str(response_data), (
                     "Service identity information leaked to end user"
+                )
 
                 # Should not expose internal service details
                 internal_fields = ["instance_id", "service_version", "internal_config"]
                 for field in internal_fields:
-                    assert field not in str(response_data), \
+                    assert field not in str(response_data), (
                         f"Internal service field '{field}' exposed to end user"
+                    )
 
 
 @pytest.mark.security
@@ -207,7 +213,9 @@ class TestSecureCommunicationChannels:
         mock_http_client.return_value.request.return_value = mock_response
 
         # Test with HTTPS URL
-        secure_client = RAGnosticClient(base_url="https://ragnostic-service.example.com")
+        secure_client = RAGnosticClient(
+            base_url="https://ragnostic-service.example.com"
+        )
         await secure_client.search_content("test query")
 
         if mock_http_client.return_value.request.called:
@@ -215,12 +223,14 @@ class TestSecureCommunicationChannels:
             url = call_args[0][1]  # Second positional argument should be URL
 
             # Cross-service URLs should use HTTPS
-            assert url.startswith("https://"), \
+            assert url.startswith("https://"), (
                 f"Cross-service communication not using HTTPS: {url}"
+            )
 
             # Should not use HTTP for external service calls
-            assert not url.startswith("http://") or "localhost" in url, \
+            assert not url.startswith("http://") or "localhost" in url, (
                 "Insecure HTTP used for external service communication"
+            )
 
     @patch("src.services.ragnostic_client.httpx.AsyncClient")
     async def test_certificate_validation_cross_service(self, mock_http_client):
@@ -228,7 +238,6 @@ class TestSecureCommunicationChannels:
         from src.services.ragnostic_client import RAGnosticClient
 
         # Check if SSL verification is enabled
-        mock_http_client_instance = mock_http_client.return_value
 
         client = RAGnosticClient()
         await client.search_content("test query")
@@ -239,10 +248,13 @@ class TestSecureCommunicationChannels:
 
             # Should not disable SSL verification
             verify_setting = init_kwargs.get("verify", True)
-            assert verify_setting is not False, \
+            assert verify_setting is not False, (
                 "SSL certificate verification disabled for cross-service communication"
+            )
 
-    def test_service_endpoint_security_validation(self, client: TestClient, auth_headers):
+    def test_service_endpoint_security_validation(
+        self, client: TestClient, auth_headers
+    ):
         """Test validation of service endpoint security configuration."""
         with patch("src.services.ragnostic_client.RAGnosticClient") as mock_client:
             mock_instance = MagicMock()
@@ -256,14 +268,15 @@ class TestSecureCommunicationChannels:
                     "topic": "Endpoint Security Test",
                     "competencies": ["AACN_KNOWLEDGE_1"],
                 },
-                headers=auth_headers.get("student1", {})
+                headers=auth_headers.get("student1", {}),
             )
 
             if mock_instance.search_content.called:
                 # Service endpoints should be properly configured
                 # This is verified through successful mock interaction
-                assert response.status_code in [200, 201], \
+                assert response.status_code in [200, 201], (
                     "Service endpoint security configuration failed"
+                )
 
     @patch("src.services.ragnostic_client.httpx.AsyncClient")
     async def test_request_timeout_security(self, mock_http_client):
@@ -289,13 +302,15 @@ class TestSecureCommunicationChannels:
         request_time = end_time - start_time
 
         # Should have reasonable timeout to prevent resource exhaustion
-        assert request_time < 30, \
+        assert request_time < 30, (
             f"Cross-service request timeout too long: {request_time:.1f}s"
+        )
 
         # Should handle timeout gracefully
         if request_time > 10:  # If it took a while, should have timeout handling
-            assert "error" in result or "timeout" in str(result).lower(), \
+            assert "error" in result or "timeout" in str(result).lower(), (
                 "Timeout not handled gracefully in cross-service communication"
+            )
 
 
 @pytest.mark.security
@@ -330,14 +345,15 @@ class TestCrossServiceAuthorization:
                         "topic": query_topic,
                         "competencies": ["AACN_KNOWLEDGE_1"],
                     },
-                    headers=auth_headers.get(username, {})
+                    headers=auth_headers.get(username, {}),
                 )
 
                 # Service authorization should be enforced
                 if response.status_code == 200:
                     # Verify service was called with appropriate context
-                    assert mock_instance.search_content.called, \
+                    assert mock_instance.search_content.called, (
                         "Service not called for authorized request"
+                    )
 
     def test_user_context_propagation(self, client: TestClient, auth_headers):
         """Test proper user context propagation to cross-service calls."""
@@ -347,13 +363,13 @@ class TestCrossServiceAuthorization:
             mock_client.return_value = mock_instance
 
             # Make request as student
-            response = client.post(
+            client.post(
                 "/api/v1/study-guide/create",
                 json={
                     "topic": "User Context Test",
                     "competencies": ["AACN_KNOWLEDGE_1"],
                 },
-                headers=auth_headers.get("student1", {})
+                headers=auth_headers.get("student1", {}),
             )
 
             if mock_instance.search_content.called:
@@ -361,7 +377,7 @@ class TestCrossServiceAuthorization:
 
                 # User context should be propagated (but not JWT token)
                 # This might be in filters, user_id, or other context parameters
-                user_context_present = any(
+                any(
                     "student" in str(value).lower() or "user" in str(key).lower()
                     for key, value in call_kwargs.items()
                 )
@@ -369,7 +385,9 @@ class TestCrossServiceAuthorization:
                 # Context propagation is implementation-specific
                 # The test validates the concept
 
-    def test_privilege_escalation_prevention_cross_service(self, client: TestClient, auth_headers):
+    def test_privilege_escalation_prevention_cross_service(
+        self, client: TestClient, auth_headers
+    ):
         """Test prevention of privilege escalation through cross-service calls."""
         with patch("src.services.ragnostic_client.RAGnosticClient") as mock_client:
             mock_instance = MagicMock()
@@ -393,19 +411,21 @@ class TestCrossServiceAuthorization:
                     "topic": "Privilege Escalation Test",
                     "competencies": ["AACN_KNOWLEDGE_1"],
                 },
-                headers=auth_headers.get("student1", {})
+                headers=auth_headers.get("student1", {}),
             )
 
             if response.status_code == 200:
                 response_data = response.json()
 
                 # Should not receive admin-level content
-                assert "privileged" not in str(response_data), \
+                assert "privileged" not in str(response_data), (
                     "Privilege escalation through cross-service call"
+                )
 
                 # Should receive appropriate content for user level
-                assert "content" in str(response_data) or "items" in str(response_data), \
-                    "No appropriate content returned for user privilege level"
+                assert "content" in str(response_data) or "items" in str(
+                    response_data
+                ), "No appropriate content returned for user privilege level"
 
     def test_service_permission_boundaries(self, client: TestClient, auth_headers):
         """Test that service permissions are properly scoped."""
@@ -433,12 +453,13 @@ class TestCrossServiceAuthorization:
                     "topic": "Permission Boundary Test",
                     "competencies": ["AACN_KNOWLEDGE_1"],
                 },
-                headers=auth_headers.get("student1", {})
+                headers=auth_headers.get("student1", {}),
             )
 
             # Should handle service permission boundaries appropriately
-            assert response.status_code != 500, \
+            assert response.status_code != 500, (
                 "Service permission boundary not handled gracefully"
+            )
 
 
 @pytest.mark.security
@@ -462,22 +483,21 @@ class TestDataIntegrityAcrossServices:
 
             # Send request with specific data
             original_topic = "Data Integrity Test with Special Characters: àáâãäåæ"
-            response = client.post(
+            client.post(
                 "/api/v1/study-guide/create",
                 json={
                     "topic": original_topic,
                     "competencies": ["AACN_KNOWLEDGE_1"],
                 },
-                headers=auth_headers.get("student1", {})
+                headers=auth_headers.get("student1", {}),
             )
 
-            if hasattr(capture_service_data, 'last_query'):
+            if hasattr(capture_service_data, "last_query"):
                 # Verify data integrity was maintained
                 captured_query = capture_service_data.last_query
 
                 # Original data should be preserved (allowing for processing)
-                assert len(captured_query) > 0, \
-                    "No data sent to service"
+                assert len(captured_query) > 0, "No data sent to service"
 
                 # Special characters should be handled properly
                 # (Implementation-specific validation)
@@ -495,11 +515,11 @@ class TestDataIntegrityAcrossServices:
                         "confidence": 0.95,
                         "metadata": {
                             "umls_cui": "C0027051",
-                            "semantic_type": "Disease or Syndrome"
-                        }
+                            "semantic_type": "Disease or Syndrome",
+                        },
                     }
                 ],
-                "total": 1
+                "total": 1,
             }
             mock_instance.search_content.return_value = service_response
             mock_client.return_value = mock_instance
@@ -510,11 +530,11 @@ class TestDataIntegrityAcrossServices:
                     "topic": "Cardiovascular Assessment",
                     "competencies": ["AACN_KNOWLEDGE_1"],
                 },
-                headers=auth_headers.get("student1", {})
+                headers=auth_headers.get("student1", {}),
             )
 
             if response.status_code == 200:
-                response_data = response.json()
+                response.json()
 
                 # Medical terminology should be preserved
                 if "myocardial" in str(service_response):
@@ -527,7 +547,7 @@ class TestDataIntegrityAcrossServices:
 
     def test_data_encoding_consistency(self, client: TestClient, auth_headers):
         """Test consistent data encoding across service boundaries."""
-        with patch("src.services.ragnostic_client.RAGnosticClient") as mock_client:
+        with patch("src.services.ragnostic_client.RAGnosticClient"):
             mock_instance = MagicMock()
 
             # Test with various character encodings
@@ -536,13 +556,13 @@ class TestDataIntegrityAcrossServices:
                 "Unicode characters: αβγδε",
                 "Emoji test: 🏥💊⚕️",
                 'Special punctuation: "quotes" and apostrophes',
-                "Medical symbols: ±×÷≤≥≠"
+                "Medical symbols: ±×÷≤≥≠",
             ]
 
             for topic in test_topics:
                 mock_instance.search_content.return_value = {
                     "items": [{"content": f"Response for: {topic}"}],
-                    "total": 1
+                    "total": 1,
                 }
 
                 response = client.post(
@@ -551,17 +571,18 @@ class TestDataIntegrityAcrossServices:
                         "topic": topic,
                         "competencies": ["AACN_KNOWLEDGE_1"],
                     },
-                    headers=auth_headers.get("student1", {})
+                    headers=auth_headers.get("student1", {}),
                 )
 
                 # Should handle various encodings without corruption
-                assert response.status_code != 500, \
+                assert response.status_code != 500, (
                     f"Encoding issue with topic: {topic}"
+                )
 
                 if response.status_code == 200:
                     # Response should be valid JSON (no encoding corruption)
                     try:
-                        response_data = response.json()
+                        response.json()
                     except json.JSONDecodeError:
                         pytest.fail(f"JSON corruption with encoding: {topic}")
 
@@ -577,11 +598,11 @@ class TestDataIntegrityAcrossServices:
                         "content": "Hypertension (high blood pressure) affects cardiovascular system",
                         "medical_validated": True,
                         "umls_concepts": ["C0020538"],
-                        "accuracy_score": 0.98
+                        "accuracy_score": 0.98,
                     }
                 ],
                 "total": 1,
-                "integrity_hash": "medical_content_hash_123"
+                "integrity_hash": "medical_content_hash_123",
             }
             mock_instance.search_content.return_value = medical_response
             mock_client.return_value = mock_instance
@@ -593,12 +614,12 @@ class TestDataIntegrityAcrossServices:
                     "difficulty": "medium",
                     "question_count": 1,
                 },
-                headers=auth_headers.get("student1", {})
+                headers=auth_headers.get("student1", {}),
             )
 
             if response.status_code == 200:
                 # Medical data integrity should be maintained
-                response_data = response.json()
+                response.json()
 
                 # Should preserve medical accuracy
                 if "hypertension" in str(medical_response).lower():
@@ -619,27 +640,31 @@ class TestInterServiceAuditLogging:
             mock_client.return_value = mock_instance
 
             with patch("src.api.main.logger") as mock_logger:
-                response = client.post(
+                client.post(
                     "/api/v1/study-guide/create",
                     json={
                         "topic": "Cross-Service Audit Test",
                         "competencies": ["AACN_KNOWLEDGE_1"],
                     },
-                    headers=auth_headers.get("student1", {})
+                    headers=auth_headers.get("student1", {}),
                 )
 
                 if mock_logger.info.called and mock_instance.search_content.called:
                     log_calls = [call[0][0] for call in mock_logger.info.call_args_list]
 
                     # Should log cross-service interaction
-                    service_interaction_logged = any(
-                        "ragnostic" in log.lower() or "cross-service" in log.lower() or "external" in log.lower()
+                    any(
+                        "ragnostic" in log.lower()
+                        or "cross-service" in log.lower()
+                        or "external" in log.lower()
                         for log in log_calls
                     )
 
                     # Should include correlation information
-                    correlation_logged = any(
-                        "correlation" in log.lower() or "trace" in log.lower() or "request-id" in log.lower()
+                    any(
+                        "correlation" in log.lower()
+                        or "trace" in log.lower()
+                        or "request-id" in log.lower()
                         for log in log_calls
                     )
 
@@ -652,37 +677,35 @@ class TestInterServiceAuditLogging:
 
             with patch("src.api.main.logger") as mock_logger:
                 # Make request that triggers service call
-                response = client.post(
+                client.post(
                     "/api/v1/nclex/generate",
                     json={
                         "topic": "Service Audit Trail Test",
                         "difficulty": "medium",
                         "question_count": 1,
                     },
-                    headers=auth_headers.get("student1", {})
+                    headers=auth_headers.get("student1", {}),
                 )
 
                 if mock_logger.info.called:
                     log_calls = [call[0][0] for call in mock_logger.info.call_args_list]
 
                     # Should audit the service request
-                    service_request_logged = any(
-                        "service request" in log.lower() or "external call" in log.lower()
+                    any(
+                        "service request" in log.lower()
+                        or "external call" in log.lower()
                         for log in log_calls
                     )
 
                     # Should log user context (but not sensitive data)
-                    user_context_logged = any(
+                    any(
                         "student1" in log and "request" in log.lower()
                         for log in log_calls
                     )
 
                     # Should not log sensitive authentication details
-                    auth_not_logged = all(
-                        "Bearer" not in log for log in log_calls
-                    )
-                    assert auth_not_logged, \
-                        "Authentication tokens leaked in audit logs"
+                    auth_not_logged = all("Bearer" not in log for log in log_calls)
+                    assert auth_not_logged, "Authentication tokens leaked in audit logs"
 
     def test_service_failure_audit_logging(self, client: TestClient, auth_headers):
         """Test audit logging of service communication failures."""
@@ -694,29 +717,39 @@ class TestInterServiceAuditLogging:
             mock_client.return_value = mock_instance
 
             with patch("src.api.main.logger") as mock_logger:
-                response = client.post(
+                client.post(
                     "/api/v1/study-guide/create",
                     json={
                         "topic": "Service Failure Audit Test",
                         "competencies": ["AACN_KNOWLEDGE_1"],
                     },
-                    headers=auth_headers.get("student1", {})
+                    headers=auth_headers.get("student1", {}),
                 )
 
                 # Service failure should be audited
                 if mock_logger.error.called or mock_logger.warning.called:
-                    error_calls = [call[0][0] for call in (mock_logger.error.call_args_list or [])]
-                    warning_calls = [call[0][0] for call in (mock_logger.warning.call_args_list or [])]
+                    error_calls = [
+                        call[0][0] for call in (mock_logger.error.call_args_list or [])
+                    ]
+                    warning_calls = [
+                        call[0][0]
+                        for call in (mock_logger.warning.call_args_list or [])
+                    ]
                     all_calls = error_calls + warning_calls
 
                     # Should log service failure
-                    service_failure_logged = any(
-                        "service" in log.lower() and ("fail" in log.lower() or "error" in log.lower() or "unavailable" in log.lower())
+                    any(
+                        "service" in log.lower()
+                        and (
+                            "fail" in log.lower()
+                            or "error" in log.lower()
+                            or "unavailable" in log.lower()
+                        )
                         for log in all_calls
                     )
 
                     # Should log impact on user request
-                    user_impact_logged = any(
+                    any(
                         "user" in log.lower() or "request" in log.lower()
                         for log in all_calls
                     )
@@ -738,10 +771,10 @@ class TestMedicalDataProtectionCrossService:
                         "content": "Patient assessment protocols for cardiac care",
                         "phi_detected": False,
                         "medical_classification": "educational",
-                        "hipaa_compliant": True
+                        "hipaa_compliant": True,
                     }
                 ],
-                "total": 1
+                "total": 1,
             }
             mock_instance.search_content.return_value = medical_data
             mock_client.return_value = mock_instance
@@ -753,7 +786,7 @@ class TestMedicalDataProtectionCrossService:
                         "clinical_scenario": "Cardiac Assessment Protocol",
                         "complexity_level": "intermediate",
                     },
-                    headers=auth_headers.get("student1", {})
+                    headers=auth_headers.get("student1", {}),
                 )
 
                 if response.status_code == 200:
@@ -761,22 +794,28 @@ class TestMedicalDataProtectionCrossService:
                     response_data = response.json()
 
                     # Should not expose PHI classification metadata to end users
-                    assert "phi_detected" not in str(response_data), \
+                    assert "phi_detected" not in str(response_data), (
                         "HIPAA metadata exposed to end user"
+                    )
 
-                    assert "hipaa_compliant" not in str(response_data), \
+                    assert "hipaa_compliant" not in str(response_data), (
                         "HIPAA compliance metadata exposed to end user"
+                    )
 
                 # Should log HIPAA compliance handling
                 if mock_logger.info.called:
                     log_calls = [call[0][0] for call in mock_logger.info.call_args_list]
 
-                    hipaa_logging = any(
-                        "hipaa" in log.lower() or "medical" in log.lower() or "compliance" in log.lower()
+                    any(
+                        "hipaa" in log.lower()
+                        or "medical" in log.lower()
+                        or "compliance" in log.lower()
                         for log in log_calls
                     )
 
-    def test_medical_data_sanitization_cross_service(self, client: TestClient, auth_headers):
+    def test_medical_data_sanitization_cross_service(
+        self, client: TestClient, auth_headers
+    ):
         """Test sanitization of medical data across service boundaries."""
         with patch("src.services.ragnostic_client.RAGnosticClient") as mock_client:
             mock_instance = MagicMock()
@@ -788,11 +827,11 @@ class TestMedicalDataProtectionCrossService:
                         "content": "Patient care protocols reference",
                         "metadata": {
                             "contains_phi": False,
-                            "sanitization_applied": True
-                        }
+                            "sanitization_applied": True,
+                        },
                     }
                 ],
-                "total": 1
+                "total": 1,
             }
             mock_instance.search_content.return_value = potentially_sensitive_data
             mock_client.return_value = mock_instance
@@ -803,23 +842,27 @@ class TestMedicalDataProtectionCrossService:
                     "topic": "Patient Care Documentation",
                     "competencies": ["AACN_KNOWLEDGE_1"],
                 },
-                headers=auth_headers.get("student1", {})
+                headers=auth_headers.get("student1", {}),
             )
 
             if response.status_code == 200:
                 response_data = response.json()
 
                 # Sanitization metadata should not be exposed
-                assert "contains_phi" not in str(response_data), \
+                assert "contains_phi" not in str(response_data), (
                     "PHI detection metadata exposed to end user"
+                )
 
-                assert "sanitization_applied" not in str(response_data), \
+                assert "sanitization_applied" not in str(response_data), (
                     "Sanitization metadata exposed to end user"
+                )
 
                 # Content should be safe for educational use
                 # (Implementation-specific validation)
 
-    def test_medical_content_classification_security(self, client: TestClient, auth_headers):
+    def test_medical_content_classification_security(
+        self, client: TestClient, auth_headers
+    ):
         """Test security of medical content classification across services."""
         with patch("src.services.ragnostic_client.RAGnosticClient") as mock_client:
             mock_instance = MagicMock()
@@ -832,11 +875,11 @@ class TestMedicalDataProtectionCrossService:
                         "classification": {
                             "sensitivity_level": "educational",
                             "access_level": "student_appropriate",
-                            "medical_accuracy": 0.98
-                        }
+                            "medical_accuracy": 0.98,
+                        },
                     }
                 ],
-                "total": 1
+                "total": 1,
             }
             mock_instance.search_content.return_value = classified_content
             mock_client.return_value = mock_instance
@@ -848,17 +891,22 @@ class TestMedicalDataProtectionCrossService:
                     "difficulty": "medium",
                     "question_count": 1,
                 },
-                headers=auth_headers.get("student1", {})
+                headers=auth_headers.get("student1", {}),
             )
 
             if response.status_code == 200:
                 response_data = response.json()
 
                 # Classification metadata should not be exposed
-                classification_fields = ["sensitivity_level", "access_level", "classification"]
+                classification_fields = [
+                    "sensitivity_level",
+                    "access_level",
+                    "classification",
+                ]
                 for field in classification_fields:
-                    assert field not in str(response_data), \
+                    assert field not in str(response_data), (
                         f"Medical classification field '{field}' exposed to end user"
+                    )
 
                 # Content should be appropriate for user's level
                 # (Content filtering is implementation-specific)

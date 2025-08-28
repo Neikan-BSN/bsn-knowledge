@@ -13,15 +13,13 @@ import logging
 import statistics
 import time
 from dataclasses import dataclass
-from typing import Dict, List, Optional
 
 import psutil
-from locust.env import Environment
-
 from breaking_point_test import StepResults
+from locust.env import Environment
 from locust_scenarios import MixedWorkloadUser
 from performance_benchmarks import benchmark_manager
-from ragnostic_batch_simulation import RAGnosticBatchSimulator, BATCH_SCENARIOS
+from ragnostic_batch_simulation import BATCH_SCENARIOS, RAGnosticBatchSimulator
 
 # Configure logging
 logging.basicConfig(
@@ -34,7 +32,7 @@ logger = logging.getLogger(__name__)
 class StressTestConfiguration:
     """Configuration for stress testing scenarios."""
 
-    load_progression: List[int]
+    load_progression: list[int]
     step_duration_seconds: int
     max_concurrent_operations: int
     breaking_point_threshold_error_rate: float
@@ -51,8 +49,8 @@ class StressTestResults:
 
     # Breaking Point Analysis
     breaking_point_detected: bool
-    breaking_point_concurrent_operations: Optional[int]
-    breaking_point_step_number: Optional[int]
+    breaking_point_concurrent_operations: int | None
+    breaking_point_step_number: int | None
     max_operations_tested: int
 
     # Performance Degradation
@@ -72,8 +70,8 @@ class StressTestResults:
     database_bottleneck_detected: bool
 
     # Error Analysis
-    error_rate_progression: List[float]
-    failure_patterns: List[str]
+    error_rate_progression: list[float]
+    failure_patterns: list[str]
     graceful_degradation_observed: bool
 
     # Scalability Analysis
@@ -81,7 +79,7 @@ class StressTestResults:
     linear_scaling_deviation_percent: float
 
     # Recovery Analysis
-    recovery_time_seconds: Optional[float]
+    recovery_time_seconds: float | None
     recovery_successful: bool
 
     # Test Configuration
@@ -97,7 +95,7 @@ class ComprehensiveStressTester:
         self,
         bsn_knowledge_url: str = "http://localhost:8000",
         ragnostic_url: str = "http://localhost:8001",
-        config: Optional[StressTestConfiguration] = None,
+        config: StressTestConfiguration | None = None,
     ):
         self.bsn_knowledge_url = bsn_knowledge_url
         self.ragnostic_url = ragnostic_url
@@ -115,7 +113,7 @@ class ComprehensiveStressTester:
             resource_critical_memory_percent=90.0,
         )
 
-        self.step_results: List[StepResults] = []
+        self.step_results: list[StepResults] = []
         self.breaking_point_found = False
         self.breaking_point_step = None
 
@@ -146,11 +144,11 @@ class ComprehensiveStressTester:
         try:
             # Execute stress testing steps
             for step_num, concurrent_ops in enumerate(self.config.load_progression, 1):
-                logger.info(f"\n{'='*60}")
+                logger.info(f"\n{'=' * 60}")
                 logger.info(
                     f"STRESS TEST STEP {step_num}: {concurrent_ops} concurrent operations"
                 )
-                logger.info(f"{'='*60}")
+                logger.info(f"{'=' * 60}")
 
                 step_result = await self._execute_stress_step(
                     step_number=step_num,
@@ -258,7 +256,7 @@ class ComprehensiveStressTester:
 
     async def _run_api_stress_load(
         self, user_count: int, duration_seconds: int
-    ) -> Dict:
+    ) -> dict:
         """Run API stress load using mixed workload users."""
         env = Environment(user_classes=[MixedWorkloadUser], host=self.bsn_knowledge_url)
 
@@ -293,7 +291,7 @@ class ComprehensiveStressTester:
 
     async def _run_batch_stress_load(
         self, batch_count: int, duration_seconds: int
-    ) -> Dict:
+    ) -> dict:
         """Run batch processing stress load."""
         simulator = RAGnosticBatchSimulator(
             base_url=self.ragnostic_url, max_concurrent_jobs=batch_count
@@ -338,10 +336,10 @@ class ComprehensiveStressTester:
         self,
         step_number: int,
         concurrent_operations: int,
-        api_results: Dict,
-        batch_results: Dict,
-        resource_start: Dict,
-        resource_end: Dict,
+        api_results: dict,
+        batch_results: dict,
+        resource_start: dict,
+        resource_end: dict,
         duration_seconds: int,
     ) -> StepResults:
         """Compile comprehensive results for a stress testing step."""
@@ -396,8 +394,8 @@ class ComprehensiveStressTester:
         )
 
     def _identify_bottlenecks(
-        self, resource_stats: Dict, api_results: Dict, batch_results: Dict
-    ) -> List[str]:
+        self, resource_stats: dict, api_results: dict, batch_results: dict
+    ) -> list[str]:
         """Identify system bottlenecks based on metrics."""
         bottlenecks = []
 
@@ -445,11 +443,11 @@ class ComprehensiveStressTester:
 
     def _identify_breaking_point_indicators(
         self,
-        api_results: Dict,
-        batch_results: Dict,
-        resource_stats: Dict,
+        api_results: dict,
+        batch_results: dict,
+        resource_stats: dict,
         combined_error_rate: float,
-    ) -> List[str]:
+    ) -> list[str]:
         """Identify indicators that suggest system is at breaking point."""
         indicators = []
 
@@ -494,7 +492,7 @@ class ComprehensiveStressTester:
 
     async def _analyze_recovery_patterns(
         self, breaking_point_step: StepResults
-    ) -> Dict:
+    ) -> dict:
         """Analyze system recovery patterns after breaking point."""
         logger.info("Analyzing system recovery patterns...")
 
@@ -683,7 +681,7 @@ class ComprehensiveStressTester:
 
         return statistics.mean(deviations)
 
-    def _analyze_failure_patterns(self) -> List[str]:
+    def _analyze_failure_patterns(self) -> list[str]:
         """Analyze patterns in system failures."""
         patterns = []
 
@@ -982,7 +980,7 @@ class EnhancedResourceMonitor:
                 logger.error(f"Error in enhanced resource monitoring: {str(e)}")
                 break
 
-    def take_snapshot(self) -> Dict:
+    def take_snapshot(self) -> dict:
         """Take a snapshot of current resource utilization."""
         try:
             cpu_percent = psutil.cpu_percent(interval=1.0)
@@ -1061,8 +1059,8 @@ class StepResults:
         total_operations: int,
         combined_error_rate_percent: float,
         operations_per_second: float,
-        bottlenecks_detected: List[str],
-        breaking_point_indicators: List[str],
+        bottlenecks_detected: list[str],
+        breaking_point_indicators: list[str],
     ):
         self.step_number = step_number
         self.concurrent_operations = concurrent_operations
@@ -1090,7 +1088,7 @@ class StepResults:
 async def run_perf_002_stress_test(
     bsn_url: str = "http://localhost:8000",
     ragnostic_url: str = "http://localhost:8001",
-    load_progression: List[int] = None,
+    load_progression: list[int] = None,
     step_duration: int = 180,
 ) -> StressTestResults:
     """Run PERF-002 stress testing with breaking point analysis."""

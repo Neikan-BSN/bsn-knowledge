@@ -26,12 +26,13 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Optional, Any
+from typing import Any
+
+from breaking_point_analyzer import run_breaking_point_analysis
+from endurance_testing_suite import run_endurance_testing_suite
 
 # Import Group 3B components
 from memory_profiler import run_memory_profiling_test
-from endurance_testing_suite import run_endurance_testing_suite
-from breaking_point_analyzer import run_breaking_point_analysis
 
 # Configure logging
 logging.basicConfig(
@@ -64,8 +65,8 @@ class Group3BTestRunner:
         self.output_dir.mkdir(exist_ok=True)
 
         # Test execution state
-        self.test_start_time: Optional[datetime] = None
-        self.test_results: Dict[str, Any] = {}
+        self.test_start_time: datetime | None = None
+        self.test_results: dict[str, Any] = {}
 
         logger.info("Group 3B Test Runner initialized:")
         logger.info(f"  BSN Knowledge URL: {bsn_knowledge_url}")
@@ -74,7 +75,7 @@ class Group3BTestRunner:
 
     async def run_memory_profiling_test(
         self, duration_hours: float = 2.0, monitoring_interval: int = 30
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Run advanced memory profiling test."""
         logger.info("=" * 100)
         logger.info("GROUP 3B: ADVANCED MEMORY PROFILING TEST")
@@ -158,7 +159,7 @@ class Group3BTestRunner:
                 "group_3b_compliance": {"overall_compliant": False},
             }
 
-    async def run_endurance_test(self, duration_hours: float = 8.0) -> Dict[str, Any]:
+    async def run_endurance_test(self, duration_hours: float = 8.0) -> dict[str, Any]:
         """Run comprehensive endurance testing."""
         logger.info("=" * 100)
         logger.info("GROUP 3B: 8-HOUR ENDURANCE TESTING")
@@ -255,7 +256,7 @@ class Group3BTestRunner:
 
     async def run_breaking_point_test(
         self, max_operations: int = 1000
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Run breaking point analysis."""
         logger.info("=" * 100)
         logger.info("GROUP 3B: BREAKING POINT ANALYSIS")
@@ -366,7 +367,7 @@ class Group3BTestRunner:
         endurance_hours: float = 8.0,
         max_operations: int = 1000,
         memory_profiling_hours: float = 2.0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Run complete Group 3B test suite with all components."""
         logger.info("=" * 100)
         logger.info("GROUP 3B: COMPLETE ADVANCED PERFORMANCE TEST SUITE")
@@ -501,7 +502,7 @@ class Group3BTestRunner:
                 "group_3b_overall_compliance": {"all_tests_passed": False},
             }
 
-    def _save_test_results(self, test_type: str, results: Dict[str, Any]):
+    def _save_test_results(self, test_type: str, results: dict[str, Any]):
         """Save test results to file."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = self.output_dir / f"{test_type}_results_{timestamp}.json"
@@ -513,7 +514,7 @@ class Group3BTestRunner:
         except Exception as e:
             logger.error(f"Failed to save test results: {e}")
 
-    def _generate_final_report(self, comprehensive_results: Dict[str, Any]):
+    def _generate_final_report(self, comprehensive_results: dict[str, Any]):
         """Generate comprehensive final report."""
         logger.info("\n" + "=" * 100)
         logger.info("GROUP 3B ADVANCED PERFORMANCE TESTING - FINAL REPORT")

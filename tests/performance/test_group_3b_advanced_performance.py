@@ -24,10 +24,10 @@ import statistics
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any
+from unittest.mock import MagicMock
 
 import pytest
-from unittest.mock import MagicMock
 
 # Import existing performance infrastructure
 try:
@@ -104,7 +104,7 @@ class AdvancedDatabasePerformanceTester:
         self.success_count = 0
         self.medical_accuracy_samples = []
 
-    async def run_advanced_database_performance_test(self) -> Dict[str, Any]:
+    async def run_advanced_database_performance_test(self) -> dict[str, Any]:
         """Execute enhanced database performance testing for Group 3B."""
         logger.info("Starting Group 3B Advanced Database Performance Testing...")
 
@@ -181,7 +181,7 @@ class AdvancedDatabasePerformanceTester:
         )
         return test_results
 
-    async def _execute_high_volume_queries(self) -> Dict[str, Any]:
+    async def _execute_high_volume_queries(self) -> dict[str, Any]:
         """Execute high-volume queries targeting >500 queries/second."""
         query_types = [
             ("medical_terminology_lookup", 50),  # 50ms average
@@ -223,7 +223,7 @@ class AdvancedDatabasePerformanceTester:
             "query_types_tested": len(query_types),
         }
 
-    async def _test_concurrent_connections(self) -> Dict[str, Any]:
+    async def _test_concurrent_connections(self) -> dict[str, Any]:
         """Test concurrent database connections under load."""
         max_connections = 100
         query_count = 0
@@ -248,7 +248,7 @@ class AdvancedDatabasePerformanceTester:
             "max_connections": max_connections,
         }
 
-    async def _simulate_connection_workload(self, connection_id: int) -> Dict[str, Any]:
+    async def _simulate_connection_workload(self, connection_id: int) -> dict[str, Any]:
         """Simulate workload for a single database connection."""
         queries = 0
         successes = 0
@@ -277,7 +277,7 @@ class AdvancedDatabasePerformanceTester:
 
         return {"queries": queries, "successes": successes}
 
-    async def _test_medical_batch_processing(self) -> Dict[str, Any]:
+    async def _test_medical_batch_processing(self) -> dict[str, Any]:
         """Test batch processing of medical data with accuracy validation."""
         batch_sizes = [50, 100, 200, 500]
         total_processed = 0
@@ -308,7 +308,7 @@ class AdvancedDatabasePerformanceTester:
             "total_accurate": total_accurate,
         }
 
-    async def _process_medical_batch(self, batch_size: int) -> Dict[str, Any]:
+    async def _process_medical_batch(self, batch_size: int) -> dict[str, Any]:
         """Process a batch of medical records."""
         processed = 0
         accurate = 0
@@ -345,7 +345,7 @@ class AdvancedDatabasePerformanceTester:
             "successes": successes,
         }
 
-    async def _process_medical_record(self) -> Dict[str, Any]:
+    async def _process_medical_record(self) -> dict[str, Any]:
         """Process a single medical record with accuracy validation."""
         # Simulate medical record processing time
         await asyncio.sleep(random.uniform(0.05, 0.15))
@@ -362,7 +362,7 @@ class AdvancedDatabasePerformanceTester:
             else 0,
         }
 
-    async def _validate_medical_accuracy_under_load(self) -> Dict[str, Any]:
+    async def _validate_medical_accuracy_under_load(self) -> dict[str, Any]:
         """Validate medical accuracy preservation under database load."""
         accuracy_samples = []
 
@@ -415,7 +415,7 @@ class AdvancedDatabasePerformanceTester:
             "load_levels_tested": len(load_levels),
         }
 
-    async def _validate_medical_query(self) -> Dict[str, Any]:
+    async def _validate_medical_query(self) -> dict[str, Any]:
         """Validate a medical query for UMLS accuracy."""
         # Simulate medical query validation time
         await asyncio.sleep(random.uniform(0.01, 0.05))
@@ -433,7 +433,7 @@ class AdvancedDatabasePerformanceTester:
 
     async def _simulate_database_query(
         self, query_type: str, base_time_ms: float
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Simulate a database query with realistic timing and success rates."""
         # Add variance to base time
         actual_time_ms = base_time_ms * random.uniform(0.7, 1.5)
@@ -469,7 +469,7 @@ class AdvancedNetworkLatencyTester:
         self.ragnostic_url = ragnostic_url
         self.network_calls = []
 
-    async def run_advanced_network_latency_test(self) -> Dict[str, Any]:
+    async def run_advanced_network_latency_test(self) -> dict[str, Any]:
         """Execute enhanced network latency analysis for Group 3B."""
         logger.info("Starting Group 3B Advanced Network Latency Testing...")
 
@@ -541,7 +541,7 @@ class AdvancedNetworkLatencyTester:
         )
         return test_results
 
-    async def _test_cross_service_latency(self) -> Dict[str, Any]:
+    async def _test_cross_service_latency(self) -> dict[str, Any]:
         """Test RAGnostic → BSN Knowledge cross-service communication latency."""
         latencies = []
 
@@ -588,7 +588,7 @@ class AdvancedNetworkLatencyTester:
             "scenarios_tested": len(test_scenarios),
         }
 
-    async def _test_service_communication_under_load(self) -> Dict[str, Any]:
+    async def _test_service_communication_under_load(self) -> dict[str, Any]:
         """Test service communication latency under concurrent load."""
         latencies = []
 
@@ -617,7 +617,7 @@ class AdvancedNetworkLatencyTester:
             "concurrent_levels_tested": len(concurrent_levels),
         }
 
-    async def _simulate_cross_service_call(self) -> Dict[str, Any]:
+    async def _simulate_cross_service_call(self) -> dict[str, Any]:
         """Simulate a cross-service call and measure latency."""
         start_time = time.time()
 
@@ -645,7 +645,7 @@ class AdvancedNetworkLatencyTester:
             "success": random.random() > 0.01,  # 99% success rate
         }
 
-    async def _test_external_api_latency(self) -> Dict[str, Any]:
+    async def _test_external_api_latency(self) -> dict[str, Any]:
         """Test external API latency impact on overall system performance."""
         latencies = []
 
@@ -683,7 +683,7 @@ class AdvancedNetworkLatencyTester:
 
         return actual_latency
 
-    async def _test_network_resilience(self) -> Dict[str, Any]:
+    async def _test_network_resilience(self) -> dict[str, Any]:
         """Test network resilience and error handling."""
         resilience_tests = [
             "timeout_handling",
@@ -749,7 +749,7 @@ class Context7IntegrationTester:
         self.prometheus_metrics = []
         self.jaeger_traces = []
 
-    async def run_context7_integration_test(self) -> Dict[str, Any]:
+    async def run_context7_integration_test(self) -> dict[str, Any]:
         """Execute Context7 library integration testing."""
         logger.info("Starting Context7 library integration testing...")
 
@@ -778,7 +778,7 @@ class Context7IntegrationTester:
             ),
         }
 
-    async def _test_k6_integration(self) -> Dict[str, Any]:
+    async def _test_k6_integration(self) -> dict[str, Any]:
         """Test k6 load testing integration."""
         # Simulate k6 load testing scenarios
         load_scenarios = [
@@ -815,7 +815,7 @@ class Context7IntegrationTester:
             "avg_success_rate": statistics.mean(scenario_scores),
         }
 
-    async def _test_prometheus_integration(self) -> Dict[str, Any]:
+    async def _test_prometheus_integration(self) -> dict[str, Any]:
         """Test Prometheus metrics collection integration."""
         # Simulate Prometheus metrics collection
         metric_types = [
@@ -856,7 +856,7 @@ class Context7IntegrationTester:
             "metric_types": metric_types,
         }
 
-    async def _test_jaeger_integration(self) -> Dict[str, Any]:
+    async def _test_jaeger_integration(self) -> dict[str, Any]:
         """Test Jaeger distributed tracing integration."""
         # Simulate distributed trace collection
         trace_scenarios = [
@@ -957,9 +957,9 @@ class Group3BAdvancedPerformanceTester:
 
     async def _compile_comprehensive_results(
         self,
-        database_results: Dict[str, Any],
-        network_results: Dict[str, Any],
-        context7_results: Dict[str, Any],
+        database_results: dict[str, Any],
+        network_results: dict[str, Any],
+        context7_results: dict[str, Any],
         duration_minutes: float,
     ) -> AdvancedPerformanceResult:
         """Compile comprehensive Group 3B results."""
@@ -1127,15 +1127,15 @@ async def test_group_3b_advanced_database_performance():
     results = await tester.run_advanced_database_performance_test()
 
     # Validate performance targets
-    assert (
-        results["queries_per_second"] >= 500
-    ), f"Database performance target not met: {results['queries_per_second']:.1f} < 500 queries/sec"
-    assert (
-        results["medical_accuracy_percent"] >= 98.0
-    ), f"Medical accuracy target not met: {results['medical_accuracy_percent']:.1f}% < 98%"
-    assert (
-        results["success_rate_percent"] >= 95.0
-    ), f"Success rate too low: {results['success_rate_percent']:.1f}% < 95%"
+    assert results["queries_per_second"] >= 500, (
+        f"Database performance target not met: {results['queries_per_second']:.1f} < 500 queries/sec"
+    )
+    assert results["medical_accuracy_percent"] >= 98.0, (
+        f"Medical accuracy target not met: {results['medical_accuracy_percent']:.1f}% < 98%"
+    )
+    assert results["success_rate_percent"] >= 95.0, (
+        f"Success rate too low: {results['success_rate_percent']:.1f}% < 95%"
+    )
 
 
 @pytest.mark.asyncio
@@ -1145,15 +1145,15 @@ async def test_group_3b_advanced_network_latency():
     results = await tester.run_advanced_network_latency_test()
 
     # Validate network latency targets
-    assert (
-        results["ragnostic_bsn_latency_ms"] <= 50
-    ), f"Network latency target not met: {results['ragnostic_bsn_latency_ms']:.1f}ms > 50ms"
-    assert (
-        results["service_communication_p95_ms"] <= 200
-    ), f"P95 latency target not met: {results['service_communication_p95_ms']:.1f}ms > 200ms"
-    assert (
-        results["network_resilience_score"] >= 0.8
-    ), f"Network resilience too low: {results['network_resilience_score']:.3f} < 0.8"
+    assert results["ragnostic_bsn_latency_ms"] <= 50, (
+        f"Network latency target not met: {results['ragnostic_bsn_latency_ms']:.1f}ms > 50ms"
+    )
+    assert results["service_communication_p95_ms"] <= 200, (
+        f"P95 latency target not met: {results['service_communication_p95_ms']:.1f}ms > 200ms"
+    )
+    assert results["network_resilience_score"] >= 0.8, (
+        f"Network resilience too low: {results['network_resilience_score']:.3f} < 0.8"
+    )
 
 
 @pytest.mark.asyncio
@@ -1163,15 +1163,15 @@ async def test_group_3b_context7_integration():
     results = await tester.run_context7_integration_test()
 
     # Validate Context7 integration
-    assert (
-        results["k6_load_test_score"] >= 0.7
-    ), f"k6 integration score too low: {results['k6_load_test_score']:.3f} < 0.7"
-    assert (
-        results["prometheus_metrics_collected"] >= 50
-    ), f"Too few Prometheus metrics: {results['prometheus_metrics_collected']} < 50"
-    assert (
-        results["jaeger_traces_analyzed"] >= 20
-    ), f"Too few Jaeger traces: {results['jaeger_traces_analyzed']} < 20"
+    assert results["k6_load_test_score"] >= 0.7, (
+        f"k6 integration score too low: {results['k6_load_test_score']:.3f} < 0.7"
+    )
+    assert results["prometheus_metrics_collected"] >= 50, (
+        f"Too few Prometheus metrics: {results['prometheus_metrics_collected']} < 50"
+    )
+    assert results["jaeger_traces_analyzed"] >= 20, (
+        f"Too few Jaeger traces: {results['jaeger_traces_analyzed']} < 20"
+    )
 
 
 @pytest.mark.asyncio
@@ -1182,18 +1182,18 @@ async def test_group_3b_comprehensive_performance_suite():
 
     # Validate comprehensive performance targets
     assert result.all_targets_met, "Not all Group 3B performance targets were met"
-    assert (
-        result.database_queries_per_second >= 500
-    ), f"Database performance: {result.database_queries_per_second:.1f} < 500 queries/sec"
-    assert (
-        result.ragnostic_bsn_latency_ms <= 50
-    ), f"Network latency: {result.ragnostic_bsn_latency_ms:.1f}ms > 50ms"
-    assert (
-        result.medical_data_accuracy_percent >= 98.0
-    ), f"Medical accuracy: {result.medical_data_accuracy_percent:.1f}% < 98%"
-    assert (
-        result.concurrent_user_capacity >= 150
-    ), f"Concurrent users: {result.concurrent_user_capacity} < 150"
+    assert result.database_queries_per_second >= 500, (
+        f"Database performance: {result.database_queries_per_second:.1f} < 500 queries/sec"
+    )
+    assert result.ragnostic_bsn_latency_ms <= 50, (
+        f"Network latency: {result.ragnostic_bsn_latency_ms:.1f}ms > 50ms"
+    )
+    assert result.medical_data_accuracy_percent >= 98.0, (
+        f"Medical accuracy: {result.medical_data_accuracy_percent:.1f}% < 98%"
+    )
+    assert result.concurrent_user_capacity >= 150, (
+        f"Concurrent users: {result.concurrent_user_capacity} < 150"
+    )
 
 
 if __name__ == "__main__":

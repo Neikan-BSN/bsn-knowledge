@@ -11,22 +11,20 @@
 import asyncio
 import gc
 import logging
-import psutil
 import statistics
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List
 
+import psutil
 from locust.env import Environment
-
 from locust_scenarios import (
-    BSNKnowledgeStudent,
     BSNKnowledgeInstructor,
+    BSNKnowledgeStudent,
     MixedWorkloadUser,
 )
 from performance_benchmarks import benchmark_manager
-from ragnostic_batch_simulation import RAGnosticBatchSimulator, BATCH_SCENARIOS
+from ragnostic_batch_simulation import BATCH_SCENARIOS, RAGnosticBatchSimulator
 
 # Configure logging
 logging.basicConfig(
@@ -116,9 +114,9 @@ class EnduranceTestResults:
     accuracy_degradation_over_time: float
 
     # Time-based Analysis
-    performance_windows: List[PerformanceWindow]
-    memory_snapshots: List[MemorySnapshot]
-    load_patterns_executed: List[LoadPattern]
+    performance_windows: list[PerformanceWindow]
+    memory_snapshots: list[MemorySnapshot]
+    load_patterns_executed: list[LoadPattern]
 
     # Quality Metrics
     data_integrity_maintained: bool
@@ -237,14 +235,14 @@ class EnduranceTester:
         try:
             # Execute load patterns sequentially
             for i, pattern in enumerate(self.load_patterns):
-                logger.info(f"\n{'='*60}")
+                logger.info(f"\n{'=' * 60}")
                 logger.info(
-                    f"LOAD PATTERN {i+1}/{len(self.load_patterns)}: {pattern.name.upper()}"
+                    f"LOAD PATTERN {i + 1}/{len(self.load_patterns)}: {pattern.name.upper()}"
                 )
                 logger.info(
                     f"Duration: {pattern.duration_hours}h, Users: {pattern.concurrent_users}, Batches: {pattern.batch_jobs}"
                 )
-                logger.info(f"{'='*60}")
+                logger.info(f"{'=' * 60}")
 
                 await self._execute_load_pattern(pattern)
 
@@ -311,7 +309,7 @@ class EnduranceTester:
         # Wait for batch processing to complete
         try:
             await asyncio.wait_for(batch_task, timeout=300)  # 5 minute timeout
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(f"Batch processing for pattern {pattern.name} timed out")
 
         logger.info(f"Load pattern {pattern.name} completed")
@@ -494,8 +492,8 @@ class EnduranceTester:
         )
 
     def _calculate_performance_degradation(
-        self, windows: List[PerformanceWindow]
-    ) -> Dict:
+        self, windows: list[PerformanceWindow]
+    ) -> dict:
         """Calculate performance degradation over time."""
         if len(windows) < 2:
             return {
@@ -537,8 +535,8 @@ class EnduranceTester:
         }
 
     def _calculate_system_stability(
-        self, performance_analysis: Dict, memory_analysis: Dict
-    ) -> Dict:
+        self, performance_analysis: dict, memory_analysis: dict
+    ) -> dict:
         """Calculate overall system stability metrics."""
         windows = performance_analysis.get("windows", [])
 
@@ -781,7 +779,7 @@ class MemoryLeakDetector:
                 logger.error(f"Error in memory monitoring: {str(e)}")
                 time.sleep(self.sampling_interval)
 
-    def check_memory_health(self) -> Dict:
+    def check_memory_health(self) -> dict:
         """Check current memory health status."""
         if not self.memory_snapshots:
             return {"healthy": True, "issue": None}
@@ -816,7 +814,7 @@ class MemoryLeakDetector:
 
         return {"healthy": True, "issue": None}
 
-    def analyze_memory_patterns(self) -> Dict:
+    def analyze_memory_patterns(self) -> dict:
         """Analyze memory usage patterns for leaks."""
         if len(self.memory_snapshots) < 10:
             return {
@@ -994,7 +992,7 @@ class ContinuousPerformanceMonitor:
             "batch_jobs": 0,
         }
 
-    def check_performance_health(self) -> Dict:
+    def check_performance_health(self) -> dict:
         """Check current performance health."""
         if not self.performance_windows:
             return {"healthy": True, "issue": None}
@@ -1017,7 +1015,7 @@ class ContinuousPerformanceMonitor:
 
         return {"healthy": True, "issue": None}
 
-    def analyze_performance_trends(self) -> Dict:
+    def analyze_performance_trends(self) -> dict:
         """Analyze performance trends over time."""
         total_requests = sum(
             len(w.requests_per_second)
@@ -1052,7 +1050,7 @@ class ContinuousMedicalAccuracyMonitor:
         self.monitoring = False
         logger.info("Medical accuracy monitoring stopped")
 
-    async def check_accuracy_health(self) -> Dict:
+    async def check_accuracy_health(self) -> dict:
         """Check current medical accuracy health."""
         # Simulate accuracy check - in real implementation would validate
         # UMLS terminology accuracy and NCLEX question medical correctness
@@ -1067,7 +1065,7 @@ class ContinuousMedicalAccuracyMonitor:
 
         return {"healthy": True, "issue": None}
 
-    async def analyze_accuracy_trends(self) -> Dict:
+    async def analyze_accuracy_trends(self) -> dict:
         """Analyze medical accuracy trends over endurance test."""
         # Simulate accuracy analysis
         min_accuracy = 98.7

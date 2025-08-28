@@ -12,15 +12,14 @@ Comprehensive memory profiling during extended operations:
 import asyncio
 import gc
 import logging
-import psutil
+import random
 import statistics
 import time
 import tracemalloc
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Optional
 
-
+import psutil
 from performance_benchmarks import benchmark_manager, record_resource_usage
 
 # Configure logging
@@ -41,13 +40,13 @@ class MemorySnapshot:
     virtual_memory_mb: float
     resident_memory_mb: float
     shared_memory_mb: float
-    heap_size_mb: Optional[float]
+    heap_size_mb: float | None
     gc_generation_0_count: int
     gc_generation_1_count: int
     gc_generation_2_count: int
     gc_collected_objects: int
-    tracemalloc_current_mb: Optional[float]
-    tracemalloc_peak_mb: Optional[float]
+    tracemalloc_current_mb: float | None
+    tracemalloc_peak_mb: float | None
     file_descriptors_open: int
     thread_count: int
 
@@ -59,7 +58,7 @@ class MemoryLeakAnalysis:
     leak_detected: bool
     growth_rate_mb_per_hour: float
     confidence_level: float  # 0.0 to 1.0
-    leak_source_hints: List[str]
+    leak_source_hints: list[str]
     memory_pattern_type: (
         str  # 'stable', 'linear_growth', 'exponential_growth', 'oscillating'
     )
@@ -79,7 +78,7 @@ class GarbageCollectionAnalysis:
     gc_efficiency_score: float  # Objects collected / Objects created
     memory_reclaimed_mb: float
     gc_performance_impact_percent: float
-    generation_distribution: Dict[str, int]
+    generation_distribution: dict[str, int]
     gc_triggered_by_pressure: int
 
 
@@ -91,7 +90,7 @@ class MemoryProfilingResults:
     test_duration_hours: float
     monitoring_interval_seconds: int
     memory_pressure_testing: bool
-    services_monitored: List[str]
+    services_monitored: list[str]
 
     # Memory Usage Analysis
     baseline_memory_mb: float
@@ -121,7 +120,7 @@ class MemoryProfilingResults:
 
     # Memory Pressure Testing
     oom_prevention_effective: bool
-    memory_pressure_recovery_time_seconds: Optional[float]
+    memory_pressure_recovery_time_seconds: float | None
     graceful_degradation_under_pressure: bool
 
     # Performance Impact
@@ -130,7 +129,7 @@ class MemoryProfilingResults:
     deallocation_efficiency_score: float
 
     # Detailed Snapshots
-    memory_snapshots: List[MemorySnapshot]
+    memory_snapshots: list[MemorySnapshot]
 
     # Target Compliance
     meets_memory_usage_targets: bool
@@ -158,7 +157,7 @@ class MemoryProfiler:
         monitoring_interval_seconds: int = 30,
         enable_tracemalloc: bool = True,
         memory_pressure_testing: bool = True,
-        services_to_monitor: List[str] = None,
+        services_to_monitor: list[str] = None,
     ):
         self.test_duration_hours = test_duration_hours
         self.monitoring_interval_seconds = monitoring_interval_seconds
@@ -167,8 +166,8 @@ class MemoryProfiler:
         self.services_to_monitor = services_to_monitor or ["bsn_knowledge", "ragnostic"]
 
         # Monitoring state
-        self.memory_snapshots: List[MemorySnapshot] = []
-        self.gc_events: List[Dict] = []
+        self.memory_snapshots: list[MemorySnapshot] = []
+        self.gc_events: list[dict] = []
         self.monitoring_active = False
         self.monitor_task = None
 
@@ -970,7 +969,7 @@ class MemoryIntensiveWorkloadGenerator:
                     self.refs = []
 
             objects = []
-            for i in range(100):
+            for _i in range(100):
                 obj = TestObject(1000)  # 1KB per object
                 if objects:
                     obj.refs.append(objects[-1])  # Create reference chains
@@ -990,7 +989,7 @@ class MemoryIntensiveWorkloadGenerator:
 
             if key in cache:
                 # Cache hit - access data
-                data = cache[key]
+                cache[key]
             else:
                 # Cache miss - create and store data
                 cache[key] = [random.randint(0, 100) for _ in range(100)]
@@ -1004,7 +1003,7 @@ class MemoryIntensiveWorkloadGenerator:
 
             await asyncio.sleep(0.01)
 
-    async def create_memory_pressure(self, target_mb: int) -> List:
+    async def create_memory_pressure(self, target_mb: int) -> list:
         """Create memory pressure by allocating specified amount of memory."""
         # Allocate memory in chunks to reach target
         chunk_size = 1024 * 1024  # 1MB chunks

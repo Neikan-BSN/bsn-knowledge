@@ -17,12 +17,12 @@ import json
 import logging
 import statistics
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
-from concurrent.futures import ThreadPoolExecutor
-import psutil
 from enum import Enum
+
+import psutil
 
 # Configure logging
 logging.basicConfig(
@@ -113,7 +113,7 @@ class LoadStepResults:
     gc_pressure_score: float
 
     # Breaking point indicators
-    breaking_point_indicators: List[str]
+    breaking_point_indicators: list[str]
     severity_score: float  # 0.0 (healthy) to 1.0 (critical failure)
 
     @property
@@ -130,7 +130,7 @@ class LoadStepResults:
         )
 
     @property
-    def breaking_point_type(self) -> Optional[BreakingPointType]:
+    def breaking_point_type(self) -> BreakingPointType | None:
         """Identify the primary type of breaking point."""
         if not self.is_breaking_point:
             return None
@@ -156,16 +156,16 @@ class SystemBreakingPoint:
 
     # Detection information
     breaking_point_detected: bool
-    breaking_point_step: Optional[int]
-    breaking_point_operations_per_second: Optional[float]
-    breaking_point_type: Optional[BreakingPointType]
+    breaking_point_step: int | None
+    breaking_point_operations_per_second: float | None
+    breaking_point_type: BreakingPointType | None
     detection_timestamp: datetime
 
     # Performance characteristics at breaking point
     response_time_degradation_percent: float
     throughput_degradation_percent: float
     error_rate_spike_percent: float
-    resource_utilization_peak: Dict[str, float]
+    resource_utilization_peak: dict[str, float]
 
     # System behavior analysis
     graceful_degradation_observed: bool
@@ -174,23 +174,23 @@ class SystemBreakingPoint:
 
     # Medical accuracy impact
     medical_accuracy_impact: float
-    accuracy_recovery_time_seconds: Optional[float]
+    accuracy_recovery_time_seconds: float | None
     critical_medical_function_impaired: bool
 
     # Predictive analysis
-    predicted_breaking_point_operations: Optional[float]
-    confidence_interval: Tuple[float, float]
+    predicted_breaking_point_operations: float | None
+    confidence_interval: tuple[float, float]
     safety_margin_operations: float  # Recommended safe operating limit
 
     # Recovery analysis
     recovery_successful: bool
-    recovery_time_seconds: Optional[float]
+    recovery_time_seconds: float | None
     baseline_performance_restored: bool
 
     # Recommendations
-    immediate_actions: List[str]
-    optimization_recommendations: List[str]
-    scaling_recommendations: List[str]
+    immediate_actions: list[str]
+    optimization_recommendations: list[str]
+    scaling_recommendations: list[str]
 
 
 class PerformanceRegression:
@@ -214,7 +214,7 @@ class PerformanceRegression:
             }
         )
 
-    def detect_regression(self) -> Dict[str, float]:
+    def detect_regression(self) -> dict[str, float]:
         """Detect performance regression using statistical analysis."""
         if len(self.performance_history) < self.baseline_window_size * 2:
             return {"regression_detected": False}
@@ -292,7 +292,7 @@ class PerformanceRegression:
 
         return regressions
 
-    def _calculate_regression_severity(self, regressions: Dict[str, float]) -> float:
+    def _calculate_regression_severity(self, regressions: dict[str, float]) -> float:
         """Calculate overall regression severity score (0.0 to 1.0)."""
         severity_factors = []
 
@@ -335,9 +335,9 @@ class BreakingPointAnalyzer:
         self.step_duration_seconds = step_duration_seconds
 
         # Analysis state
-        self.step_results: List[LoadStepResults] = []
+        self.step_results: list[LoadStepResults] = []
         self.breaking_point_detected = False
-        self.breaking_point_analysis: Optional[SystemBreakingPoint] = None
+        self.breaking_point_analysis: SystemBreakingPoint | None = None
 
         # Performance regression detector
         self.regression_detector = PerformanceRegression()
@@ -351,7 +351,7 @@ class BreakingPointAnalyzer:
         logger.info(f"  Max operations/sec: {max_operations_per_second}")
         logger.info(f"  Step duration: {step_duration_seconds} seconds")
 
-    def generate_load_steps(self) -> List[LoadStepConfig]:
+    def generate_load_steps(self) -> list[LoadStepConfig]:
         """Generate progressive load testing steps."""
         steps = []
 
@@ -413,7 +413,7 @@ class BreakingPointAnalyzer:
 
     async def execute_load_step(self, step_config: LoadStepConfig) -> LoadStepResults:
         """Execute a single load testing step."""
-        logger.info(f"\n{'='*70}")
+        logger.info(f"\n{'=' * 70}")
         logger.info(
             f"EXECUTING STEP {step_config.step_number}: {step_config.operations_per_second} ops/sec"
         )
@@ -421,7 +421,7 @@ class BreakingPointAnalyzer:
             f"Duration: {step_config.duration_seconds}s | Users: {step_config.concurrent_users} | "
             f"Complexity: {step_config.medical_complexity}"
         )
-        logger.info(f"{'='*70}")
+        logger.info(f"{'=' * 70}")
 
         step_start_time = datetime.now()
 
@@ -504,8 +504,8 @@ class BreakingPointAnalyzer:
         start_time: datetime,
         end_time: datetime,
         actual_duration: float,
-        load_results: Dict,
-        system_metrics: Dict,
+        load_results: dict,
+        system_metrics: dict,
     ) -> LoadStepResults:
         """Analyze results from a completed load step."""
 
@@ -734,8 +734,8 @@ class BreakingPointAnalyzer:
         )
 
     async def _generate_breaking_point_recommendations(
-        self, step_results: LoadStepResults, bp_type: Optional[BreakingPointType]
-    ) -> Dict[str, List[str]]:
+        self, step_results: LoadStepResults, bp_type: BreakingPointType | None
+    ) -> dict[str, list[str]]:
         """Generate recommendations based on breaking point analysis."""
 
         immediate_actions = []
@@ -980,7 +980,7 @@ class BreakingPointAnalyzer:
 
         return self.breaking_point_analysis
 
-    async def _test_system_recovery(self) -> Dict[str, any]:
+    async def _test_system_recovery(self) -> dict[str, any]:
         """Test system recovery after breaking point."""
         logger.info("Testing system recovery with reduced load...")
 
@@ -1236,7 +1236,7 @@ class StepMetricsCollector:
     def __init__(self):
         self.metrics_samples = []
 
-    async def collect_metrics(self, duration_seconds: int) -> Dict:
+    async def collect_metrics(self, duration_seconds: int) -> dict:
         """Collect system metrics for the specified duration."""
         start_time = time.time()
         sample_interval = 5  # 5-second intervals
@@ -1320,7 +1320,7 @@ class LoadGenerator:
 
     async def generate_load(
         self, duration_seconds: int, complexity: str, nclex_rate: int
-    ) -> Dict:
+    ) -> dict:
         """Generate load for the specified duration."""
         logger.info(
             f"Generating load: {self.operations_per_second} ops/sec for {duration_seconds}s"
@@ -1428,7 +1428,7 @@ class LoadGenerator:
                 response_time = (time.time() - start_time) * 1000  # Convert to ms
                 self.response_times.append(response_time)
 
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 self.timeout_operations += 1
             except Exception:
                 self.failed_operations += 1

@@ -14,12 +14,10 @@ import statistics
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List
 
 import psutil
-
 from performance_benchmarks import benchmark_manager, record_resource_usage
-from ragnostic_batch_simulation import RAGnosticBatchSimulator, BATCH_SCENARIOS
+from ragnostic_batch_simulation import BATCH_SCENARIOS, RAGnosticBatchSimulator
 
 # Configure logging
 logging.basicConfig(
@@ -94,9 +92,9 @@ class BatchProcessingResults:
     resource_sharing_efficiency: float
 
     # Job Type Analysis
-    job_type_performance: Dict[str, Dict]
-    slowest_job_types: List[str]
-    fastest_job_types: List[str]
+    job_type_performance: dict[str, dict]
+    slowest_job_types: list[str]
+    fastest_job_types: list[str]
 
     # Target Compliance
     meets_concurrent_jobs_target: bool
@@ -133,7 +131,7 @@ class BatchProcessingTester:
         self.include_api_competition = include_api_competition
 
         # Test state tracking
-        self.job_metrics: List[BatchJobMetrics] = []
+        self.job_metrics: list[BatchJobMetrics] = []
         self.resource_snapshots = []
         self.queue_performance_data = []
 
@@ -189,7 +187,7 @@ class BatchProcessingTester:
 
         return results
 
-    async def _run_baseline_batch_processing(self) -> Dict:
+    async def _run_baseline_batch_processing(self) -> dict:
         """Run baseline batch processing without API competition."""
         logger.info(f"Running {self.target_concurrent_jobs} concurrent batch jobs...")
 
@@ -235,7 +233,7 @@ class BatchProcessingTester:
         finally:
             await simulator.close()
 
-    async def _run_batch_with_api_competition(self) -> Dict:
+    async def _run_batch_with_api_competition(self) -> dict:
         """Run batch processing with concurrent API load."""
         logger.info("Running batch processing with concurrent API load...")
 
@@ -256,7 +254,7 @@ class BatchProcessingTester:
             ),
         }
 
-    async def _simulate_api_load(self) -> Dict:
+    async def _simulate_api_load(self) -> dict:
         """Simulate concurrent API load to compete with batch processing."""
         # Simple API load simulation
         # In real implementation, would use Locust or similar
@@ -290,7 +288,7 @@ class BatchProcessingTester:
             "requests_per_second": api_requests / (time.time() - start_time),
         }
 
-    async def _run_competitive_batch_processing(self) -> Dict:
+    async def _run_competitive_batch_processing(self) -> dict:
         """Run batch processing under resource competition."""
         simulator = RAGnosticBatchSimulator(
             base_url=self.ragnostic_url, max_concurrent_jobs=self.target_concurrent_jobs
@@ -320,7 +318,7 @@ class BatchProcessingTester:
         finally:
             await simulator.close()
 
-    async def _run_priority_optimization_test(self) -> Dict:
+    async def _run_priority_optimization_test(self) -> dict:
         """Test priority queue handling and optimization."""
         logger.info("Testing priority queue handling and job optimization...")
 
@@ -334,7 +332,7 @@ class BatchProcessingTester:
 
             # High priority jobs (25%)
             high_priority_count = self.target_concurrent_jobs // 4
-            for i in range(high_priority_count):
+            for _i in range(high_priority_count):
                 scenario = {
                     "job_type": "medical_validation",  # Critical job type
                     "document_count": 200,  # Smaller for faster processing
@@ -344,7 +342,7 @@ class BatchProcessingTester:
 
             # Normal priority jobs (50%)
             normal_priority_count = self.target_concurrent_jobs // 2
-            for i in range(normal_priority_count):
+            for _i in range(normal_priority_count):
                 scenario = {
                     "job_type": "document_enrichment",
                     "document_count": self.documents_per_batch,
@@ -358,7 +356,7 @@ class BatchProcessingTester:
                 - high_priority_count
                 - normal_priority_count
             )
-            for i in range(low_priority_count):
+            for _i in range(low_priority_count):
                 scenario = {
                     "job_type": "vector_indexing",
                     "document_count": self.documents_per_batch * 2,  # Larger batches
@@ -390,7 +388,7 @@ class BatchProcessingTester:
         finally:
             await simulator.close()
 
-    def _create_batch_scenarios(self, scenario_count: int) -> List[Dict]:
+    def _create_batch_scenarios(self, scenario_count: int) -> list[dict]:
         """Create diverse batch processing scenarios."""
         scenarios = []
 
@@ -417,8 +415,8 @@ class BatchProcessingTester:
         return scenarios
 
     def _calculate_competition_impact(
-        self, batch_results: Dict, api_results: Dict
-    ) -> Dict:
+        self, batch_results: dict, api_results: dict
+    ) -> dict:
         """Calculate the impact of API competition on batch processing."""
         # This would compare batch processing performance with and without API load
         # For now, simulate the analysis
@@ -431,7 +429,7 @@ class BatchProcessingTester:
             "cpu_contention_level": "low",
         }
 
-    def _analyze_priority_effectiveness(self, completed_jobs: List) -> Dict:
+    def _analyze_priority_effectiveness(self, completed_jobs: list) -> dict:
         """Analyze how effectively the priority queue system worked."""
         if not completed_jobs:
             return {
@@ -454,9 +452,9 @@ class BatchProcessingTester:
 
     async def _analyze_batch_processing_results(
         self,
-        baseline_results: Dict,
-        competition_results: Dict,
-        optimization_results: Dict,
+        baseline_results: dict,
+        competition_results: dict,
+        optimization_results: dict,
     ) -> BatchProcessingResults:
         """Analyze comprehensive batch processing test results."""
 
@@ -553,7 +551,7 @@ class BatchProcessingTester:
             meets_throughput_targets=meets_throughput,
         )
 
-    def _analyze_job_type_performance(self, all_results: List[Dict]) -> Dict:
+    def _analyze_job_type_performance(self, all_results: list[dict]) -> dict:
         """Analyze performance by job type."""
         job_types = [scenario["job_type"] for scenario in BATCH_SCENARIOS]
 
@@ -804,7 +802,7 @@ class BatchResourceMonitor:
                 logger.error(f"Error in batch resource monitoring: {str(e)}")
                 time.sleep(self.sampling_interval)
 
-    def get_comprehensive_stats(self) -> Dict:
+    def get_comprehensive_stats(self) -> dict:
         """Get comprehensive resource utilization statistics."""
         if not self.resource_samples:
             return {

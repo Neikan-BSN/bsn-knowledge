@@ -18,14 +18,13 @@ import json
 import logging
 import statistics
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
-from concurrent.futures import ThreadPoolExecutor
-import psutil
 
-from memory_profiler import AdvancedMemoryProfiler, MemoryLeakPattern
+import psutil
 from breaking_point_analyzer import BreakingPointAnalyzer, SystemBreakingPoint
+from memory_profiler import AdvancedMemoryProfiler, MemoryLeakPattern
 
 # Configure logging
 logging.basicConfig(
@@ -131,21 +130,21 @@ class EnduranceTestResults:
     throughput_consistency_score: float  # 0-1, higher is better
 
     # Memory analysis
-    memory_leak_patterns: List[MemoryLeakPattern]
+    memory_leak_patterns: list[MemoryLeakPattern]
     max_memory_usage_mb: float
     memory_growth_rate_mb_per_hour: float
     memory_efficiency_score: float
 
     # Breaking point analysis
     breaking_point_reached: bool
-    breaking_point_details: Optional[SystemBreakingPoint]
+    breaking_point_details: SystemBreakingPoint | None
     recovery_successful: bool
-    recovery_time_seconds: Optional[float]
+    recovery_time_seconds: float | None
 
     # Medical accuracy
     medical_accuracy_maintained: bool
     min_medical_accuracy: float
-    accuracy_degradation_events: List[Tuple[datetime, str, float]]
+    accuracy_degradation_events: list[tuple[datetime, str, float]]
 
     # Resource management
     resource_leak_incidents: int
@@ -153,8 +152,8 @@ class EnduranceTestResults:
     cleanup_efficiency_score: float
 
     # Phase-specific results
-    phase_metrics: List[EnduranceMetrics]
-    phase_results: Dict[str, Dict]
+    phase_metrics: list[EnduranceMetrics]
+    phase_results: dict[str, dict]
 
     # Quality gates compliance
     meets_8_hour_target: bool
@@ -203,7 +202,7 @@ class MedicalAccuracyMonitor:
         self.monitoring_active = False
         logger.info("Medical accuracy monitoring stopped")
 
-    async def check_medical_accuracy(self, phase_name: str) -> Dict[str, float]:
+    async def check_medical_accuracy(self, phase_name: str) -> dict[str, float]:
         """Check current medical accuracy across different domains."""
         if not self.monitoring_active:
             return {}
@@ -246,7 +245,7 @@ class MedicalAccuracyMonitor:
 
         return accuracy_metrics
 
-    def get_accuracy_summary(self) -> Dict:
+    def get_accuracy_summary(self) -> dict:
         """Get summary of medical accuracy throughout test."""
         if not self.accuracy_samples:
             return {
@@ -272,7 +271,7 @@ class MedicalAccuracyMonitor:
 class SystemHealthMonitor:
     """Monitor system health during endurance testing."""
 
-    def __init__(self, alert_thresholds: Dict[str, float] = None):
+    def __init__(self, alert_thresholds: dict[str, float] = None):
         self.alert_thresholds = alert_thresholds or {
             "cpu_percent": 85.0,
             "memory_percent": 85.0,
@@ -297,8 +296,8 @@ class SystemHealthMonitor:
         logger.info("System health monitoring stopped")
 
     async def capture_health_metrics(
-        self, phase_name: str, additional_metrics: Dict = None
-    ) -> Dict:
+        self, phase_name: str, additional_metrics: dict = None
+    ) -> dict:
         """Capture comprehensive system health metrics."""
         if not self.monitoring_active:
             return {}
@@ -306,8 +305,8 @@ class SystemHealthMonitor:
         # System resource metrics
         cpu_percent = psutil.cpu_percent(interval=1)
         memory = psutil.virtual_memory()
-        disk_io = psutil.disk_io_counters()
-        network_io = psutil.net_io_counters()
+        psutil.disk_io_counters()
+        psutil.net_io_counters()
 
         # Calculate IO rates (simplified)
         disk_io_mb_per_sec = 0  # Would need previous sample to calculate rate
@@ -334,7 +333,7 @@ class SystemHealthMonitor:
         self.health_samples.append(health_metrics)
         return health_metrics
 
-    async def _check_health_alerts(self, metrics: Dict):
+    async def _check_health_alerts(self, metrics: dict):
         """Check health metrics against alert thresholds."""
         alerts = []
 
@@ -353,7 +352,7 @@ class SystemHealthMonitor:
             for alert in alerts:
                 logger.warning(f"Health Alert: {alert} in phase {metrics['phase']}")
 
-    def get_health_summary(self) -> Dict:
+    def get_health_summary(self) -> dict:
         """Get summary of system health throughout test."""
         if not self.health_samples:
             return {
@@ -400,9 +399,9 @@ class EnduranceTestSuite:
         self.system_health_monitor = SystemHealthMonitor()
 
         # Test state
-        self.test_start_time: Optional[datetime] = None
-        self.test_results: Optional[EnduranceTestResults] = None
-        self.phase_metrics: List[EnduranceMetrics] = []
+        self.test_start_time: datetime | None = None
+        self.test_results: EnduranceTestResults | None = None
+        self.phase_metrics: list[EnduranceMetrics] = []
 
         # Thread pool for parallel operations
         self.thread_pool = ThreadPoolExecutor(max_workers=4)
@@ -413,7 +412,7 @@ class EnduranceTestSuite:
         logger.info(f"  Test duration: {test_duration_hours} hours")
         logger.info(f"  Test phases: {len(self.test_phases)}")
 
-    def _create_endurance_phases(self) -> List[EndurancePhaseConfig]:
+    def _create_endurance_phases(self) -> list[EndurancePhaseConfig]:
         """Create realistic 8-hour endurance test phases."""
         return [
             EndurancePhaseConfig(
@@ -536,7 +535,7 @@ class EnduranceTestSuite:
         try:
             # Execute each test phase
             for phase_idx, phase in enumerate(self.test_phases):
-                logger.info(f"\n{'='*80}")
+                logger.info(f"\n{'=' * 80}")
                 logger.info(
                     f"PHASE {phase_idx + 1}/{len(self.test_phases)}: {phase.name.upper()}"
                 )
@@ -548,7 +547,7 @@ class EnduranceTestSuite:
                     f"Medical Complexity: {phase.medical_content_complexity} | "
                     f"NCLEX Difficulty: {phase.nclex_question_difficulty}"
                 )
-                logger.info(f"{'='*80}")
+                logger.info(f"{'=' * 80}")
 
                 # Execute phase
                 phase_results = await self._execute_endurance_phase(phase)
@@ -605,7 +604,7 @@ class EnduranceTestSuite:
 
         logger.info("All monitoring systems stopped")
 
-    async def _execute_endurance_phase(self, phase: EndurancePhaseConfig) -> Dict:
+    async def _execute_endurance_phase(self, phase: EndurancePhaseConfig) -> dict:
         """Execute a single endurance testing phase."""
         phase_start_time = datetime.now()
         phase_duration_seconds = phase.duration_hours * 3600
@@ -627,7 +626,7 @@ class EnduranceTestSuite:
                 asyncio.gather(load_task, monitoring_task, return_exceptions=True),
                 timeout=phase_duration_seconds + 300,  # 5-minute buffer
             )
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(f"Phase {phase.name} timed out")
 
         phase_end_time = datetime.now()
@@ -694,7 +693,7 @@ class EnduranceTestSuite:
         await asyncio.sleep(batch_delay)
 
     async def _monitor_phase_execution(
-        self, phase: EndurancePhaseConfig, metrics_list: List
+        self, phase: EndurancePhaseConfig, metrics_list: list
     ):
         """Monitor phase execution and collect metrics."""
         phase_duration_seconds = phase.duration_hours * 3600
@@ -772,7 +771,7 @@ class EnduranceTestSuite:
             await asyncio.sleep(monitoring_interval)
 
     async def _analyze_phase_results(
-        self, phase: EndurancePhaseConfig, phase_results: Dict
+        self, phase: EndurancePhaseConfig, phase_results: dict
     ):
         """Analyze results from a completed phase."""
         metrics = phase_results["metrics"]

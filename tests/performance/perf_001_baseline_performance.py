@@ -13,18 +13,16 @@ import logging
 import statistics
 import time
 from dataclasses import dataclass
-from typing import Dict
 
 import psutil
 from locust.env import Environment
-
-from locust_scenarios import BSNKnowledgeStudent, BSNKnowledgeInstructor
+from locust_scenarios import BSNKnowledgeInstructor, BSNKnowledgeStudent
 from performance_benchmarks import (
     benchmark_manager,
     record_concurrent_users,
     record_resource_usage,
 )
-from ragnostic_batch_simulation import RAGnosticBatchSimulator, BATCH_SCENARIOS
+from ragnostic_batch_simulation import BATCH_SCENARIOS, RAGnosticBatchSimulator
 
 # Configure logging
 logging.basicConfig(
@@ -196,7 +194,7 @@ class BaselinePerformanceTester:
 
         return results
 
-    async def _test_bsn_knowledge_baseline(self) -> Dict:
+    async def _test_bsn_knowledge_baseline(self) -> dict:
         """Test BSN Knowledge API performance baseline."""
         # Set up Locust environment for BSN Knowledge testing
         env = Environment(
@@ -236,7 +234,7 @@ class BaselinePerformanceTester:
             * 100,
         }
 
-    async def _test_ragnostic_baseline(self) -> Dict:
+    async def _test_ragnostic_baseline(self) -> dict:
         """Test RAGnostic batch processing baseline."""
         # Initialize RAGnostic batch simulator
         simulator = RAGnosticBatchSimulator(
@@ -280,7 +278,7 @@ class BaselinePerformanceTester:
         finally:
             await simulator.close()
 
-    async def _test_combined_load(self) -> Dict:
+    async def _test_combined_load(self) -> dict:
         """Test combined BSN Knowledge + RAGnostic load."""
         logger.info(
             "Starting combined load test: BSN Knowledge users + RAGnostic batch jobs..."
@@ -301,7 +299,7 @@ class BaselinePerformanceTester:
             ),
         }
 
-    async def _run_bsn_knowledge_concurrent(self) -> Dict:
+    async def _run_bsn_knowledge_concurrent(self) -> dict:
         """Run BSN Knowledge load test concurrently with batch processing."""
         # Similar to baseline test but runs concurrently
         env = Environment(
@@ -332,7 +330,7 @@ class BaselinePerformanceTester:
             * 100,
         }
 
-    async def _run_ragnostic_concurrent(self) -> Dict:
+    async def _run_ragnostic_concurrent(self) -> dict:
         """Run RAGnostic batch processing concurrently with API load."""
         simulator = RAGnosticBatchSimulator(
             base_url=self.ragnostic_url, max_concurrent_jobs=self.batch_jobs
@@ -370,8 +368,8 @@ class BaselinePerformanceTester:
             await simulator.close()
 
     def _analyze_performance_interference(
-        self, bsn_baseline: Dict, ragnostic_baseline: Dict, combined_results: Dict
-    ) -> Dict:
+        self, bsn_baseline: dict, ragnostic_baseline: dict, combined_results: dict
+    ) -> dict:
         """Analyze if combined load causes performance interference."""
 
         # Compare baseline vs combined performance
@@ -421,8 +419,8 @@ class BaselinePerformanceTester:
         }
 
     def _analyze_combined_performance(
-        self, bsn_results: Dict, ragnostic_results: Dict
-    ) -> Dict:
+        self, bsn_results: dict, ragnostic_results: dict
+    ) -> dict:
         """Analyze overall system performance under combined load."""
         total_operations = (
             bsn_results["total_requests"] + ragnostic_results["documents_processed"]
@@ -442,7 +440,7 @@ class BaselinePerformanceTester:
             "system_throughput_ops_per_second": total_operations / self.test_duration,
         }
 
-    def _calculate_sla_compliance(self, combined_results: Dict) -> float:
+    def _calculate_sla_compliance(self, combined_results: dict) -> float:
         """Calculate SLA compliance percentage."""
         # SLA criteria:
         # - API response time p95 < 200ms
@@ -482,7 +480,7 @@ class BaselinePerformanceTester:
         )
 
     def _generate_baseline_report(
-        self, results: BaselineTestResults, interference_analysis: Dict
+        self, results: BaselineTestResults, interference_analysis: dict
     ):
         """Generate comprehensive baseline performance report."""
         logger.info("\n" + "=" * 80)
@@ -613,7 +611,7 @@ class ResourceMonitor:
                 logger.error(f"Error in resource monitoring: {str(e)}")
                 break
 
-    def get_stats(self) -> Dict[str, float]:
+    def get_stats(self) -> dict[str, float]:
         """Get resource utilization statistics."""
         if not self.cpu_samples or not self.memory_samples:
             return {
@@ -634,7 +632,7 @@ class ResourceMonitor:
 class MedicalAccuracyValidator:
     """Validates medical accuracy under load conditions."""
 
-    async def validate_accuracy_under_load(self, test_results: Dict) -> Dict:
+    async def validate_accuracy_under_load(self, test_results: dict) -> dict:
         """Validate medical accuracy during load testing."""
         # Simulate medical accuracy validation
         # In real implementation, this would validate UMLS terminology accuracy

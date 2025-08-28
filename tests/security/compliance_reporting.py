@@ -27,7 +27,7 @@ Reporting Capabilities:
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 
 class ComplianceReportingFramework:
@@ -49,10 +49,10 @@ class ComplianceReportingFramework:
 
     def generate_comprehensive_compliance_report(
         self,
-        validation_results: Dict[str, Any],
-        audit_results: Dict[str, Any],
-        security_test_results: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        validation_results: dict[str, Any],
+        audit_results: dict[str, Any],
+        security_test_results: dict[str, Any],
+    ) -> dict[str, Any]:
         """Generate comprehensive compliance report from validation results."""
 
         report = {
@@ -98,8 +98,8 @@ class ComplianceReportingFramework:
         return report
 
     def _generate_executive_summary(
-        self, validation_results: Dict, audit_results: Dict, security_results: Dict
-    ) -> Dict[str, Any]:
+        self, validation_results: dict, audit_results: dict, security_results: dict
+    ) -> dict[str, Any]:
         """Generate executive summary for compliance report."""
         # Calculate overall compliance score
         overall_security_score = validation_results.get(
@@ -147,11 +147,11 @@ class ComplianceReportingFramework:
     def _assess_compliance_standard(
         self,
         standard_name: str,
-        requirements: Dict[str, Any],
-        validation_results: Dict,
-        audit_results: Dict,
-        security_results: Dict,
-    ) -> Dict[str, Any]:
+        requirements: dict[str, Any],
+        validation_results: dict,
+        audit_results: dict,
+        security_results: dict,
+    ) -> dict[str, Any]:
         """Assess compliance with a specific standard."""
 
         assessment = {
@@ -202,11 +202,11 @@ class ComplianceReportingFramework:
 
     def _assess_hipaa_compliance(
         self,
-        requirements: Dict,
-        validation_results: Dict,
-        audit_results: Dict,
-        security_results: Dict,
-    ) -> Dict[str, Any]:
+        requirements: dict,
+        validation_results: dict,
+        audit_results: dict,
+        security_results: dict,
+    ) -> dict[str, Any]:
         """Assess HIPAA compliance requirements."""
         assessment = {
             "standard_name": "HIPAA",
@@ -320,11 +320,11 @@ class ComplianceReportingFramework:
 
     def _assess_ferpa_compliance(
         self,
-        requirements: Dict,
-        validation_results: Dict,
-        audit_results: Dict,
-        security_results: Dict,
-    ) -> Dict[str, Any]:
+        requirements: dict,
+        validation_results: dict,
+        audit_results: dict,
+        security_results: dict,
+    ) -> dict[str, Any]:
         """Assess FERPA compliance requirements."""
         assessment = {
             "standard_name": "FERPA",
@@ -390,11 +390,11 @@ class ComplianceReportingFramework:
 
     def _assess_owasp_compliance(
         self,
-        requirements: Dict,
-        validation_results: Dict,
-        audit_results: Dict,
-        security_results: Dict,
-    ) -> Dict[str, Any]:
+        requirements: dict,
+        validation_results: dict,
+        audit_results: dict,
+        security_results: dict,
+    ) -> dict[str, Any]:
         """Assess OWASP Top 10 compliance."""
         assessment = {
             "standard_name": "OWASP",
@@ -511,11 +511,11 @@ class ComplianceReportingFramework:
     # Simplified implementations for other compliance standards
     def _assess_sox_compliance(
         self,
-        requirements: Dict,
-        validation_results: Dict,
-        audit_results: Dict,
-        security_results: Dict,
-    ) -> Dict[str, Any]:
+        requirements: dict,
+        validation_results: dict,
+        audit_results: dict,
+        security_results: dict,
+    ) -> dict[str, Any]:
         return {
             "standard_name": "SOX",
             "overall_score": 92.0,
@@ -535,11 +535,11 @@ class ComplianceReportingFramework:
 
     def _assess_gdpr_compliance(
         self,
-        requirements: Dict,
-        validation_results: Dict,
-        audit_results: Dict,
-        security_results: Dict,
-    ) -> Dict[str, Any]:
+        requirements: dict,
+        validation_results: dict,
+        audit_results: dict,
+        security_results: dict,
+    ) -> dict[str, Any]:
         return {
             "standard_name": "GDPR",
             "overall_score": 88.0,
@@ -556,11 +556,11 @@ class ComplianceReportingFramework:
 
     def _assess_iso27001_compliance(
         self,
-        requirements: Dict,
-        validation_results: Dict,
-        audit_results: Dict,
-        security_results: Dict,
-    ) -> Dict[str, Any]:
+        requirements: dict,
+        validation_results: dict,
+        audit_results: dict,
+        security_results: dict,
+    ) -> dict[str, Any]:
         return {
             "standard_name": "ISO27001",
             "overall_score": 91.0,
@@ -580,11 +580,11 @@ class ComplianceReportingFramework:
 
     def _assess_nist_compliance(
         self,
-        requirements: Dict,
-        validation_results: Dict,
-        audit_results: Dict,
-        security_results: Dict,
-    ) -> Dict[str, Any]:
+        requirements: dict,
+        validation_results: dict,
+        audit_results: dict,
+        security_results: dict,
+    ) -> dict[str, Any]:
         return {
             "standard_name": "NIST",
             "overall_score": 94.0,
@@ -603,11 +603,11 @@ class ComplianceReportingFramework:
 
     def _assess_medical_platform_compliance(
         self,
-        requirements: Dict,
-        validation_results: Dict,
-        audit_results: Dict,
-        security_results: Dict,
-    ) -> Dict[str, Any]:
+        requirements: dict,
+        validation_results: dict,
+        audit_results: dict,
+        security_results: dict,
+    ) -> dict[str, Any]:
         return {
             "standard_name": "MEDICAL_PLATFORM",
             "overall_score": validation_results.get(
@@ -635,8 +635,8 @@ class ComplianceReportingFramework:
         }
 
     def _generate_risk_assessment(
-        self, validation_results: Dict, audit_results: Dict, security_results: Dict
-    ) -> Dict[str, Any]:
+        self, validation_results: dict, audit_results: dict, security_results: dict
+    ) -> dict[str, Any]:
         """Generate comprehensive risk assessment."""
         return {
             "risk_level": "LOW",
@@ -659,8 +659,8 @@ class ComplianceReportingFramework:
         }
 
     def _generate_gap_analysis(
-        self, validation_results: Dict, audit_results: Dict, security_results: Dict
-    ) -> Dict[str, Any]:
+        self, validation_results: dict, audit_results: dict, security_results: dict
+    ) -> dict[str, Any]:
         """Generate gap analysis from validation results."""
         return {
             "total_gaps_identified": 0,
@@ -672,8 +672,8 @@ class ComplianceReportingFramework:
         }
 
     def _generate_remediation_plan(
-        self, validation_results: Dict, audit_results: Dict, security_results: Dict
-    ) -> Dict[str, Any]:
+        self, validation_results: dict, audit_results: dict, security_results: dict
+    ) -> dict[str, Any]:
         """Generate remediation plan for identified gaps."""
         return {
             "immediate_actions": [],
@@ -684,8 +684,8 @@ class ComplianceReportingFramework:
         }
 
     def _calculate_compliance_metrics(
-        self, validation_results: Dict, audit_results: Dict, security_results: Dict
-    ) -> Dict[str, Any]:
+        self, validation_results: dict, audit_results: dict, security_results: dict
+    ) -> dict[str, Any]:
         """Calculate comprehensive compliance metrics."""
         return {
             "overall_compliance_score": 96.5,
@@ -701,8 +701,8 @@ class ComplianceReportingFramework:
 
     # Helper methods for generating report content
     def _extract_critical_findings(
-        self, validation_results: Dict, audit_results: Dict, security_results: Dict
-    ) -> List[str]:
+        self, validation_results: dict, audit_results: dict, security_results: dict
+    ) -> list[str]:
         """Extract critical findings from validation results."""
         findings = []
 
@@ -724,8 +724,8 @@ class ComplianceReportingFramework:
         return findings
 
     def _extract_key_achievements(
-        self, validation_results: Dict, audit_results: Dict, security_results: Dict
-    ) -> List[str]:
+        self, validation_results: dict, audit_results: dict, security_results: dict
+    ) -> list[str]:
         """Extract key security achievements."""
         achievements = []
 
@@ -752,8 +752,8 @@ class ComplianceReportingFramework:
         return achievements
 
     def _identify_immediate_actions(
-        self, validation_results: Dict, audit_results: Dict, security_results: Dict
-    ) -> List[str]:
+        self, validation_results: dict, audit_results: dict, security_results: dict
+    ) -> list[str]:
         """Identify immediate actions required."""
         actions = []
 
@@ -772,7 +772,7 @@ class ComplianceReportingFramework:
 
     def _generate_certification_recommendations(
         self, compliance_score: float
-    ) -> List[str]:
+    ) -> list[str]:
         """Generate certification recommendations based on compliance score."""
         recommendations = []
 
@@ -802,7 +802,7 @@ class ComplianceReportingFramework:
         return recommendations
 
     # Compliance standards requirements definitions
-    def _get_hipaa_requirements(self) -> Dict[str, Any]:
+    def _get_hipaa_requirements(self) -> dict[str, Any]:
         return {
             "administrative_safeguards": [
                 "Security Officer",
@@ -822,7 +822,7 @@ class ComplianceReportingFramework:
             ],
         }
 
-    def _get_ferpa_requirements(self) -> Dict[str, Any]:
+    def _get_ferpa_requirements(self) -> dict[str, Any]:
         return {
             "educational_records": [
                 "Access Controls",
@@ -832,19 +832,19 @@ class ComplianceReportingFramework:
             "disclosure_controls": ["Authorized Access Only", "Audit Logging"],
         }
 
-    def _get_sox_requirements(self) -> Dict[str, Any]:
+    def _get_sox_requirements(self) -> dict[str, Any]:
         return {
             "internal_controls": ["Access Controls", "Change Management"],
             "audit_requirements": ["Audit Trails", "Log Integrity"],
         }
 
-    def _get_gdpr_requirements(self) -> Dict[str, Any]:
+    def _get_gdpr_requirements(self) -> dict[str, Any]:
         return {
             "data_protection": ["Privacy by Design", "Consent Management"],
             "data_subject_rights": ["Access Rights", "Deletion Rights"],
         }
 
-    def _get_owasp_requirements(self) -> Dict[str, Any]:
+    def _get_owasp_requirements(self) -> dict[str, Any]:
         return {
             "owasp_top_10": [
                 "Access Control",
@@ -854,7 +854,7 @@ class ComplianceReportingFramework:
             ]
         }
 
-    def _get_iso27001_requirements(self) -> Dict[str, Any]:
+    def _get_iso27001_requirements(self) -> dict[str, Any]:
         return {
             "information_security": [
                 "Risk Management",
@@ -863,7 +863,7 @@ class ComplianceReportingFramework:
             ]
         }
 
-    def _get_nist_requirements(self) -> Dict[str, Any]:
+    def _get_nist_requirements(self) -> dict[str, Any]:
         return {
             "cybersecurity_framework": [
                 "Identify",
@@ -874,7 +874,7 @@ class ComplianceReportingFramework:
             ]
         }
 
-    def _get_medical_platform_requirements(self) -> Dict[str, Any]:
+    def _get_medical_platform_requirements(self) -> dict[str, Any]:
         return {
             "medical_specific": [
                 "Medical Accuracy",
@@ -886,10 +886,10 @@ class ComplianceReportingFramework:
 
 # Integration functions for Group 3C validation
 def generate_group_3c_compliance_report(
-    validation_results: Dict[str, Any],
-    audit_results: Dict[str, Any],
-    security_test_results: Dict[str, Any],
-) -> Dict[str, Any]:
+    validation_results: dict[str, Any],
+    audit_results: dict[str, Any],
+    security_test_results: dict[str, Any],
+) -> dict[str, Any]:
     """Generate Group 3C compliance report."""
     framework = ComplianceReportingFramework()
     return framework.generate_comprehensive_compliance_report(
@@ -897,7 +897,7 @@ def generate_group_3c_compliance_report(
     )
 
 
-def export_compliance_report(report: Dict[str, Any], output_path: str) -> bool:
+def export_compliance_report(report: dict[str, Any], output_path: str) -> bool:
     """Export compliance report to file."""
     try:
         output_file = Path(output_path)
