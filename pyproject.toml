@@ -77,6 +77,7 @@ test = [
     "coverage[toml]>=7.4.0",
     "hypothesis>=6.100.0",
     "psutil>=6.0.0",
+    "matplotlib>=3.7.0",
 ]
 
 format = [
@@ -289,7 +290,7 @@ exclude = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "B018", "B011"]  # Be lenient in tests
+"tests/*" = ["S101", "B018", "B011", "S311"]  # Be lenient in tests, allow test random
 "scripts/*" = ["S603", "S607"]        # Allow subprocess in scripts
 
 # ================================================================================

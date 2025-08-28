@@ -9,10 +9,8 @@ Context7 Protocol Compliant:
 - Performance monitoring integration
 """
 
-import os
 import sys
 import json
-import hashlib
 from pathlib import Path
 from datetime import datetime
 

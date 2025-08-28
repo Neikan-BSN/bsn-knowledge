@@ -199,7 +199,7 @@ class ContentGenerationService:
                     )
                     raise ContentGenerationError(
                         f"Failed to generate content: {str(e)}"
-                    )
+                    ) from e
                 await asyncio.sleep(retry_delay)
 
         raise ContentGenerationError("Max retries exceeded for content generation")

@@ -320,12 +320,12 @@ class RequestValidationMiddleware:
 
         except ValidationError:
             raise
-        except Exception:
+        except Exception as e:
             raise APIError(
                 message="Request validation failed",
                 status_code=status.HTTP_400_BAD_REQUEST,
                 error_code="VALIDATION_ERROR",
-            )
+            ) from e
 
     def _validate_headers(self, request: Request):
         """Validate request headers"""

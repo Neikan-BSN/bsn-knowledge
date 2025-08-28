@@ -3,9 +3,12 @@ Mock data generators for BSN Knowledge API testing.
 
 Provides comprehensive mock data for nursing education scenarios,
 realistic test cases, and edge case testing.
+
+Note: Uses standard random module intentionally for test data generation.
+This is not for cryptographic purposes and is appropriate for test scenarios.
 """
 
-import random
+import random  # nosec - Intentionally using standard random for test data
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
