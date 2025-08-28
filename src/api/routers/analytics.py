@@ -103,7 +103,7 @@ async def get_student_progress(
         logger.error(f"Error retrieving student progress: {str(e)}")
         raise HTTPException(
             status_code=500, detail="Failed to retrieve progress metrics"
-        )
+        ) from e
 
 
 @router.get("/student/{student_id}/insights")
@@ -131,7 +131,7 @@ async def get_learning_insights(
         logger.error(f"Error generating learning insights: {str(e)}")
         raise HTTPException(
             status_code=500, detail="Failed to generate learning insights"
-        )
+        ) from e
 
 
 @router.get("/student/{student_id}/cohort-comparison")
@@ -163,7 +163,7 @@ async def get_cohort_comparison(
         logger.error(f"Error generating cohort comparison: {str(e)}")
         raise HTTPException(
             status_code=500, detail="Failed to generate cohort comparison"
-        )
+        ) from e
 
 
 @router.post("/student/{student_id}/engagement/track")
@@ -195,7 +195,7 @@ async def track_engagement(
 
     except Exception as e:
         logger.error(f"Error tracking engagement: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to track engagement")
+        raise HTTPException(status_code=500, detail="Failed to track engagement") from e
 
 
 @router.post("/student/{student_id}/predict-performance")
@@ -233,7 +233,9 @@ async def predict_performance(
 
     except Exception as e:
         logger.error(f"Error predicting performance: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to predict performance")
+        raise HTTPException(
+            status_code=500, detail="Failed to predict performance"
+        ) from e
 
 
 @router.post("/student/{student_id}/report/generate")
@@ -272,7 +274,7 @@ async def generate_learning_report(
         logger.error(f"Error generating learning report: {str(e)}")
         raise HTTPException(
             status_code=500, detail="Failed to generate learning report"
-        )
+        ) from e
 
 
 @router.get("/content/{content_id}/performance")
@@ -301,7 +303,7 @@ async def get_content_performance(
         logger.error(f"Error analyzing content performance: {str(e)}")
         raise HTTPException(
             status_code=500, detail="Failed to analyze content performance"
-        )
+        ) from e
 
 
 @router.get("/quiz/{quiz_id}/analytics")
@@ -327,7 +329,7 @@ async def get_quiz_analytics(
 
     except Exception as e:
         logger.error(f"Error analyzing quiz: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to analyze quiz")
+        raise HTTPException(status_code=500, detail="Failed to analyze quiz") from e
 
 
 @router.post("/cohort/analyze", response_model=CohortAnalytics)
@@ -357,7 +359,7 @@ async def analyze_cohort(
 
     except Exception as e:
         logger.error(f"Error analyzing cohort: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to analyze cohort")
+        raise HTTPException(status_code=500, detail="Failed to analyze cohort") from e
 
 
 @router.post("/institutional/report", response_model=InstitutionalReport)
@@ -391,7 +393,7 @@ async def generate_institutional_report(
         logger.error(f"Error generating institutional report: {str(e)}")
         raise HTTPException(
             status_code=500, detail="Failed to generate institutional report"
-        )
+        ) from e
 
 
 @router.get("/dashboard/summary")
@@ -459,7 +461,7 @@ async def get_dashboard_summary(
         logger.error(f"Error generating dashboard summary: {str(e)}")
         raise HTTPException(
             status_code=500, detail="Failed to generate dashboard summary"
-        )
+        ) from e
 
 
 @router.get("/exports/data")
@@ -502,7 +504,9 @@ async def export_analytics_data(
 
     except Exception as e:
         logger.error(f"Error preparing data export: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to prepare data export")
+        raise HTTPException(
+            status_code=500, detail="Failed to prepare data export"
+        ) from e
 
 
 @router.post("/student/{student_id}/learning-analytics/analyze")
@@ -554,7 +558,7 @@ async def analyze_student_learning(
         logger.error(f"Error in learning analysis: {str(e)}")
         raise HTTPException(
             status_code=500, detail="Failed to analyze student learning patterns"
-        )
+        ) from e
 
 
 @router.post("/institutional/learning-analytics/report")
@@ -607,7 +611,7 @@ async def generate_institutional_learning_report(
         logger.error(f"Error generating institutional learning report: {str(e)}")
         raise HTTPException(
             status_code=500, detail="Failed to generate institutional learning report"
-        )
+        ) from e
 
 
 @router.get("/student/{student_id}/competency-progression")
@@ -656,7 +660,7 @@ async def get_competency_progression(
         logger.error(f"Error analyzing competency progression: {str(e)}")
         raise HTTPException(
             status_code=500, detail="Failed to analyze competency progression"
-        )
+        ) from e
 
 
 @router.get("/student/{student_id}/knowledge-gaps")
@@ -730,7 +734,9 @@ async def get_knowledge_gap_analysis(
 
     except Exception as e:
         logger.error(f"Error analyzing knowledge gaps: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to analyze knowledge gaps")
+        raise HTTPException(
+            status_code=500, detail="Failed to analyze knowledge gaps"
+        ) from e
 
 
 @router.get("/student/{student_id}/learning-recommendations")
@@ -803,7 +809,7 @@ async def get_learning_path_recommendations(
         logger.error(f"Error generating learning recommendations: {str(e)}")
         raise HTTPException(
             status_code=500, detail="Failed to generate learning recommendations"
-        )
+        ) from e
 
 
 @router.get("/dashboard/learning-analytics-summary")
@@ -894,7 +900,7 @@ async def get_learning_analytics_dashboard(
         logger.error(f"Error generating learning analytics dashboard: {str(e)}")
         raise HTTPException(
             status_code=500, detail="Failed to generate learning analytics dashboard"
-        )
+        ) from e
 
 
 @router.get("/benchmarks/national")
@@ -957,4 +963,6 @@ async def get_national_benchmarks(
 
     except Exception as e:
         logger.error(f"Error retrieving national benchmarks: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to retrieve benchmarks")
+        raise HTTPException(
+            status_code=500, detail="Failed to retrieve benchmarks"
+        ) from e

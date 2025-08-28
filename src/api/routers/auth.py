@@ -63,12 +63,12 @@ async def login(login_data: LoginRequest) -> Token:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from e
 
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="User account is disabled"
-        )
+        ) from e
 
     return create_auth_tokens(user)
 
@@ -96,12 +96,12 @@ async def oauth2_login(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from e
 
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="User account is disabled"
-        )
+        ) from e
 
     # Note: form_data.scopes contains requested scopes, can be used for fine-grained access
     return create_auth_tokens(user)
@@ -132,14 +132,14 @@ async def refresh_token(refresh_token: str) -> Token:
         if not user or not user.is_active:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
-            )
+            ) from e
 
         return create_auth_tokens(user)
 
     except HTTPException:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
-        )
+        ) from e
 
 
 @router.post("/logout")

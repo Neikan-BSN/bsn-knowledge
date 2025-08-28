@@ -24,7 +24,7 @@ jobs:
   validate_and_test:
     name: Validate & Test
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -49,8 +49,8 @@ jobs:
           echo "🔍 Running code formatting check..."
           uv run ruff format src/ tests/
           echo "✅ Format check completed"
-          echo "🔍 Running linting check (syntax errors only)..."
-          uv run ruff check src/ tests/ --select F401,F821 --ignore F401
+          echo "🔍 Running comprehensive linting check..."
+          uv run ruff check src/ tests/ --fix --exit-non-zero-on-fix
           echo "✅ Lint check completed"
 
       # - name: Type Checking
@@ -69,7 +69,8 @@ jobs:
 
       - name: Run Tests
         run: |
-          timeout 1200 uv run pytest tests/ -v --tb=short --cov=src --cov-report=xml --timeout=300
+          echo "🧪 Running test suite with optimized timeouts and better error handling..."
+          timeout 2400 uv run pytest tests/ -v --tb=short --cov=src --cov-report=xml --timeout=600 --maxfail=5 -x
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v4

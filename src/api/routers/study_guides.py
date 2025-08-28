@@ -148,7 +148,7 @@ async def create_study_guide(
     except Exception as e:
         logger.error(f"Study guide creation failed: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"Study guide generation failed: {str(e)}"
+            status_code=500, detail=f"Study guide generation failed: {str(e) from e}"
         )
 
 
@@ -203,7 +203,7 @@ async def create_personalized_study_guide(
     except Exception as e:
         logger.error(f"Personalized study guide creation failed: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"Personalized guide generation failed: {str(e)}"
+            status_code=500, detail=f"Personalized guide generation failed: {str(e) from e}"
         )
 
 
@@ -225,7 +225,7 @@ async def create_competency_focused_guide(
             raise HTTPException(
                 status_code=400,
                 detail=f"Unknown competency framework: {request.competency}",
-            )
+            ) from e
 
         # Generate competency-focused guide
         study_guide = await generator.generate_competency_focused_guide(
@@ -267,7 +267,7 @@ async def create_competency_focused_guide(
     except Exception as e:
         logger.error(f"Competency-focused guide creation failed: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"Competency guide generation failed: {str(e)}"
+            status_code=500, detail=f"Competency guide generation failed: {str(e) from e}"
         )
 
 
@@ -285,11 +285,11 @@ async def customize_study_guide(
         # For now, return a placeholder response indicating customization capability
         raise HTTPException(
             status_code=501, detail="Guide customization requires storage integration"
-        )
+        ) from e
 
     except Exception as e:
         logger.error(f"Study guide customization failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Customization failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Customization failed: {str(e) from e}")
 
 
 @router.get("/topics", response_model=list[str])
@@ -304,7 +304,7 @@ async def get_available_topics(
         return await generator.get_available_topics()
     except Exception as e:
         logger.error(f"Failed to get topics: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to retrieve topics")
+        raise HTTPException(status_code=500, detail="Failed to retrieve topics") from e
 
 
 @router.get("/competency-frameworks", response_model=list[str])
@@ -338,7 +338,7 @@ async def get_study_guide(guide_id: str):
     Get specific study guide by ID (placeholder - would integrate with storage)
     """
     # This would retrieve from database/storage
-    raise HTTPException(status_code=404, detail="Study guide not found")
+    raise HTTPException(status_code=404, detail="Study guide not found") from e
 
 
 @router.post("/create", response_model=StudyGuideResponse)
@@ -359,7 +359,7 @@ async def create_study_guide_endpoint(
     except Exception as e:
         logger.error(f"Study guide creation failed: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"Study guide creation failed: {str(e)}"
+            status_code=500, detail=f"Study guide creation failed: {str(e) from e}"
         )
 
 

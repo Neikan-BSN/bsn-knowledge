@@ -161,9 +161,7 @@ async def test_competency_framework_fixtures(auth_tokens, auth_headers, test_use
 
     # Validate user roles for competency access
     assert student_user.role == "student", "Student role validation failed"
-    assert (
-        instructor_user.role == "instructor"
-    ), "Instructor role validation failed"
+    assert instructor_user.role == "instructor", "Instructor role validation failed"
     assert admin_user.role == "admin", "Admin role validation failed"
 
     # Test active user validation

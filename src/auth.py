@@ -205,7 +205,7 @@ async def get_current_user(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Authentication required",
                 headers={"WWW-Authenticate": "Bearer"},
-            )
+            ) from e
 
     token_data = verify_token(credentials.credentials)
     user = get_user(username=token_data.username)
@@ -219,7 +219,7 @@ async def get_current_user(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User not found",
                 headers={"WWW-Authenticate": "Bearer"},
-            )
+            ) from e
 
     if not user.is_active:
         try:
@@ -229,7 +229,7 @@ async def get_current_user(
         except ImportError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
-            )
+            ) from e
 
     # Convert UserInDB to User (remove hashed_password)
     return User(
@@ -260,7 +260,7 @@ def require_role(required_role: str):
                     raise HTTPException(
                         status_code=status.HTTP_403_FORBIDDEN,
                         detail=f"Insufficient permissions. Required role: {required_role}",
-                    )
+                    ) from e
             return await func(*args, **kwargs)
 
         return wrapper
@@ -284,7 +284,7 @@ def require_any_role(required_roles: list[str]):
                 if user.role not in required_roles and user.role != UserRole.ADMIN:
                     raise HTTPException(
                         status_code=status.HTTP_403_FORBIDDEN,
-                        detail=f"Insufficient permissions. Required roles: {', '.join(required_roles)}",
+                        detail=f"Insufficient permissions. Required roles: {', '.join(required_roles) from e}",
                     )
             return await func(*args, **kwargs)
 
@@ -299,7 +299,7 @@ async def get_current_active_user(
 ) -> User:
     """Get current active user"""
     if not current_user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(status_code=400, detail="Inactive user") from e
     return current_user
 
 
@@ -313,7 +313,7 @@ async def get_current_student(current_user: User = Depends(get_current_user)) ->
         except ImportError:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="Student access required"
-            )
+            ) from e
     return current_user
 
 
@@ -330,7 +330,7 @@ async def get_current_instructor(
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Instructor access required",
-            )
+            ) from e
     return current_user
 
 
@@ -345,7 +345,7 @@ async def get_current_admin(current_user: User = Depends(get_current_user)) -> U
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Administrator access required",
-            )
+            ) from e
     return current_user
 
 

@@ -20,7 +20,7 @@ class StudentIDValidation(BaseModel):
     @validator("student_id")
     def validate_student_id_format(cls, v):
         if not v or not v.strip():
-            raise ValueError("Student ID cannot be empty")
+            raise ValueError("Student ID cannot be empty") from e
         return v.strip()
 
 
@@ -34,7 +34,7 @@ class CompetencyIDValidation(BaseModel):
     @validator("competency_id")
     def validate_competency_id_format(cls, v):
         if not v or not v.strip():
-            raise ValueError("Competency ID cannot be empty")
+            raise ValueError("Competency ID cannot be empty") from e
         return v.strip()
 
 
@@ -55,7 +55,7 @@ class TimeRangeValidation(BaseModel):
     def validate_date_range(cls, v, values):
         if v and "start_date" in values and values["start_date"]:
             if v < values["start_date"]:
-                raise ValueError("End date must be after start date")
+                raise ValueError("End date must be after start date") from e
         return v
 
 
@@ -67,7 +67,7 @@ class TopicValidation(BaseModel):
     @validator("topic")
     def validate_topic_content(cls, v):
         if not v or not v.strip():
-            raise ValueError("Topic cannot be empty")
+            raise ValueError("Topic cannot be empty") from e
 
         # Check for potentially harmful content
         forbidden_patterns = [
@@ -80,7 +80,7 @@ class TopicValidation(BaseModel):
 
         for pattern in forbidden_patterns:
             if re.search(pattern, v, re.IGNORECASE):
-                raise ValueError("Topic contains invalid content")
+                raise ValueError("Topic contains invalid content") from e
 
         return v.strip()
 
@@ -99,24 +99,24 @@ class AssessmentDataValidation(BaseModel):
     @validator("performance_data")
     def validate_performance_data_structure(cls, v):
         if not isinstance(v, dict):
-            raise ValueError("Performance data must be a dictionary")
+            raise ValueError("Performance data must be a dictionary") from e
 
         # Validate basic structure
         required_keys = ["scores", "completion_time"]
         for key in required_keys:
             if key not in v:
-                raise ValueError(f"Missing required key: {key}")
+                raise ValueError(f"Missing required key: {key}") from e
 
         # Validate scores
         if not isinstance(v["scores"], dict | list):
-            raise ValueError("Scores must be a dictionary or list")
+            raise ValueError("Scores must be a dictionary or list") from e
 
         # Validate completion time
         if (
             not isinstance(v["completion_time"], int | float)
             or v["completion_time"] < 0
         ):
-            raise ValueError("Completion time must be a non-negative number")
+            raise ValueError("Completion time must be a non-negative number") from e
 
         return v
 
@@ -135,7 +135,7 @@ class ContentValidation(BaseModel):
     @validator("content")
     def validate_content_safety(cls, v):
         if not v or not v.strip():
-            raise ValueError("Content cannot be empty")
+            raise ValueError("Content cannot be empty") from e
 
         # Basic XSS protection
         dangerous_tags = [
@@ -157,7 +157,9 @@ class ContentValidation(BaseModel):
         content_lower = v.lower()
         for tag in dangerous_tags:
             if tag in content_lower:
-                raise ValueError(f"Content contains potentially unsafe element: {tag}")
+                raise ValueError(
+                    f"Content contains potentially unsafe element: {tag}"
+                ) from e
 
         return v.strip()
 

@@ -197,7 +197,9 @@ async def get_medical_terms(
 
     except Exception as e:
         logger.error("get_medical_terms_failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Failed to retrieve medical terms")
+        raise HTTPException(
+            status_code=500, detail="Failed to retrieve medical terms"
+        ) from e
 
 
 @app.post("/api/v1/medical-terms")
@@ -210,7 +212,7 @@ async def create_medical_term(term_data: dict[str, Any]) -> dict[str, Any]:
             if field not in term_data:
                 raise HTTPException(
                     status_code=400, detail=f"Missing required field: {field}"
-                )
+                ) from e
 
         # Mock creation - would implement actual Neo4j creation
         created_term = {
@@ -235,7 +237,9 @@ async def create_medical_term(term_data: dict[str, Any]) -> dict[str, Any]:
         raise
     except Exception as e:
         logger.error("create_medical_term_failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Failed to create medical term")
+        raise HTTPException(
+            status_code=500, detail="Failed to create medical term"
+        ) from e
 
 
 @app.get("/api/v1/search/semantic")
@@ -284,7 +288,7 @@ async def semantic_search(
 
     except Exception as e:
         logger.error("semantic_search_failed", query=query, error=str(e))
-        raise HTTPException(status_code=500, detail="Search failed")
+        raise HTTPException(status_code=500, detail="Search failed") from e
 
 
 @app.get("/api/v1/graph/traverse")
@@ -326,7 +330,7 @@ async def graph_traversal(
 
     except Exception as e:
         logger.error("graph_traversal_failed", start_term=start_term, error=str(e))
-        raise HTTPException(status_code=500, detail="Graph traversal failed")
+        raise HTTPException(status_code=500, detail="Graph traversal failed") from e
 
 
 # Health check helper functions (mock implementations)
@@ -394,7 +398,7 @@ async def get_metrics() -> dict[str, Any]:
         }
     except Exception as e:
         logger.error("metrics_collection_failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Failed to collect metrics")
+        raise HTTPException(status_code=500, detail="Failed to collect metrics") from e
 
 
 if __name__ == "__main__":

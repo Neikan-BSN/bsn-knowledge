@@ -241,7 +241,7 @@ async def get_clinical_recommendations(
     except Exception as e:
         logger.error(f"Clinical recommendations failed: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"Clinical decision support failed: {str(e)}"
+            status_code=500, detail=f"Clinical decision support failed: {str(e) from e}"
         )
 
 
@@ -272,7 +272,7 @@ async def get_emergency_protocols(
     except Exception as e:
         logger.error(f"Emergency protocol generation failed: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"Emergency protocol generation failed: {str(e)}"
+            status_code=500, detail=f"Emergency protocol generation failed: {str(e) from e}"
         )
 
 
@@ -302,7 +302,7 @@ async def validate_care_plan(
     except Exception as e:
         logger.error(f"Care plan validation failed: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"Care plan validation failed: {str(e)}"
+            status_code=500, detail=f"Care plan validation failed: {str(e) from e}"
         )
 
 
@@ -463,7 +463,7 @@ async def generate_nursing_care_plan(
     except Exception as e:
         logger.error(f"Care plan generation failed: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"Care plan generation failed: {str(e)}"
+            status_code=500, detail=f"Care plan generation failed: {str(e) from e}"
         )
 
 
@@ -527,7 +527,7 @@ async def b3_generate_clinical_recommendations(
         logger.error(f"B.3 Clinical recommendation generation failed: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Clinical decision support B.3 implementation failed: {str(e)}",
+            detail=f"Clinical decision support B.3 implementation failed: {str(e) from e}",
         )
 
 
@@ -561,7 +561,7 @@ async def b3_create_case_studies(
         logger.error(f"B.3 Case study generation failed: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Case study generation B.3 implementation failed: {str(e)}",
+            detail=f"Case study generation B.3 implementation failed: {str(e) from e}",
         )
 
 
