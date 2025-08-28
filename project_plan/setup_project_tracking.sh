@@ -166,7 +166,7 @@ if [ -f "$PROJECT_ROOT/Makefile" ]; then
         echo "" >> "$PROJECT_ROOT/Makefile"
         echo "docs-health: ## Generate system health report" >> "$PROJECT_ROOT/Makefile"
         echo -e "\tuv run python scripts/unified_documentation_agent.py --health-report" >> "$PROJECT_ROOT/Makefile"
-        
+
         echo -e "  ✅ Makefile targets added"
     else
         echo -e "  ✅ Makefile already has documentation targets"

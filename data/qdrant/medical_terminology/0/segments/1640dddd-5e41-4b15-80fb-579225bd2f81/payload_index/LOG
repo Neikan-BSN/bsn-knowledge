@@ -6,8 +6,8 @@
 2025/08/10-20:04:46.592667 38 CURRENT file:  CURRENT
 2025/08/10-20:04:46.592668 38 IDENTITY file:  IDENTITY
 2025/08/10-20:04:46.592670 38 MANIFEST file:  MANIFEST-000013 size: 165 Bytes
-2025/08/10-20:04:46.592671 38 SST files in ./storage/collections/medical_terminology/0/segments/1640dddd-5e41-4b15-80fb-579225bd2f81/payload_index dir, Total Num: 0, files: 
-2025/08/10-20:04:46.592671 38 Write Ahead Log file in ./storage/collections/medical_terminology/0/segments/1640dddd-5e41-4b15-80fb-579225bd2f81/payload_index: 000012.log size: 0 ; 
+2025/08/10-20:04:46.592671 38 SST files in ./storage/collections/medical_terminology/0/segments/1640dddd-5e41-4b15-80fb-579225bd2f81/payload_index dir, Total Num: 0, files:
+2025/08/10-20:04:46.592671 38 Write Ahead Log file in ./storage/collections/medical_terminology/0/segments/1640dddd-5e41-4b15-80fb-579225bd2f81/payload_index: 000012.log size: 0 ;
 2025/08/10-20:04:46.592672 38                         Options.error_if_exists: 0
 2025/08/10-20:04:46.592673 38                       Options.create_if_missing: 1
 2025/08/10-20:04:46.592673 38                         Options.paranoid_checks: 1
@@ -32,8 +32,8 @@
 2025/08/10-20:04:46.592684 38                        Options.use_direct_reads: 0
 2025/08/10-20:04:46.592685 38                        Options.use_direct_io_for_flush_and_compaction: 0
 2025/08/10-20:04:46.592685 38          Options.create_missing_column_families: 1
-2025/08/10-20:04:46.592686 38                              Options.db_log_dir: 
-2025/08/10-20:04:46.592686 38                                 Options.wal_dir: 
+2025/08/10-20:04:46.592686 38                              Options.db_log_dir:
+2025/08/10-20:04:46.592686 38                                 Options.wal_dir:
 2025/08/10-20:04:46.592686 38                Options.table_cache_numshardbits: 6
 2025/08/10-20:04:46.592687 38                         Options.WAL_ttl_seconds: 0
 2025/08/10-20:04:46.592688 38                       Options.WAL_size_limit_MB: 0
@@ -96,7 +96,7 @@
 2025/08/10-20:04:46.592717 38                   Options.strict_bytes_per_sync: 0
 2025/08/10-20:04:46.592718 38       Options.compaction_readahead_size: 2097152
 2025/08/10-20:04:46.592718 38                  Options.max_background_flushes: -1
-2025/08/10-20:04:46.592719 38 Options.daily_offpeak_time_utc: 
+2025/08/10-20:04:46.592719 38 Options.daily_offpeak_time_utc:
 2025/08/10-20:04:46.592719 38 Compression algorithms supported:
 2025/08/10-20:04:46.592720 38 	kZSTD supported: 0
 2025/08/10-20:04:46.592721 38 	kXpressCompression supported: 0
@@ -215,7 +215,7 @@
 2025/08/10-20:04:46.592854 38 Options.compaction_options_universal.max_read_amp: -1
 2025/08/10-20:04:46.592854 38 Options.compaction_options_fifo.max_table_files_size: 1073741824
 2025/08/10-20:04:46.592854 38 Options.compaction_options_fifo.allow_compaction: 0
-2025/08/10-20:04:46.592857 38                   Options.table_properties_collectors: 
+2025/08/10-20:04:46.592857 38                   Options.table_properties_collectors:
 2025/08/10-20:04:46.592857 38                   Options.inplace_update_support: 0
 2025/08/10-20:04:46.592858 38                 Options.inplace_update_num_locks: 10000
 2025/08/10-20:04:46.592858 38               Options.memtable_prefix_bloom_size_ratio: 0.000000

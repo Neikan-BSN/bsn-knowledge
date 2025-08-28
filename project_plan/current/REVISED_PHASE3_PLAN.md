@@ -50,7 +50,7 @@ Transform RAGnostic into a focused, reusable data pipeline by removing all appli
 - **Environment Variables Required**:
   ```bash
   UMLS_API_KEY=<your_umls_api_key>          # Store in Doppler
-  UMLS_TGT_URL=<ticket_granting_url>        # Store in Doppler  
+  UMLS_TGT_URL=<ticket_granting_url>        # Store in Doppler
   UMLS_AUTH_URL=<authentication_url>        # Store in Doppler
   UMLS_API_VERSION=<api_version>            # Store in Doppler
   UMLS_RATE_LIMIT=20                        # 20 requests/second limit
@@ -61,18 +61,18 @@ Transform RAGnostic into a focused, reusable data pipeline by removing all appli
 class UMLSPipelineEnricher:
     \"\"\"Pure pipeline enrichment - no application logic\"\"\"
     VERSION = \"1.0.0\"
-    
+
     def __init__(self):
         # Load UMLS credentials from Doppler environment
         from shared.utils.doppler_config import DopplerConfig
         config = DopplerConfig.get_config()
-        
+
         self.api_key = config["UMLS_API_KEY"]
-        self.tgt_url = config["UMLS_TGT_URL"] 
+        self.tgt_url = config["UMLS_TGT_URL"]
         self.auth_url = config["UMLS_AUTH_URL"]
         self.api_version = config["UMLS_API_VERSION"]
         self.rate_limiter = RateLimiter(requests_per_second=20)
-    
+
     def enrich_chunk(self, chunk: ContentChunk) -> EnrichedChunk:
         # Extract medical terms using scispaCy
         # Query UMLS API for CUIs (Concept Unique Identifiers)
@@ -85,7 +85,7 @@ class UMLSPipelineEnricher:
             semantic_types=types,
             relationships=relationships
         )
-        
+
     async def authenticate_umls(self) -> str:
         \"\"\"Get UMLS authentication ticket from Doppler-stored credentials\"\"\"
         # Use Doppler-stored API key for UMLS authentication
@@ -109,7 +109,7 @@ class UMLSPipelineEnricher:
 ```python
 class BatchProcessingPipeline:
     \"\"\"Overnight enrichment pipeline\"\"\"
-    
+
     async def process_batch(self):
         # Checkpoint management
         # UMLS API rate limit handling (20 requests/second)
@@ -139,7 +139,7 @@ class DocumentProcessor(BaseProcessor):
     \"\"\"Process medical documents\"\"\"
     VERSION = \"1.0.0\"
     SUPPORTED_FORMATS = ['.pdf', '.docx', '.pptx']
-    
+
     def process(self, source_config: dict) -> ProcessingResult:
         # Extract text with structure preservation
         # Maintain medical terminology integrity
@@ -151,7 +151,7 @@ class DocumentProcessor(BaseProcessor):
 class OCRProcessor(BaseProcessor):
     \"\"\"Process scanned medical documents\"\"\"
     VERSION = \"1.0.0\"
-    
+
     def process(self, source_config: dict) -> ProcessingResult:
         # Tesseract integration for text extraction
         # Medical handwriting recognition
@@ -163,7 +163,7 @@ class OCRProcessor(BaseProcessor):
 class MediaProcessor(BaseProcessor):
     \"\"\"Process medical lecture recordings\"\"\"
     VERSION = \"1.0.0\"
-    
+
     def process(self, source_config: dict) -> ProcessingResult:
         # Whisper transcription with timestamps
         # Medical terminology accuracy
@@ -247,12 +247,12 @@ async def search_enriched_content(
 ) -> EnrichedContentResponse:
     \"\"\"Returns enriched chunks with UMLS, embeddings, relationships\"\"\"
     # Pure data retrieval - no generation
-    
+
 @router.get(\"/api/v1/educational/concepts/{concept_id}/graph\")
 async def get_concept_graph(concept_id: str) -> ConceptGraph:
     \"\"\"Returns graph data for concept relationships\"\"\"
     # Graph traversal only - no path generation
-    
+
 @router.get(\"/api/v1/educational/content/batch\")
 async def get_content_batch(filters: dict) -> ContentBatch:
     \"\"\"Bulk retrieval for BSN Knowledge processing\"\"\"
@@ -369,11 +369,11 @@ cp ../template-workspace/.pre-commit-config.yaml .
 # Migrated NCLEX Generator
 class NCLEXGenerator:
     \"\"\"Generates NCLEX-style questions using RAGnostic data\"\"\"
-    
+
     def __init__(self, ragnostic_client: RAGnosticClient):
         self.rag_client = ragnostic_client
         self.question_templates = load_templates()
-    
+
     async def generate_questions(self, topic: str, count: int = 5):
         # Fetch enriched content from RAGnostic
         content = await self.rag_client.search_content(
@@ -387,11 +387,11 @@ class NCLEXGenerator:
 # Migrated Competency Assessment
 class CompetencyAssessment:
     \"\"\"Assesses nursing competencies using AACN framework\"\"\"
-    
+
     def __init__(self, ragnostic_client: RAGnosticClient):
         self.rag_client = ragnostic_client
         self.aacn_framework = load_aacn_framework()
-    
+
     async def assess_competencies(self, student_responses):
         # Use RAGnostic data for assessment
         # Apply AACN framework mapping
@@ -413,14 +413,14 @@ class CompetencyAssessment:
 ```python
 class ClinicalDecisionSupport:
     \"\"\"Provides evidence-based clinical recommendations\"\"\"
-    
+
     async def generate_recommendations(self, case_scenario: dict):
         # Query RAGnostic for relevant clinical content
         # Apply clinical reasoning algorithms
         # Generate evidence-based recommendations
         # Include citations and confidence scores
         pass
-    
+
     async def create_case_studies(self, learning_objectives: List[str]):
         # Use RAGnostic content to build scenarios
         # Align with specified learning objectives
@@ -442,14 +442,14 @@ class ClinicalDecisionSupport:
 ```python
 class LearningAnalytics:
     \"\"\"Analyzes learning patterns and outcomes\"\"\"
-    
+
     async def analyze_student_progress(self, student_id: str):
         # Track competency progression
         # Identify knowledge gaps
         # Generate learning recommendations
         # Create progress reports
         pass
-    
+
     async def generate_institutional_reports(self):
         # Program effectiveness metrics
         # Curriculum alignment analysis
@@ -471,14 +471,14 @@ class LearningAnalytics:
 ```python
 class AdaptiveLearningEngine:
     \"\"\"Personalizes learning based on performance\"\"\"
-    
+
     async def generate_personalized_content(self, student_profile: dict):
         # Analyze student strengths/weaknesses
         # Query RAGnostic for appropriate content
         # Adjust difficulty dynamically
         # Create personalized study plans
         pass
-    
+
     async def optimize_learning_path(self, target_competencies: List[str]):
         # Use RAGnostic's prerequisite graphs
         # Calculate optimal learning sequence
@@ -502,15 +502,15 @@ class AdaptiveLearningEngine:
 @router.post(\"/api/v1/nclex/generate\")
 async def generate_nclex_questions(request: NCLEXRequest):
     \"\"\"Generate NCLEX-style questions\"\"\"
-    
+
 @router.post(\"/api/v1/assessment/competency\")
 async def assess_competency(request: CompetencyRequest):
     \"\"\"Assess nursing competencies\"\"\"
-    
+
 @router.post(\"/api/v1/study-guide/create\")
 async def create_study_guide(request: StudyGuideRequest):
     \"\"\"Generate personalized study guides\"\"\"
-    
+
 @router.get(\"/api/v1/analytics/student/{student_id}\")
 async def get_student_analytics(student_id: str):
     \"\"\"Retrieve student learning analytics\"\"\"
@@ -587,17 +587,17 @@ async def get_student_analytics(student_id: str):
 ### Technical Risks
 1. **Migration Complexity**: Code extraction may reveal tight coupling
    - Mitigation: Incremental migration with feature flags
-   
+
 2. **API Performance**: BSN Knowledge's dependency on RAGnostic API
    - Mitigation: Implement caching and batch operations
-   
+
 3. **UMLS Rate Limits**: API restrictions for medical term enrichment
    - Mitigation: Batch processing with checkpoint/resume
 
 ### Project Risks
 1. **Scope Creep**: Temptation to add features during migration
    - Mitigation: Strict adherence to architectural boundaries
-   
+
 2. **Testing Coverage**: Ensuring functionality after separation
    - Mitigation: Comprehensive test suite before and after
 
@@ -687,7 +687,7 @@ mcp__context7__get-library-docs --context7CompatibleLibraryID="/librosa/librosa"
 ### Step 3: Implementation Guidance Queries
 
 #### **UMLS Integration** (Task R.2)
-**Assigned Agent**: @rag-pipeline-architect  
+**Assigned Agent**: @rag-pipeline-architect
 **Pre-resolved Context7 IDs**:
 - `/spacy/scispacy` - Medical text processing and clinical entity recognition
 - `/huggingface/transformers` - Clinical BERT models for medical understanding
@@ -700,7 +700,7 @@ mcp__context7__get-library-docs --context7CompatibleLibraryID="/librosa/librosa"
   ```bash
   UMLS_API_KEY=<api_key>           # Primary UMLS API authentication
   UMLS_TGT_URL=<tgt_url>          # Ticket granting URL
-  UMLS_AUTH_URL=<auth_url>        # Authentication endpoint  
+  UMLS_AUTH_URL=<auth_url>        # Authentication endpoint
   UMLS_API_VERSION=<version>      # API version identifier
   ```
 
@@ -862,7 +862,7 @@ mcp__context7__get-library-docs --context7CompatibleLibraryID="/fastapi/fastapi"
 
 ## Conclusion
 
-This revised plan properly separates concerns between RAGnostic (data pipeline) and BSN Knowledge (application layer), respecting the architectural boundaries defined in the planning conversation. RAGnostic becomes a focused, reusable pipeline that enriches and indexes medical content, while BSN Knowledge handles all educational content generation and assessment features. 
+This revised plan properly separates concerns between RAGnostic (data pipeline) and BSN Knowledge (application layer), respecting the architectural boundaries defined in the planning conversation. RAGnostic becomes a focused, reusable pipeline that enriches and indexes medical content, while BSN Knowledge handles all educational content generation and assessment features.
 
 **Enhanced with Context7 Planning Protocol**: The plan now includes comprehensive Context7 MCP integration with 18+ pre-resolved library IDs and exact `get-library-docs` commands for immediate subagent execution. This ensures medical accuracy, eliminates library resolution delays, and provides Context7-guided implementation patterns for both RAGnostic pipeline enhancements and BSN Knowledge educational features.
 

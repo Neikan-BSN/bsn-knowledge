@@ -6,8 +6,8 @@
 2025/08/10-20:04:46.553841 41 CURRENT file:  CURRENT
 2025/08/10-20:04:46.553842 41 IDENTITY file:  IDENTITY
 2025/08/10-20:04:46.553846 41 MANIFEST file:  MANIFEST-000013 size: 503 Bytes
-2025/08/10-20:04:46.553849 41 SST files in ./storage/collections/medical_terminology/0/segments/d3f3d2b1-4147-401d-aa74-a7fb1f670fbe dir, Total Num: 0, files: 
-2025/08/10-20:04:46.553857 41 Write Ahead Log file in ./storage/collections/medical_terminology/0/segments/d3f3d2b1-4147-401d-aa74-a7fb1f670fbe: 000012.log size: 0 ; 
+2025/08/10-20:04:46.553849 41 SST files in ./storage/collections/medical_terminology/0/segments/d3f3d2b1-4147-401d-aa74-a7fb1f670fbe dir, Total Num: 0, files:
+2025/08/10-20:04:46.553857 41 Write Ahead Log file in ./storage/collections/medical_terminology/0/segments/d3f3d2b1-4147-401d-aa74-a7fb1f670fbe: 000012.log size: 0 ;
 2025/08/10-20:04:46.553858 41                         Options.error_if_exists: 0
 2025/08/10-20:04:46.553859 41                       Options.create_if_missing: 1
 2025/08/10-20:04:46.553860 41                         Options.paranoid_checks: 1
@@ -32,8 +32,8 @@
 2025/08/10-20:04:46.553880 41                        Options.use_direct_reads: 0
 2025/08/10-20:04:46.553882 41                        Options.use_direct_io_for_flush_and_compaction: 0
 2025/08/10-20:04:46.553883 41          Options.create_missing_column_families: 1
-2025/08/10-20:04:46.553884 41                              Options.db_log_dir: 
-2025/08/10-20:04:46.553885 41                                 Options.wal_dir: 
+2025/08/10-20:04:46.553884 41                              Options.db_log_dir:
+2025/08/10-20:04:46.553885 41                                 Options.wal_dir:
 2025/08/10-20:04:46.553886 41                Options.table_cache_numshardbits: 6
 2025/08/10-20:04:46.553887 41                         Options.WAL_ttl_seconds: 0
 2025/08/10-20:04:46.553890 41                       Options.WAL_size_limit_MB: 0
@@ -96,7 +96,7 @@
 2025/08/10-20:04:46.553958 41                   Options.strict_bytes_per_sync: 0
 2025/08/10-20:04:46.553959 41       Options.compaction_readahead_size: 2097152
 2025/08/10-20:04:46.553960 41                  Options.max_background_flushes: -1
-2025/08/10-20:04:46.553961 41 Options.daily_offpeak_time_utc: 
+2025/08/10-20:04:46.553961 41 Options.daily_offpeak_time_utc:
 2025/08/10-20:04:46.553962 41 Compression algorithms supported:
 2025/08/10-20:04:46.553963 41 	kZSTD supported: 0
 2025/08/10-20:04:46.553964 41 	kXpressCompression supported: 0
@@ -215,7 +215,7 @@
 2025/08/10-20:04:46.555311 41 Options.compaction_options_universal.max_read_amp: -1
 2025/08/10-20:04:46.555312 41 Options.compaction_options_fifo.max_table_files_size: 1073741824
 2025/08/10-20:04:46.555312 41 Options.compaction_options_fifo.allow_compaction: 0
-2025/08/10-20:04:46.555313 41                   Options.table_properties_collectors: 
+2025/08/10-20:04:46.555313 41                   Options.table_properties_collectors:
 2025/08/10-20:04:46.555313 41                   Options.inplace_update_support: 0
 2025/08/10-20:04:46.555345 41                 Options.inplace_update_num_locks: 10000
 2025/08/10-20:04:46.555353 41               Options.memtable_prefix_bloom_size_ratio: 0.000000
@@ -350,7 +350,7 @@
 2025/08/10-20:04:46.555577 41 Options.compaction_options_universal.max_read_amp: -1
 2025/08/10-20:04:46.555577 41 Options.compaction_options_fifo.max_table_files_size: 1073741824
 2025/08/10-20:04:46.555577 41 Options.compaction_options_fifo.allow_compaction: 0
-2025/08/10-20:04:46.555578 41                   Options.table_properties_collectors: 
+2025/08/10-20:04:46.555578 41                   Options.table_properties_collectors:
 2025/08/10-20:04:46.555579 41                   Options.inplace_update_support: 0
 2025/08/10-20:04:46.555579 41                 Options.inplace_update_num_locks: 10000
 2025/08/10-20:04:46.555579 41               Options.memtable_prefix_bloom_size_ratio: 0.000000
@@ -485,7 +485,7 @@
 2025/08/10-20:04:46.555683 41 Options.compaction_options_universal.max_read_amp: -1
 2025/08/10-20:04:46.555683 41 Options.compaction_options_fifo.max_table_files_size: 1073741824
 2025/08/10-20:04:46.555683 41 Options.compaction_options_fifo.allow_compaction: 0
-2025/08/10-20:04:46.555684 41                   Options.table_properties_collectors: 
+2025/08/10-20:04:46.555684 41                   Options.table_properties_collectors:
 2025/08/10-20:04:46.555685 41                   Options.inplace_update_support: 0
 2025/08/10-20:04:46.555685 41                 Options.inplace_update_num_locks: 10000
 2025/08/10-20:04:46.555686 41               Options.memtable_prefix_bloom_size_ratio: 0.000000
@@ -620,7 +620,7 @@
 2025/08/10-20:04:46.555782 41 Options.compaction_options_universal.max_read_amp: -1
 2025/08/10-20:04:46.555783 41 Options.compaction_options_fifo.max_table_files_size: 1073741824
 2025/08/10-20:04:46.555783 41 Options.compaction_options_fifo.allow_compaction: 0
-2025/08/10-20:04:46.555784 41                   Options.table_properties_collectors: 
+2025/08/10-20:04:46.555784 41                   Options.table_properties_collectors:
 2025/08/10-20:04:46.555784 41                   Options.inplace_update_support: 0
 2025/08/10-20:04:46.555785 41                 Options.inplace_update_num_locks: 10000
 2025/08/10-20:04:46.555786 41               Options.memtable_prefix_bloom_size_ratio: 0.000000
@@ -755,7 +755,7 @@
 2025/08/10-20:04:46.555867 41 Options.compaction_options_universal.max_read_amp: -1
 2025/08/10-20:04:46.555867 41 Options.compaction_options_fifo.max_table_files_size: 1073741824
 2025/08/10-20:04:46.555867 41 Options.compaction_options_fifo.allow_compaction: 0
-2025/08/10-20:04:46.555868 41                   Options.table_properties_collectors: 
+2025/08/10-20:04:46.555868 41                   Options.table_properties_collectors:
 2025/08/10-20:04:46.555868 41                   Options.inplace_update_support: 0
 2025/08/10-20:04:46.555869 41                 Options.inplace_update_num_locks: 10000
 2025/08/10-20:04:46.555870 41               Options.memtable_prefix_bloom_size_ratio: 0.000000

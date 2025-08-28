@@ -160,7 +160,7 @@ class CompetencyLevel(str, Enum):
 
 # Assessment categories
 - Fundamentals of Nursing
-- Anatomy and Physiology  
+- Anatomy and Physiology
 - Pharmacology
 - Medical-Surgical Nursing
 - Psychiatric Nursing
@@ -264,7 +264,7 @@ curl -X POST http://localhost:8000/api/v1/quizzes/generate \
 # BSN Nursing Topics
 NURSING_TOPICS = [
     "Fundamentals of Nursing",
-    "Anatomy and Physiology", 
+    "Anatomy and Physiology",
     "Pharmacology",
     "Medical-Surgical Nursing",
     "Psychiatric Nursing",
@@ -276,7 +276,7 @@ NURSING_TOPICS = [
 # Content Types
 CONTENT_TYPES = [
     "study_guide",
-    "quiz", 
+    "quiz",
     "flashcards",
     "case_study",
     "video_lecture",

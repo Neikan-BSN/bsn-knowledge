@@ -6,7 +6,7 @@ docs-update: ## Process commit and update documentation
 	@echo "🔄 Processing commit and updating documentation..."
 	uv run python scripts/unified_documentation_agent.py --process-commit
 
-docs-status: ## Show documentation system status  
+docs-status: ## Show documentation system status
 	@echo "📊 Checking documentation system status..."
 	uv run python scripts/unified_documentation_agent.py --status-check
 

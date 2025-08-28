@@ -502,7 +502,7 @@ import sqlite3
 class SQLiteKnowledgeBase:
     def __init__(self, db_path):
         self.conn = sqlite3.connect(db_path)
-    
+
     def store_knowledge(self, content):
         # Store knowledge in SQLite
         pass
@@ -516,7 +516,7 @@ import psycopg2
 class PostgreSQLKnowledgeBase:
     def __init__(self, connection_string):
         self.conn = psycopg2.connect(connection_string)
-    
+
     def store_knowledge(self, content):
         # Store knowledge in PostgreSQL
         pass
@@ -532,7 +532,7 @@ from elasticsearch import Elasticsearch
 class ElasticsearchSearchEngine:
     def __init__(self, hosts):
         self.es = Elasticsearch(hosts)
-    
+
     def search(self, query):
         # Search using Elasticsearch
         pass

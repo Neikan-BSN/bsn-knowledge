@@ -14,14 +14,15 @@ import json
 from pathlib import Path
 from datetime import datetime
 
+
 def detect_changes():
     """Detect changes that require documentation regeneration"""
     project_path = Path("/home/user01/projects/active-projects/bsn-knowledge")
-    change_patterns = ['*.py', '*.md', '*.yaml']
-    regeneration_triggers = ['src/', 'docs/', 'knowledge/']
-    
+    change_patterns = ["*.py", "*.md", "*.yaml"]
+    regeneration_triggers = ["src/", "docs/", "knowledge/"]
+
     changes = []
-    
+
     # Check for file changes in trigger directories
     for trigger in regeneration_triggers:
         trigger_path = project_path / trigger
@@ -30,29 +31,31 @@ def detect_changes():
                 for file_path in trigger_path.rglob(pattern):
                     if file_path.is_file():
                         changes.append(str(file_path.relative_to(project_path)))
-    
+
     # Check if documentation files exist and are current
     architecture_md = project_path / "ARCHITECTURE.md"
     technical_specs_md = project_path / "TECHNICAL_SPECIFICATIONS.md"
-    
+
     docs_need_update = (
-        not architecture_md.exists() or 
-        not technical_specs_md.exists() or 
-        len(changes) > 0
+        not architecture_md.exists()
+        or not technical_specs_md.exists()
+        or len(changes) > 0
     )
-    
+
     return {
         "needs_update": docs_need_update,
         "changed_files": changes,
         "timestamp": datetime.now().isoformat(),
-        "project": "bsn-knowledge"
+        "project": "bsn-knowledge",
     }
+
 
 def main():
     """Main entry point for change detection"""
     result = detect_changes()
     print(json.dumps(result, indent=2))
     return 0 if result["needs_update"] else 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

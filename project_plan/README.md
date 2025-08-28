@@ -124,7 +124,7 @@ For issues or customization needs, see the workspace documentation system at `wo
 
 ---
 
-**System Version**: 1.0.0  
-**Last Updated**: August 18, 2025  
-**Project Type**: medical_processing  
+**System Version**: 1.0.0
+**Last Updated**: August 18, 2025
+**Project Type**: medical_processing
 **Focus Area**: ai

@@ -7,7 +7,7 @@ services:
   postgres:
     image: postgres:15-alpine
     ports:
-      - "5438:5432"  # Coordinated port to avoid conflicts with other projects
+      - "5438:5432" # Coordinated port to avoid conflicts with other projects
     environment:
       - POSTGRES_DB=bsn_knowledge
       - POSTGRES_USER=bsn_knowledge
@@ -30,22 +30,26 @@ services:
       - SETGID
       - SETUID
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U bsn_knowledge -d bsn_knowledge -h localhost"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U bsn_knowledge -d bsn_knowledge -h localhost",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
     command: >
-      postgres 
-        -c max_connections=200 
-        -c shared_buffers=256MB 
-        -c effective_cache_size=1GB 
+      postgres
+        -c max_connections=200
+        -c shared_buffers=256MB
+        -c effective_cache_size=1GB
         -c maintenance_work_mem=64MB
 
   redis:
     image: redis:7-alpine
     ports:
-      - "6380:6379"  # Coordinated port to avoid conflicts
+      - "6380:6379" # Coordinated port to avoid conflicts
     volumes:
       - redis_data:/data
       - redis_temp:/tmp
@@ -70,8 +74,8 @@ services:
   neo4j:
     image: neo4j:5.15-community
     ports:
-      - "7476:7474"  # HTTP - coordinated with Task Group 2 service matrix
-      - "7688:7687"  # Bolt
+      - "7476:7474" # HTTP - coordinated with Task Group 2 service matrix
+      - "7688:7687" # Bolt
     environment:
       NEO4J_AUTH: neo4j/bsn_neo4j_dev
       NEO4J_dbms_memory_heap_initial__size: 512M
@@ -101,7 +105,16 @@ services:
       - SETGID
       - SETUID
     healthcheck:
-      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "bsn_neo4j_dev", "RETURN 1"]
+      test:
+        [
+          "CMD",
+          "cypher-shell",
+          "-u",
+          "neo4j",
+          "-p",
+          "bsn_neo4j_dev",
+          "RETURN 1",
+        ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -111,8 +124,8 @@ services:
   qdrant:
     image: qdrant/qdrant:v1.8.4
     ports:
-      - "6334:6333"  # HTTP API - coordinated port
-      - "6335:6334"  # gRPC
+      - "6334:6333" # HTTP API - coordinated port
+      - "6335:6334" # gRPC
     volumes:
       - qdrant_data:/qdrant/storage
       - qdrant_temp:/tmp
@@ -143,7 +156,7 @@ services:
       dockerfile: docker/api-gateway/Dockerfile
       target: production
     ports:
-      - "8010:8000"  # Coordinated port for BSN Knowledge API
+      - "8010:8000" # Coordinated port for BSN Knowledge API
     environment:
       # Database connections
       - DATABASE_URL=postgresql://bsn_knowledge:bsn_dev_pass@postgres:5432/bsn_knowledge
@@ -152,23 +165,23 @@ services:
       - NEO4J_PASSWORD=bsn_neo4j_dev
       - REDIS_URL=redis://redis:6379/0
       - QDRANT_URL=http://qdrant:6333
-      
+
       # Service configuration
       - SERVICE_NAME=bsn-knowledge-api
       - SERVICE_VERSION=1.0.0
       - LOG_LEVEL=INFO
       - DEBUG=false
-      
+
       # Performance settings
       - MAX_WORKERS=4
       - KEEP_ALIVE_TIMEOUT=65
       - MAX_REQUESTS=1000
       - MAX_REQUESTS_JITTER=50
-      
+
       # Security
       - CORS_ORIGINS=http://localhost:3000,http://localhost:8080
       - API_KEY_ENABLED=true
-      
+
     depends_on:
       postgres:
         condition: service_healthy
@@ -203,7 +216,7 @@ services:
       dockerfile: docker/knowledge-processor/Dockerfile
       target: production
     ports:
-      - "8011:8000"  # Knowledge processor API
+      - "8011:8000" # Knowledge processor API
     environment:
       # Database connections
       - NEO4J_URI=bolt://neo4j:7687
@@ -211,22 +224,22 @@ services:
       - NEO4J_PASSWORD=bsn_neo4j_dev
       - QDRANT_URL=http://qdrant:6333
       - REDIS_URL=redis://redis:6379/1
-      
+
       # Processing configuration
       - PROCESSOR_TYPE=medical_terminology
       - BATCH_SIZE=100
       - MAX_CONCURRENT_PROCESSES=4
       - PROCESSING_TIMEOUT=300
-      
+
       # Medical NLP settings
       - ENABLE_SCISPACY=true
       - ENABLE_MEDICAL_NER=true
       - MODEL_CACHE_SIZE=1000
-      
+
       # Performance
       - WORKER_PROCESSES=2
       - MEMORY_LIMIT=2G
-      
+
     depends_on:
       neo4j:
         condition: service_healthy
@@ -249,10 +262,10 @@ services:
       resources:
         limits:
           memory: 2G
-          cpus: '1.0'
+          cpus: "1.0"
         reservations:
           memory: 1G
-          cpus: '0.5'
+          cpus: "0.5"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -268,7 +281,7 @@ services:
       dockerfile: docker/analytics-service/Dockerfile
       target: production
     ports:
-      - "8012:8000"  # Analytics API
+      - "8012:8000" # Analytics API
     environment:
       - NEO4J_URI=bolt://neo4j:7687
       - NEO4J_USER=neo4j
@@ -324,7 +337,7 @@ services:
   neo4j-browser:
     image: neo4j:5.15-community
     ports:
-      - "7477:7474"  # Alternative browser port
+      - "7477:7474" # Alternative browser port
     environment:
       NEO4J_AUTH: neo4j/browser_dev
       NEO4J_dbms_connector_http_listen__address: 0.0.0.0:7474
@@ -372,7 +385,7 @@ volumes:
     driver: local
   qdrant_temp:
     driver: local
-  
+
   # Application volumes
   api_logs:
     driver: local
@@ -386,7 +399,7 @@ volumes:
     driver: local
   analytics_logs:
     driver: local
-  
+
   # Service-specific temporary volumes
   api_gateway_temp:
     driver: local

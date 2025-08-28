@@ -18,18 +18,14 @@
       ],
       "message": "Hardcoded secret detected",
       "severity": "ERROR",
-      "languages": [
-        "python"
-      ]
+      "languages": ["python"]
     },
     {
       "id": "sql-injection",
       "pattern": "execute(\"SELECT * FROM \" + $VAR)",
       "message": "Potential SQL injection",
       "severity": "ERROR",
-      "languages": [
-        "python"
-      ]
+      "languages": ["python"]
     }
   ]
 }
