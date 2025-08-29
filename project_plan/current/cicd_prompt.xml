@@ -27,6 +27,63 @@
             permission.</item>
     </prohibitions>
 
+    <mcp_tool_reference>
+        <description>Available MCP tools for CI/CD troubleshooting. Use these instead of generic function calls.</description>
+        <core_tools>
+            <tool name="mcp__sequential-thinking__sequentialthinking">
+                <usage>Complex analysis and debugging with iterative reasoning</usage>
+                <parameters>thought, thoughtNumber, totalThoughts, nextThoughtNeeded</parameters>
+            </tool>
+            <tool name="mcp__context7__resolve-library-id">
+                <usage>Resolve library names to Context7-compatible IDs</usage>
+                <parameters>libraryName</parameters>
+            </tool>
+            <tool name="mcp__context7__get-library-docs">
+                <usage>Retrieve up-to-date documentation for libraries</usage>
+                <parameters>context7CompatibleLibraryID, topic, tokens</parameters>
+            </tool>
+            <tool name="Bash">
+                <usage>Execute shell commands for CI/CD operations</usage>
+                <parameters>command, description, timeout</parameters>
+            </tool>
+            <tool name="Write">
+                <usage>Create documentation and log files</usage>
+                <parameters>file_path, content</parameters>
+            </tool>
+            <tool name="Edit">
+                <usage>Modify existing files with precise changes</usage>
+                <parameters>file_path, old_string, new_string</parameters>
+            </tool>
+            <tool name="Read">
+                <usage>Read file contents for analysis</usage>
+                <parameters>file_path, offset, limit</parameters>
+            </tool>
+            <tool name="mcp__git__git_status">
+                <usage>Check git repository status</usage>
+                <parameters>path</parameters>
+            </tool>
+            <tool name="mcp__git__git_log">
+                <usage>View commit history and changes</usage>
+                <parameters>path, maxCount, author</parameters>
+            </tool>
+            <tool name="mcp__git__git_commit">
+                <usage>Commit changes with context-aware messages</usage>
+                <parameters>message, path</parameters>
+            </tool>
+            <tool name="mcp__git__git_push">
+                <usage>Push commits to remote repository</usage>
+                <parameters>remote, branch, path</parameters>
+            </tool>
+        </core_tools>
+        <usage_notes>
+            <note>Always use full MCP tool names with mcp__ prefix</note>
+            <note>Include proper parameters as documented in tool definitions</note>
+            <note>Use sequential thinking for complex CI/CD debugging</note>
+            <note>Use Context7 tools only AFTER identifying specific libraries</note>
+            <note>Use git MCP tools for version control operations</note>
+        </usage_notes>
+    </mcp_tool_reference>
+
     <tool_protocols>
         <tool_protocol name="Sequential_Thinking">
             <description>Mandatory protocol for complex problem-solving requiring iterative,
@@ -38,7 +95,7 @@
                 <criterion>Multiple solution paths need exploration</criterion>
             </activation_criteria>
             <usage_requirements>
-                <requirement id="ST.1">Use sequential_thinking tool BEFORE generating final output</requirement>
+                <requirement id="ST.1">Use mcp__sequential-thinking__sequentialthinking tool BEFORE generating final output</requirement>
                 <requirement id="ST.2">Start with initial thought estimate, adjust as understanding
                     develops</requirement>
                 <requirement id="ST.3">Mark revisions explicitly when reconsidering previous
@@ -67,13 +124,13 @@
                 <rule id="C7E.1" priority="1">
                     <condition>Pre-resolved Context7-compatible library ID is provided (format:
                         /org/project)</condition>
-                    <action>Use the provided ID directly with `get-library-docs`, specifying the
+                    <action>Use the provided ID directly with `mcp__context7__get-library-docs`, specifying the
                         'topic' parameter for the relevant functionality.</action>
                 </rule>
                 <rule id="C7E.2" priority="2">
                     <condition>No pre-resolved ID found, only library name is available</condition>
                     <action>
-                        <step num="1">Call `resolve-library-id(libraryName='[name]')` to obtain
+                        <step num="1">Call `mcp__context7__resolve-library-id(libraryName='[name]')` to obtain
                             Context7-compatible ID</step>
                         <step num="2">If resolution fails, retry with exponential backoff: 2s, 4s,
                             8s, 16s, 30s</step>
@@ -81,7 +138,7 @@
                             "CRITICAL: Context7 resolution failed for [library]. Manual intervention
                             required."</step>
                         <step num="4">On success, call
-                            `get-library-docs(context7CompatibleLibraryID='[resolved-id]',
+                            `mcp__context7__get-library-docs(context7CompatibleLibraryID='[resolved-id]',
                             topic='[specific-functionality]')</step>
                     </action>
                 </rule>
@@ -196,12 +253,12 @@
             <scenario>Debugging a failed GitHub workflow and documenting fixes.</scenario>
             <action_taken>
                 <sequential_phase>
-                    sequential_thinking(thought="Analyzing workflow logs for `ci.yml`",
+                    mcp__sequential-thinking__sequentialthinking(thought="Analyzing workflow logs for `ci.yml`",
                     thoughtNumber=1, totalThoughts=5, nextThoughtNeeded=true)
-                    sequential_thinking(thought="Hypothesis: Incorrect dependency caching path is
+                    mcp__sequential-thinking__sequentialthinking(thought="Hypothesis: Incorrect dependency caching path is
                     causing build failure.", thoughtNumber=3, totalThoughts=5,
                     nextThoughtNeeded=true)
-                    sequential_thinking(thought="Hypothesis verified. The path needs correction.",
+                    mcp__sequential-thinking__sequentialthinking(thought="Hypothesis verified. The path needs correction.",
                     thoughtNumber=5, totalThoughts=5, nextThoughtNeeded=false)
                 </sequential_phase>
                 <documentation_phase>
@@ -224,9 +281,9 @@
                 <analysis>Workflow log shows linter error in `src/utils.js`.</analysis>
                 <context7_usage>
                     // Now that troubleshooting identified the library, invoke Context7
-                    resolve-library-id('eslint-plugin-react') →
+                    mcp__context7__resolve-library-id(libraryName='eslint-plugin-react') →
                     /eslint-community/eslint-plugin-react-hooks
-                    get-library-docs('/eslint-community/eslint-plugin-react-hooks',
+                    mcp__context7__get-library-docs(context7CompatibleLibraryID='/eslint-community/eslint-plugin-react-hooks',
                     topic='rules_of_hooks')
                 </context7_usage>
                 <fix>Edit `src/utils.js` based on documentation to fix the linter error.</fix>
@@ -279,7 +336,7 @@
     </task>
 
     <output_structure>
-        <description>You must follow this multi-stage process. First, use the sequential_thinking
+        <description>You must follow this multi-stage process. First, use the mcp__sequential-thinking__sequentialthinking
             tool to decompose and analyze the problem iteratively until you reach a verified
             solution. Then, synthesize your sequential thinking results in the <![CDATA[<thinking>]]>
             block. Finally, provide the verified solution in the <![CDATA[<plan>]]> block.</description>

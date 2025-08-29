@@ -23,6 +23,42 @@
         <item id="P7">Do not modify test plan structure - only execute assigned components.</item>
     </prohibitions>
 
+    <mcp_tool_reference>
+        <description>Available MCP tools for test execution. Use these instead of generic function calls.</description>
+        <core_tools>
+            <tool name="mcp__context7__get-library-docs">
+                <usage>Retrieve up-to-date documentation for testing libraries</usage>
+                <parameters>context7CompatibleLibraryID, topic, tokens</parameters>
+                <note>Use pre-resolved Context7 IDs from test plan (/org/project format)</note>
+            </tool>
+            <tool name="Bash">
+                <usage>Execute test commands and validation scripts</usage>
+                <parameters>command, description, timeout</parameters>
+            </tool>
+            <tool name="Write">
+                <usage>Create test results and documentation files</usage>
+                <parameters>file_path, content</parameters>
+            </tool>
+            <tool name="Edit">
+                <usage>Update tracker files with test progress and results</usage>
+                <parameters>file_path, old_string, new_string</parameters>
+            </tool>
+            <tool name="Read">
+                <usage>Read test plans, trackers, and configuration files</usage>
+                <parameters>file_path, offset, limit</parameters>
+            </tool>
+            <tool name="mcp__git__git_status">
+                <usage>Check repository status during test execution</usage>
+                <parameters>path</parameters>
+            </tool>
+        </core_tools>
+        <testing_specific_usage>
+            <context7_integration>Use ONLY pre-resolved Context7 IDs from test plan document</context7_integration>
+            <tracker_updates>Update tracker files with precise timestamps and validation results</tracker_updates>
+            <medical_accuracy>Maintain >98% UMLS terminology accuracy for all medical content tests</medical_accuracy>
+        </testing_specific_usage>
+    </mcp_tool_reference>
+
     <execution_protocols>
         <protocol name="Phase_Execution">
             <description>Execute specific test phase with Context7 library integration and tracker updates.</description>
@@ -35,7 +71,7 @@
             </requirements>
             <context7_integration>
                 <rule>Use ONLY pre-resolved Context7 IDs from test plan (/org/project format).</rule>
-                <rule>Reference specific library documentation using Context7 fetch-documentation.</rule>
+                <rule>Reference specific library documentation using mcp__context7__get-library-docs.</rule>
                 <rule>Implement testing patterns following Context7 best practices.</rule>
             </context7_integration>
         </protocol>
