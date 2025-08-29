@@ -8,12 +8,16 @@ on:
       - "tests/**"
       - "pyproject.toml"
       - ".github/workflows/**"
+      - ".pre-commit-config.yaml"
+      - "project_plan/**/*.xml"
   pull_request:
     branches: [main]
     paths:
       - "src/**"
       - "tests/**"
       - "pyproject.toml"
+      - ".pre-commit-config.yaml"
+      - "project_plan/**/*.xml"
   workflow_dispatch:
 
 env:
@@ -43,10 +47,22 @@ jobs:
       - name: Install Dependencies
         run: |
           uv sync --all-extras
-
-      - name: Code Quality Check
+          
+      - name: Install Pre-commit
         run: |
-          echo "🔍 Running code formatting check..."
+          uv run pip install pre-commit
+          pre-commit install --install-hooks
+
+      - name: Pre-commit Validation
+        run: |
+          echo "🔍 Running Essential 8 pre-commit hooks validation..."
+          # Run pre-commit on all files for comprehensive validation
+          pre-commit run --all-files --show-diff-on-failure
+          echo "✅ Pre-commit validation completed"
+
+      - name: Code Quality Check (Fallback)
+        run: |
+          echo "🔍 Running direct code quality checks as fallback..."
           uv run ruff format src/ tests/
           echo "✅ Format check completed"
           echo "🔍 Running comprehensive linting check..."
