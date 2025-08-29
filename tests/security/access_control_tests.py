@@ -40,9 +40,9 @@ class TestRoleBasedAccessControl:
             elif method == "DELETE":
                 response = client.delete(endpoint, headers=auth_headers["student1"])
 
-            assert (
-                response.status_code == status.HTTP_403_FORBIDDEN
-            ), f"Student should not access {method} {endpoint}"
+            assert response.status_code == status.HTTP_403_FORBIDDEN, (
+                f"Student should not access {method} {endpoint}"
+            )
 
         # Student SHOULD have access to:
         allowed_endpoints = [
@@ -85,9 +85,9 @@ class TestRoleBasedAccessControl:
             elif method == "DELETE":
                 response = client.delete(endpoint, headers=auth_headers["instructor1"])
 
-            assert (
-                response.status_code == status.HTTP_403_FORBIDDEN
-            ), f"Instructor should not access {method} {endpoint}"
+            assert response.status_code == status.HTTP_403_FORBIDDEN, (
+                f"Instructor should not access {method} {endpoint}"
+            )
 
         # Instructor SHOULD have access to:
         allowed_endpoints = [
@@ -212,9 +212,9 @@ class TestPrivilegeEscalationPrevention:
 
         for headers in role_manipulation_attempts:
             response = client.get("/api/v1/auth/users", headers=headers)
-            assert (
-                response.status_code == status.HTTP_403_FORBIDDEN
-            ), f"Role manipulation succeeded with headers: {headers}"
+            assert response.status_code == status.HTTP_403_FORBIDDEN, (
+                f"Role manipulation succeeded with headers: {headers}"
+            )
 
     def test_session_hijacking_protection(self, client: TestClient, test_users):
         """Test protection against session hijacking attacks."""
@@ -325,9 +325,9 @@ class TestResourceAccessControl:
                             ]
                         ), f"{role} should access {endpoint}"
                     else:
-                        assert (
-                            response.status_code == status.HTTP_403_FORBIDDEN
-                        ), f"{role} should not access {endpoint}"
+                        assert response.status_code == status.HTTP_403_FORBIDDEN, (
+                            f"{role} should not access {endpoint}"
+                        )
 
 
 @pytest.mark.security
@@ -480,9 +480,9 @@ class TestAuthorizationBypassAttempts:
 
         # All requests should be consistently denied
         for response in results:
-            assert (
-                response.status_code == status.HTTP_403_FORBIDDEN
-            ), "Race condition allowed authorization bypass"
+            assert response.status_code == status.HTTP_403_FORBIDDEN, (
+                "Race condition allowed authorization bypass"
+            )
 
     def test_time_of_check_time_of_use_prevention(self, client: TestClient, test_users):
         """Test prevention of TOCTOU (Time-of-Check-Time-of-Use) attacks."""

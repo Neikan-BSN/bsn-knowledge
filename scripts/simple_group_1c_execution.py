@@ -133,7 +133,7 @@ def create_medical_test_data():
         content = f"""
         {title} - Comprehensive Nursing Education Guide
 
-        This educational resource covers essential nursing knowledge for {domain.replace('_', ' ')} practice.
+        This educational resource covers essential nursing knowledge for {domain.replace("_", " ")} practice.
 
         Key Medical Concepts:
         """

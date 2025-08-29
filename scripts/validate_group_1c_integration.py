@@ -4,9 +4,9 @@ Group 1C Integration Validation Script
 Validates integration with multi-database infrastructure from Groups 1A & 1B
 """
 
-import sqlite3
 import json
 import os
+import sqlite3
 from datetime import datetime
 
 
@@ -39,9 +39,9 @@ def validate_database_integration():
     qdrant_valid = os.path.exists(qdrant_config) and os.path.exists(qdrant_vectors)
 
     if qdrant_valid:
-        with open(qdrant_config, "r") as f:
+        with open(qdrant_config) as f:
             config = json.load(f)
-        with open(qdrant_vectors, "r") as f:
+        with open(qdrant_vectors) as f:
             vectors = json.load(f)
 
         print(
@@ -102,7 +102,7 @@ def validate_database_integration():
 
     print("\n=== VALIDATION SUMMARY ===")
     print(f"Checks Passed: {success_count}/{total_checks}")
-    print(f"Success Rate: {success_count/total_checks*100:.1f}%")
+    print(f"Success Rate: {success_count / total_checks * 100:.1f}%")
 
     overall_success = success_count == total_checks
     print(f"Overall Status: {'✓ SUCCESS' if overall_success else '✗ PARTIAL SUCCESS'}")
@@ -129,11 +129,11 @@ def create_final_completion_report():
 **Group**: Group 1C - Test Data Preparation
 **Agent**: backend-developer
 **Execution Status**: ✅ COMPLETED
-**Completion Time**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
+**Completion Time**: {datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")}
 
 ## Executive Summary
 
-Successfully completed Group 1C Test Data Preparation, creating comprehensive medical content test database with {validation['documents_created']} nursing education documents achieving {validation['medical_accuracy']:.3f} UMLS medical accuracy. Integration with multi-database infrastructure from Groups 1A & 1B operational with {validation['success_rate']*100:.1f}% validation success rate.
+Successfully completed Group 1C Test Data Preparation, creating comprehensive medical content test database with {validation["documents_created"]} nursing education documents achieving {validation["medical_accuracy"]:.3f} UMLS medical accuracy. Integration with multi-database infrastructure from Groups 1A & 1B operational with {validation["success_rate"] * 100:.1f}% validation success rate.
 
 ## Success Criteria Achieved
 
@@ -142,8 +142,8 @@ Successfully completed Group 1C Test Data Preparation, creating comprehensive me
 **Status**: COMPLETED - All success criteria met
 
 **Deliverables Completed**:
-- ✅ **1000+ Nursing Education Documents**: Created {validation['documents_created']} curated documents
-- ✅ **UMLS Terminology Validation**: Achieved {validation['medical_accuracy']:.3f} accuracy (exceeds >98% requirement)
+- ✅ **1000+ Nursing Education Documents**: Created {validation["documents_created"]} curated documents
+- ✅ **UMLS Terminology Validation**: Achieved {validation["medical_accuracy"]:.3f} accuracy (exceeds >98% requirement)
 - ✅ **Educational Standards Compliance**: NCLEX-RN aligned content across clinical domains
 - ✅ **Multi-Database Integration**: SQLite, Qdrant vector database integration
 - ✅ **Clinical Domain Coverage**: Medical-Surgical, Pediatrics, Maternity, Psychiatric, Community Health
@@ -151,15 +151,15 @@ Successfully completed Group 1C Test Data Preparation, creating comprehensive me
 ## Technical Implementation Results
 
 ### Medical Content Database
-- **Total Documents**: {validation['documents_created']}
+- **Total Documents**: {validation["documents_created"]}
 - **Medical Concepts**: 3,000 UMLS-validated concepts
-- **Medical Accuracy**: {validation['medical_accuracy']:.3f} (Target: >0.98)
+- **Medical Accuracy**: {validation["medical_accuracy"]:.3f} (Target: >0.98)
 - **Clinical Domains**: 5 nursing specialties
 - **Difficulty Levels**: 5 levels (beginner to expert)
 
 ### Database Integration Architecture
 - **SQLite Primary Storage**: `/home/user01/projects/bsn_knowledge/data/medical_test_data.db`
-- **Qdrant Vector Database**: {validation['vector_count']} medical content embeddings
+- **Qdrant Vector Database**: {validation["vector_count"]} medical content embeddings
 - **Search Integration**: Semantic search index for content retrieval
 - **Group 1A Integration**: Connected to established BSN Knowledge infrastructure
 - **Group 1B Integration**: Compatible with pytest framework fixtures

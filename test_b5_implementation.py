@@ -15,10 +15,10 @@ all REVISED_PHASE3_PLAN.md B.5 success criteria.
 
 import asyncio
 import logging
-from datetime import datetime
-from typing import Dict, Any
-import sys
 import os
+import sys
+from datetime import datetime
+from typing import Any
 
 # Add src directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
@@ -55,7 +55,7 @@ def print_info(message: str):
 class MockRAGnosticClient:
     """Mock RAGnostic client for testing"""
 
-    async def search_content(self, query: str) -> Dict[str, Any]:
+    async def search_content(self, query: str) -> dict[str, Any]:
         """Mock content search"""
         return {
             "results": [
@@ -109,7 +109,7 @@ class MockAnalyticsService:
             last_assessment_date=datetime.now(),
         )
 
-    async def _get_student_profile(self, student_id: str) -> Dict[str, Any]:
+    async def _get_student_profile(self, student_id: str) -> dict[str, Any]:
         """Mock student profile"""
         return {
             "student_id": student_id,
@@ -130,10 +130,10 @@ async def test_adaptive_learning_engine_initialization():
     print_test_header("B.5 AdaptiveLearningEngine Initialization")
 
     try:
-        from src.services.adaptive_learning_engine import AdaptiveLearningEngine
-        from src.services.learning_analytics import LearningAnalytics
         from src.assessment.knowledge_gap_analyzer import KnowledgeGapAnalyzer
         from src.assessment.learning_path_optimizer import LearningPathOptimizer
+        from src.services.adaptive_learning_engine import AdaptiveLearningEngine
+        from src.services.learning_analytics import LearningAnalytics
 
         # Create mock dependencies
         ragnostic_client = MockRAGnosticClient()
@@ -199,19 +199,19 @@ async def test_personalized_content_generation(adaptive_engine):
 
         # Validate results
         assert len(recommendations) > 0, "No recommendations generated"
-        assert all(
-            hasattr(rec, "personalization_score") for rec in recommendations
-        ), "Missing personalization scores"
-        assert all(
-            rec.personalization_score > 0 for rec in recommendations
-        ), "Invalid personalization scores"
+        assert all(hasattr(rec, "personalization_score") for rec in recommendations), (
+            "Missing personalization scores"
+        )
+        assert all(rec.personalization_score > 0 for rec in recommendations), (
+            "Invalid personalization scores"
+        )
 
         print_success(f"Generated {len(recommendations)} personalized recommendations")
 
         # Display sample recommendations
         for i, rec in enumerate(recommendations[:3]):
             print_info(
-                f"Recommendation {i+1}: {rec.title} (Score: {rec.personalization_score:.2f}, Success Prob: {rec.success_probability:.2f})"
+                f"Recommendation {i + 1}: {rec.title} (Score: {rec.personalization_score:.2f}, Success Prob: {rec.success_probability:.2f})"
             )
 
         return recommendations
@@ -252,9 +252,9 @@ async def test_learning_path_optimization(adaptive_engine):
         assert "path_id" in path_result, "Missing path_id"
         assert "optimized_path" in path_result, "Missing optimized path"
         assert "success_metrics" in path_result, "Missing success metrics"
-        assert (
-            "performance_predictions" in path_result
-        ), "Missing performance predictions"
+        assert "performance_predictions" in path_result, (
+            "Missing performance predictions"
+        )
 
         # Check adaptive features
         adaptive_features = path_result.get("adaptation_features", {})
@@ -266,9 +266,9 @@ async def test_learning_path_optimization(adaptive_engine):
         ]
 
         for feature in expected_features:
-            assert adaptive_features.get(
-                feature, False
-            ), f"Missing adaptive feature: {feature}"
+            assert adaptive_features.get(feature, False), (
+                f"Missing adaptive feature: {feature}"
+            )
 
         print_success(f"Learning path optimized: {path_result['path_id']}")
         print_info(
@@ -337,18 +337,18 @@ async def test_dynamic_difficulty_adjustment(adaptive_engine):
             )
 
             # Validate adjustment
-            assert hasattr(
-                difficulty_adjustment, "recommended_difficulty"
-            ), "Missing recommended difficulty"
-            assert hasattr(
-                difficulty_adjustment, "confidence_score"
-            ), "Missing confidence score"
-            assert hasattr(
-                difficulty_adjustment, "adjustment_reason"
-            ), "Missing adjustment reason"
-            assert (
-                0 <= difficulty_adjustment.confidence_score <= 1
-            ), "Invalid confidence score"
+            assert hasattr(difficulty_adjustment, "recommended_difficulty"), (
+                "Missing recommended difficulty"
+            )
+            assert hasattr(difficulty_adjustment, "confidence_score"), (
+                "Missing confidence score"
+            )
+            assert hasattr(difficulty_adjustment, "adjustment_reason"), (
+                "Missing adjustment reason"
+            )
+            assert 0 <= difficulty_adjustment.confidence_score <= 1, (
+                "Invalid confidence score"
+            )
 
             print_info(f"  Current: {difficulty_adjustment.current_difficulty}")
             print_info(f"  Recommended: {difficulty_adjustment.recommended_difficulty}")
@@ -396,15 +396,15 @@ async def test_realtime_path_adaptation(adaptive_engine):
         )
 
         # Validate adaptation
-        assert hasattr(
-            adaptation_result, "adaptations_made"
-        ), "Missing adaptations made"
-        assert hasattr(
-            adaptation_result, "estimated_improvement"
-        ), "Missing improvement estimate"
-        assert hasattr(
-            adaptation_result, "adaptation_confidence"
-        ), "Missing adaptation confidence"
+        assert hasattr(adaptation_result, "adaptations_made"), (
+            "Missing adaptations made"
+        )
+        assert hasattr(adaptation_result, "estimated_improvement"), (
+            "Missing improvement estimate"
+        )
+        assert hasattr(adaptation_result, "adaptation_confidence"), (
+            "Missing adaptation confidence"
+        )
         assert len(adaptation_result.adaptations_made) > 0, "No adaptations identified"
 
         print_success(
@@ -480,19 +480,19 @@ async def test_adaptive_study_plan_generation(adaptive_engine):
         ]
 
         for feature in expected_adaptive_features:
-            assert adaptive_features.get(
-                feature, False
-            ), f"Missing adaptive feature: {feature}"
+            assert adaptive_features.get(feature, False), (
+                f"Missing adaptive feature: {feature}"
+            )
 
         # Validate success predictions
         success_predictions = study_plan["success_predictions"]
-        assert (
-            "completion_probability" in success_predictions
-        ), "Missing completion probability"
+        assert "completion_probability" in success_predictions, (
+            "Missing completion probability"
+        )
         assert "competency_targets" in success_predictions, "Missing competency targets"
-        assert (
-            0 <= success_predictions["completion_probability"] <= 1
-        ), "Invalid completion probability"
+        assert 0 <= success_predictions["completion_probability"] <= 1, (
+            "Invalid completion probability"
+        )
 
         print_success(f"Adaptive study plan generated: {study_plan['plan_id']}")
         print_info(
@@ -782,8 +782,10 @@ async def run_comprehensive_b5_tests():
         if met:
             criteria_met += 1
 
-    print(f"\
-🏆 B.5 SUCCESS CRITERIA: {criteria_met}/{len(success_criteria)} MET ({criteria_met/len(success_criteria)*100:.1f}%)")
+    print(
+        f"\
+🏆 B.5 SUCCESS CRITERIA: {criteria_met}/{len(success_criteria)} MET ({criteria_met / len(success_criteria) * 100:.1f}%)"
+    )
 
     if test_results["failed_tests"] == 0 and criteria_met == len(success_criteria):
         print(

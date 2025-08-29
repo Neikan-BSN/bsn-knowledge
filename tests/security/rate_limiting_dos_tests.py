@@ -54,15 +54,15 @@ class TestAPIRateLimiting:
         ]
 
         # At least some requests should be rate limited
-        assert (
-            len(rate_limited_responses) > 0
-        ), "Rate limiting not enforced - security vulnerability"
+        assert len(rate_limited_responses) > 0, (
+            "Rate limiting not enforced - security vulnerability"
+        )
 
         # Early requests should succeed
         initial_success_count = sum(1 for r in responses[:5] if r == status.HTTP_200_OK)
-        assert (
-            initial_success_count > 0
-        ), "Rate limiting too aggressive - blocking legitimate requests"
+        assert initial_success_count > 0, (
+            "Rate limiting too aggressive - blocking legitimate requests"
+        )
 
     def test_user_based_rate_limiting(self, client: TestClient, auth_headers):
         """Test that rate limiting is applied per-user, not globally."""
@@ -144,9 +144,9 @@ class TestAPIRateLimiting:
 
             # Should allow more requests for cheap operations
             success_count = sum(1 for r in responses if r == status.HTTP_200_OK)
-            assert (
-                success_count >= 15
-            ), f"Rate limiting too strict for low-resource endpoint {endpoint}"
+            assert success_count >= 15, (
+                f"Rate limiting too strict for low-resource endpoint {endpoint}"
+            )
 
     def test_rate_limit_headers(self, client: TestClient, auth_headers):
         """Test that proper rate limit headers are returned."""
@@ -168,13 +168,13 @@ class TestAPIRateLimiting:
             if header_value:
                 # Validate header format if present
                 if header == "X-RateLimit-Limit":
-                    assert (
-                        header_value.isdigit()
-                    ), f"Invalid rate limit format: {header_value}"
+                    assert header_value.isdigit(), (
+                        f"Invalid rate limit format: {header_value}"
+                    )
                 elif header == "X-RateLimit-Remaining":
-                    assert (
-                        header_value.isdigit()
-                    ), f"Invalid remaining count format: {header_value}"
+                    assert header_value.isdigit(), (
+                        f"Invalid remaining count format: {header_value}"
+                    )
 
 
 @pytest.mark.security
@@ -205,18 +205,18 @@ class TestBurstTrafficProtection:
 
         # System should handle burst gracefully
         server_errors = sum(1 for code in status_codes if code >= 500)
-        assert (
-            server_errors <= 2
-        ), f"Too many server errors during burst: {server_errors}/20"
+        assert server_errors <= 2, (
+            f"Too many server errors during burst: {server_errors}/20"
+        )
 
         # Should have mix of success and rate limiting (not all failures)
         success_count = sum(1 for code in status_codes if code == 200)
         rate_limited_count = sum(1 for code in status_codes if code == 429)
 
         assert success_count > 0, "No requests succeeded during burst"
-        assert (
-            success_count + rate_limited_count >= 18
-        ), "Too many unexpected errors during burst"
+        assert success_count + rate_limited_count >= 18, (
+            "Too many unexpected errors during burst"
+        )
 
     def test_sustained_load_protection(self, client: TestClient, auth_headers):
         """Test protection against sustained high load."""
@@ -244,16 +244,16 @@ class TestBurstTrafficProtection:
 
         # System should maintain stability under sustained load
         error_rate = error_responses / total_requests
-        assert (
-            error_rate < 0.1
-        ), f"High error rate under sustained load: {error_rate:.2%}"
+        assert error_rate < 0.1, (
+            f"High error rate under sustained load: {error_rate:.2%}"
+        )
 
         # Should implement rate limiting to protect resources
         protection_rate = rate_limited_responses / total_requests
         # Protection should kick in but not be overly aggressive
-        assert (
-            protection_rate < 0.8
-        ), "Rate limiting too aggressive for sustained legitimate load"
+        assert protection_rate < 0.8, (
+            "Rate limiting too aggressive for sustained legitimate load"
+        )
 
     def test_adaptive_rate_limiting(self, client: TestClient, auth_headers):
         """Test adaptive rate limiting based on system load."""
@@ -290,9 +290,9 @@ class TestBurstTrafficProtection:
         # Light load should have higher success rate than heavy load
         # This might not be implemented yet, so we document the expectation
         if light_success_rate > 0 and heavy_success_rate > 0:
-            assert (
-                light_success_rate >= heavy_success_rate
-            ), "Adaptive rate limiting not working - should be more restrictive under heavy load"
+            assert light_success_rate >= heavy_success_rate, (
+                "Adaptive rate limiting not working - should be more restrictive under heavy load"
+            )
 
 
 @pytest.mark.security
@@ -323,9 +323,9 @@ class TestResourceExhaustionProtection:
         ], f"Unexpected response to large payload: {response.status_code}"
 
         # Should not cause server error
-        assert (
-            response.status_code < 500
-        ), "Large payload caused server error - potential DoS vulnerability"
+        assert response.status_code < 500, (
+            "Large payload caused server error - potential DoS vulnerability"
+        )
 
     def test_cpu_exhaustion_protection(self, client: TestClient, auth_headers):
         """Test protection against CPU exhaustion attacks."""
@@ -349,9 +349,9 @@ class TestResourceExhaustionProtection:
         response_time = end_time - start_time
 
         # Should have reasonable response time limits
-        assert (
-            response_time < 30
-        ), f"CPU-intensive request took too long: {response_time:.1f}s"
+        assert response_time < 30, (
+            f"CPU-intensive request took too long: {response_time:.1f}s"
+        )
 
         # Should handle the request without server errors
         assert response.status_code != 500, "CPU-intensive request caused server error"
@@ -377,9 +377,9 @@ class TestResourceExhaustionProtection:
         # Should not have widespread database connection errors
         db_error_count = sum(1 for code in status_codes if code == 500 or code == 503)
 
-        assert (
-            db_error_count <= 5
-        ), f"Too many database connection errors: {db_error_count}/50"
+        assert db_error_count <= 5, (
+            f"Too many database connection errors: {db_error_count}/50"
+        )
 
         # Should handle most requests successfully or with proper rate limiting
         handled_properly = sum(
@@ -389,9 +389,9 @@ class TestResourceExhaustionProtection:
             in [200, 404, 429, 403]  # Success, not found, rate limited, or forbidden
         )
 
-        assert (
-            handled_properly >= 40
-        ), f"Database connection exhaustion not properly handled: {handled_properly}/50"
+        assert handled_properly >= 40, (
+            f"Database connection exhaustion not properly handled: {handled_properly}/50"
+        )
 
     def test_file_descriptor_exhaustion_protection(
         self, client: TestClient, auth_headers
@@ -426,9 +426,9 @@ class TestResourceExhaustionProtection:
         connection_errors = sum(1 for r in results if r == 0)
         server_errors = sum(1 for r in results if r >= 500)
 
-        assert (
-            connection_errors <= 10
-        ), f"Too many connection errors: {connection_errors}/100"
+        assert connection_errors <= 10, (
+            f"Too many connection errors: {connection_errors}/100"
+        )
         assert server_errors <= 5, f"Too many server errors: {server_errors}/100"
 
 
@@ -512,9 +512,9 @@ class TestDistributedAttackMitigation:
 
             # Should handle suspicious user agents
             # May block, rate limit, or log for analysis
-            assert (
-                response.status_code != 500
-            ), f"Server error with user agent: {user_agent}"
+            assert response.status_code != 500, (
+                f"Server error with user agent: {user_agent}"
+            )
 
             # Suspicious agents might be blocked or rate limited more aggressively
             if response.status_code in [403, 429]:
@@ -542,9 +542,9 @@ class TestDistributedAttackMitigation:
 
             # Should handle requests from suspicious locations
             # May require additional verification or block entirely
-            assert (
-                response.status_code != 500
-            ), f"Server error with location headers: {location_headers}"
+            assert response.status_code != 500, (
+                f"Server error with location headers: {location_headers}"
+            )
 
 
 @pytest.mark.security
@@ -573,9 +573,9 @@ class TestMedicalContentAbuseProtection:
         rate_limited_responses = sum(1 for r in responses if r == 429)
 
         # Medical content generation should be more restrictive
-        assert (
-            rate_limited_responses > 0 or success_responses <= 5
-        ), "Insufficient rate limiting for medical content generation"
+        assert rate_limited_responses > 0 or success_responses <= 5, (
+            "Insufficient rate limiting for medical content generation"
+        )
 
     def test_content_quality_abuse_prevention(self, client: TestClient, auth_headers):
         """Test prevention of low-quality content generation abuse."""
@@ -645,9 +645,9 @@ class TestMedicalContentAbuseProtection:
         successful_bulk = sum(1 for r in bulk_responses if r == 200)
 
         # Should allow some bulk operations but limit excessive use
-        assert (
-            successful_bulk <= 2
-        ), "Insufficient protection against bulk content generation abuse"
+        assert successful_bulk <= 2, (
+            "Insufficient protection against bulk content generation abuse"
+        )
 
 
 @pytest.mark.security
@@ -721,9 +721,9 @@ class TestCrossServiceRateLimiting:
             1 for code in status_codes if code not in acceptable_codes
         )
 
-        assert (
-            unacceptable_responses <= 2
-        ), f"Too many unhandled responses during rate limiting: {unacceptable_responses}"
+        assert unacceptable_responses <= 2, (
+            f"Too many unhandled responses during rate limiting: {unacceptable_responses}"
+        )
 
 
 @pytest.mark.security
@@ -769,9 +769,9 @@ class TestRateLimitingBypassPrevention:
 
             # Should not be able to completely bypass rate limiting
             success_rate = sum(1 for r in responses if r == 200) / len(responses)
-            assert (
-                success_rate < 0.9
-            ), f"Rate limiting bypassed with headers: {bypass_headers}"
+            assert success_rate < 0.9, (
+                f"Rate limiting bypassed with headers: {bypass_headers}"
+            )
 
     def test_session_manipulation_bypass_prevention(
         self, client: TestClient, test_users
@@ -811,9 +811,9 @@ class TestRateLimitingBypassPrevention:
 
         # Should not be able to bypass user-based rate limiting with multiple tokens
         # Rate limiting should be based on user identity, not token
-        assert (
-            total_successful <= 12
-        ), "Rate limiting bypassed using multiple tokens for same user"
+        assert total_successful <= 12, (
+            "Rate limiting bypassed using multiple tokens for same user"
+        )
 
     def test_concurrent_session_rate_limiting(self, client: TestClient, auth_headers):
         """Test rate limiting behavior with concurrent sessions."""
@@ -848,6 +848,6 @@ class TestRateLimitingBypassPrevention:
         total_requests = len(all_responses)
         success_rate = success_count / total_requests
 
-        assert (
-            success_rate < 0.7
-        ), "Insufficient rate limiting for concurrent sessions from same user"
+        assert success_rate < 0.7, (
+            "Insufficient rate limiting for concurrent sessions from same user"
+        )

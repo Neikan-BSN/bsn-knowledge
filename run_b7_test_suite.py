@@ -30,16 +30,16 @@ Options:
     --benchmark     Run performance benchmarks
 """
 
+import argparse
+import concurrent.futures
+import json
 import subprocess
 import sys
 import time
-import json
-import argparse
-from pathlib import Path
-from typing import Dict, List, Any
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from datetime import datetime
-import concurrent.futures
+from pathlib import Path
+from typing import Any
 
 
 @dataclass
@@ -55,7 +55,7 @@ class TestExecutionResult:
     coverage_percentage: float
     exit_code: int
     output: str
-    performance_metrics: Dict[str, Any]
+    performance_metrics: dict[str, Any]
 
 
 @dataclass
@@ -68,11 +68,11 @@ class ComprehensiveTestReport:
     total_skipped: int
     total_execution_time: float
     overall_coverage: float
-    categories: List[TestExecutionResult]
-    performance_benchmarks: Dict[str, Any]
-    security_assessment: Dict[str, Any]
+    categories: list[TestExecutionResult]
+    performance_benchmarks: dict[str, Any]
+    security_assessment: dict[str, Any]
     ci_cd_readiness: bool
-    recommendations: List[str]
+    recommendations: list[str]
     generated_at: str
 
 
@@ -151,7 +151,7 @@ class B7TestSuiteRunner:
 
         return report
 
-    def _determine_test_categories(self) -> List[str]:
+    def _determine_test_categories(self) -> list[str]:
         """Determine which test categories to run based on arguments."""
         if self.args.quick:
             return ["unit", "validation"]
@@ -166,7 +166,7 @@ class B7TestSuiteRunner:
         else:
             return ["unit", "integration", "validation"]
 
-    def _run_tests_sequential(self, categories: List[str]) -> List[TestExecutionResult]:
+    def _run_tests_sequential(self, categories: list[str]) -> list[TestExecutionResult]:
         """Run test categories sequentially."""
         results = []
 
@@ -183,7 +183,7 @@ class B7TestSuiteRunner:
 
         return results
 
-    def _run_tests_parallel(self, categories: List[str]) -> List[TestExecutionResult]:
+    def _run_tests_parallel(self, categories: list[str]) -> list[TestExecutionResult]:
         """Run test categories in parallel where possible."""
         # Some tests need to run sequentially (e.g., performance tests might interfere)
         sequential_categories = ["performance"]
@@ -318,7 +318,7 @@ class B7TestSuiteRunner:
                 performance_metrics={},
             )
 
-    def _build_pytest_command(self, category: str, config: Dict[str, Any]) -> List[str]:
+    def _build_pytest_command(self, category: str, config: dict[str, Any]) -> list[str]:
         """Build pytest command for a specific test category."""
         cmd = ["python", "-m", "pytest"]
 
@@ -382,7 +382,7 @@ class B7TestSuiteRunner:
 
         return cmd
 
-    def _parse_pytest_output(self, stdout: str, stderr: str) -> Dict[str, int]:
+    def _parse_pytest_output(self, stdout: str, stderr: str) -> dict[str, int]:
         """Parse pytest output to extract test statistics."""
         output = stdout + stderr
 
@@ -427,7 +427,7 @@ class B7TestSuiteRunner:
 
     def _extract_performance_metrics(
         self, output: str, category: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Extract performance metrics from test output."""
         metrics = {}
 
@@ -451,7 +451,7 @@ class B7TestSuiteRunner:
 
     def _generate_comprehensive_report(
         self,
-        category_results: List[TestExecutionResult],
+        category_results: list[TestExecutionResult],
         total_execution_time: float,
     ) -> ComprehensiveTestReport:
         """Generate comprehensive test report."""
@@ -500,8 +500,8 @@ class B7TestSuiteRunner:
         )
 
     def _analyze_performance_benchmarks(
-        self, results: List[TestExecutionResult]
-    ) -> Dict[str, Any]:
+        self, results: list[TestExecutionResult]
+    ) -> dict[str, Any]:
         """Analyze performance benchmark results."""
         performance_results = [r for r in results if r.category == "performance"]
 
@@ -530,8 +530,8 @@ class B7TestSuiteRunner:
         return benchmarks
 
     def _analyze_security_results(
-        self, results: List[TestExecutionResult]
-    ) -> Dict[str, Any]:
+        self, results: list[TestExecutionResult]
+    ) -> dict[str, Any]:
         """Analyze security test results."""
         security_results = [r for r in results if r.category == "security"]
 
@@ -563,7 +563,7 @@ class B7TestSuiteRunner:
 
         return assessment
 
-    def _extract_security_failures(self, output: str) -> List[str]:
+    def _extract_security_failures(self, output: str) -> list[str]:
         """Extract security test failures as potential vulnerabilities."""
         vulnerabilities = []
 
@@ -578,7 +578,7 @@ class B7TestSuiteRunner:
 
         return vulnerabilities
 
-    def _assess_ci_cd_readiness(self, results: List[TestExecutionResult]) -> bool:
+    def _assess_ci_cd_readiness(self, results: list[TestExecutionResult]) -> bool:
         """Assess CI/CD integration readiness."""
         validation_results = [r for r in results if r.category == "validation"]
 
@@ -589,8 +589,8 @@ class B7TestSuiteRunner:
         return validation_result.exit_code == 0 and validation_result.tests_passed > 0
 
     def _generate_recommendations(
-        self, results: List[TestExecutionResult], coverage: float
-    ) -> List[str]:
+        self, results: list[TestExecutionResult], coverage: float
+    ) -> list[str]:
         """Generate recommendations based on test results."""
         recommendations = []
 

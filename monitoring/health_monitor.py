@@ -1,7 +1,8 @@
 # \!/usr/bin/env python3
 import json
-import psutil
 from datetime import datetime
+
+import psutil
 
 
 class HealthMonitor:

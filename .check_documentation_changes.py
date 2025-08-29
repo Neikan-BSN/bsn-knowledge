@@ -9,10 +9,10 @@ Context7 Protocol Compliant:
 - Performance monitoring integration
 """
 
-import sys
 import json
-from pathlib import Path
+import sys
 from datetime import datetime
+from pathlib import Path
 
 
 def detect_changes():

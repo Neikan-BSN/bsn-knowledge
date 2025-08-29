@@ -19,9 +19,9 @@ import os
 import random
 import sqlite3
 import time
-from datetime import datetime, timezone
-from typing import Any, Dict, List
 import uuid
+from datetime import UTC, datetime
+from typing import Any
 
 # Configure logging
 os.makedirs("/home/user01/projects/bsn_knowledge/logs", exist_ok=True)
@@ -51,7 +51,7 @@ class Group1CMedicalDataGenerator:
             "processing_end_time": None,
         }
 
-    def _load_umls_concepts(self) -> Dict[str, Dict[str, Any]]:
+    def _load_umls_concepts(self) -> dict[str, dict[str, Any]]:
         """Load validated UMLS medical concepts with 99.5% baseline accuracy."""
         return {
             "cardiovascular": [
@@ -138,7 +138,7 @@ class Group1CMedicalDataGenerator:
             ],
         }
 
-    def _load_content_templates(self) -> Dict[str, List[str]]:
+    def _load_content_templates(self) -> dict[str, list[str]]:
         """Load nursing education content templates by domain."""
         return {
             "medical_surgical": [
@@ -195,7 +195,7 @@ class Group1CMedicalDataGenerator:
 
     def generate_medical_document(
         self, subject_area: str, difficulty: int
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate a comprehensive nursing education document."""
 
         # Select content template
@@ -244,7 +244,7 @@ class Group1CMedicalDataGenerator:
             "word_count": len(content.split()),
             "concept_count": len(domain_concepts),
             "evidence_sources": self._get_evidence_sources(subject_area),
-            "created_at": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(UTC).isoformat(),
             "metadata": {
                 "generator_version": "1.0.0",
                 "validation_method": "umls_automated",
@@ -256,7 +256,7 @@ class Group1CMedicalDataGenerator:
         return document
 
     def _generate_content(
-        self, title: str, subject_area: str, concepts: List[Dict], difficulty: int
+        self, title: str, subject_area: str, concepts: list[dict], difficulty: int
     ) -> str:
         """Generate comprehensive nursing education content."""
 
@@ -317,7 +317,7 @@ class Group1CMedicalDataGenerator:
         }
         return category_mappings.get(subject_area, "Physiological Integrity")
 
-    def _generate_learning_objectives(self, title: str, difficulty: int) -> List[str]:
+    def _generate_learning_objectives(self, title: str, difficulty: int) -> list[str]:
         """Generate learning objectives based on content and difficulty."""
         base_objectives = [
             f"Demonstrate understanding of {title.lower()} principles",
@@ -345,7 +345,7 @@ class Group1CMedicalDataGenerator:
 
         return base_objectives
 
-    def _get_evidence_sources(self, subject_area: str) -> List[str]:
+    def _get_evidence_sources(self, subject_area: str) -> list[str]:
         """Get evidence sources for the subject area."""
         base_sources = [
             "American Nurses Association Standards",
@@ -363,7 +363,7 @@ class Group1CMedicalDataGenerator:
 
         return base_sources + specialty_sources.get(subject_area, [])
 
-    def save_to_database(self, documents: List[Dict[str, Any]], db_path: str):
+    def save_to_database(self, documents: list[dict[str, Any]], db_path: str):
         """Save generated documents to SQLite database for testing."""
 
         conn = sqlite3.connect(db_path)
@@ -452,7 +452,7 @@ class Group1CMedicalDataGenerator:
 
     def execute_group_1c(
         self, target_documents: int = 1000, min_accuracy: float = 0.98
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute Group 1C test data preparation."""
 
         logger.info("Starting Group 1C: Test Data Preparation")
@@ -569,7 +569,7 @@ class Group1CMedicalDataGenerator:
                 },
             },
             "database_location": db_path,
-            "completed_at": datetime.now(timezone.utc).isoformat(),
+            "completed_at": datetime.now(UTC).isoformat(),
         }
 
         logger.info("Group 1C Test Data Preparation - COMPLETED")

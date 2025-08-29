@@ -83,9 +83,9 @@ class TestE2EPipeline:
                 "ragnostic_orchestrator", processing_time * 1000
             )
 
-            assert (
-                ragnostic_response.status_code == 200
-            ), f"RAGnostic processing failed: {ragnostic_response.text}"
+            assert ragnostic_response.status_code == 200, (
+                f"RAGnostic processing failed: {ragnostic_response.text}"
+            )
             ragnostic_result = ragnostic_response.json()
 
             # Validate enrichment quality
@@ -116,9 +116,9 @@ class TestE2EPipeline:
                 "bsn_knowledge", generation_time * 1000
             )
 
-            assert (
-                bsn_response.status_code == 200
-            ), f"NCLEX generation failed: {bsn_response.text}"
+            assert bsn_response.status_code == 200, (
+                f"NCLEX generation failed: {bsn_response.text}"
+            )
             nclex_result = bsn_response.json()
 
             # Validate NCLEX question quality
@@ -141,9 +141,9 @@ class TestE2EPipeline:
                     for concept in ragnostic_result["medical_concepts"]
                     if concept.get("preferred_name", "").lower() in question_text
                 )
-                assert (
-                    medical_terms_found > 0
-                ), "Questions should incorporate medical concepts from RAGnostic"
+                assert medical_terms_found > 0, (
+                    "Questions should incorporate medical concepts from RAGnostic"
+                )
 
                 # Validate medical accuracy
                 medical_terms = [
@@ -170,9 +170,9 @@ class TestE2EPipeline:
             total_pipeline_time = performance_monitor_e2e.duration
 
             # Assert performance benchmarks (<2s requirement)
-            assert (
-                total_pipeline_time < 2.0
-            ), f"E2E-001 Pipeline too slow: {total_pipeline_time:.2f}s > 2.0s requirement"
+            assert total_pipeline_time < 2.0, (
+                f"E2E-001 Pipeline too slow: {total_pipeline_time:.2f}s > 2.0s requirement"
+            )
 
             # Assert medical accuracy requirements (>98%)
             performance_monitor_e2e.assert_medical_accuracy_targets()
@@ -306,16 +306,16 @@ class TestE2EPipeline:
             )
 
         # E2E-002 Performance assertions
-        assert (
-            success_rate >= 95.0
-        ), f"E2E-002 Success rate too low: {success_rate:.1f}% < 95% requirement"
+        assert success_rate >= 95.0, (
+            f"E2E-002 Success rate too low: {success_rate:.1f}% < 95% requirement"
+        )
         if response_times:
-            assert (
-                avg_response_time < 2.0
-            ), f"E2E-002 Average response time too high: {avg_response_time:.2f}s > 2.0s"
-            assert (
-                p95_response_time < 5.0
-            ), f"E2E-002 P95 response time too high: {p95_response_time:.2f}s > 5.0s requirement"
+            assert avg_response_time < 2.0, (
+                f"E2E-002 Average response time too high: {avg_response_time:.2f}s > 2.0s"
+            )
+            assert p95_response_time < 5.0, (
+                f"E2E-002 P95 response time too high: {p95_response_time:.2f}s > 5.0s requirement"
+            )
 
         logger.info(
             f"E2E-002 PASSED: {total_requests} requests, {success_rate:.1f}% success"
@@ -358,9 +358,9 @@ class TestE2EPipeline:
                     json=ragnostic_payload,
                     timeout=30.0,
                 )
-                assert (
-                    ragnostic_response.status_code == 200
-                ), f"RAGnostic processing failed for {topic['name']}"
+                assert ragnostic_response.status_code == 200, (
+                    f"RAGnostic processing failed for {topic['name']}"
+                )
                 ragnostic_result = ragnostic_response.json()
 
                 # Step 2: Validate UMLS terminology accuracy preservation
@@ -398,9 +398,9 @@ class TestE2EPipeline:
                     json=bsn_payload,
                     timeout=30.0,
                 )
-                assert (
-                    bsn_response.status_code == 200
-                ), f"BSN Knowledge processing failed for {topic['name']}"
+                assert bsn_response.status_code == 200, (
+                    f"BSN Knowledge processing failed for {topic['name']}"
+                )
                 bsn_result = bsn_response.json()
 
                 # Step 3: Validate medical accuracy in generated content
@@ -439,15 +439,15 @@ class TestE2EPipeline:
             ) / len(accuracy_results)
 
             # Assert E2E-003 requirements (>98% medical accuracy)
-            assert (
-                overall_concept_preservation >= 0.98
-            ), f"E2E-003 Concept preservation {overall_concept_preservation:.3f} < 0.98 requirement"
-            assert (
-                overall_umls_accuracy >= 0.98
-            ), f"E2E-003 UMLS accuracy {overall_umls_accuracy:.3f} < 0.98 requirement"
-            assert (
-                overall_nclex_quality >= 0.85
-            ), f"E2E-003 NCLEX quality {overall_nclex_quality:.3f} < 0.85 threshold"
+            assert overall_concept_preservation >= 0.98, (
+                f"E2E-003 Concept preservation {overall_concept_preservation:.3f} < 0.98 requirement"
+            )
+            assert overall_umls_accuracy >= 0.98, (
+                f"E2E-003 UMLS accuracy {overall_umls_accuracy:.3f} < 0.98 requirement"
+            )
+            assert overall_nclex_quality >= 0.85, (
+                f"E2E-003 NCLEX quality {overall_nclex_quality:.3f} < 0.85 threshold"
+            )
 
             # Validate medical accuracy requirements
             medical_accuracy_validator.assert_medical_accuracy_requirements()
@@ -511,9 +511,9 @@ class TestE2EPipeline:
                 json=content_payload,
                 timeout=30.0,
             )
-            assert (
-                content_response.status_code == 200
-            ), f"Content generation failed: {content_response.text}"
+            assert content_response.status_code == 200, (
+                f"Content generation failed: {content_response.text}"
+            )
             content_result = content_response.json()
 
             # Step 3: Verify data consistency across databases
@@ -522,9 +522,9 @@ class TestE2EPipeline:
                 f"http://bsn-knowledge-test:8040/api/v1/students/profile/{test_student_id}",
                 timeout=10.0,
             )
-            assert (
-                student_check.status_code == 200
-            ), "Student profile not found in PostgreSQL"
+            assert student_check.status_code == 200, (
+                "Student profile not found in PostgreSQL"
+            )
             student_data = student_check.json()
             assert student_data["student_id"] == test_student_id
 
@@ -558,9 +558,9 @@ class TestE2EPipeline:
                 f"http://bsn-knowledge-test:8040/api/v1/students/profile/{test_student_id}",
                 timeout=10.0,
             )
-            assert (
-                student_recheck.status_code == 200
-            ), "Student data corrupted after failed transaction"
+            assert student_recheck.status_code == 200, (
+                "Student data corrupted after failed transaction"
+            )
 
             logger.info("E2E-004 PASSED: Multi-database consistency maintained")
 
@@ -621,18 +621,18 @@ class TestE2EPipeline:
                 if response.status_code == 200:
                     # Fallback mechanism worked
                     result = response.json()
-                    assert (
-                        "enriched_content" in result
-                    ), "Fallback should provide enriched content"
-                    assert (
-                        "fallback_used" in result
-                    ), "Should indicate fallback was used"
+                    assert "enriched_content" in result, (
+                        "Fallback should provide enriched content"
+                    )
+                    assert "fallback_used" in result, (
+                        "Should indicate fallback was used"
+                    )
                     assert result["fallback_used"] is True
 
                     # Validate fallback quality
-                    assert (
-                        len(result["enriched_content"]) > 100
-                    ), "Fallback content should be substantial"
+                    assert len(result["enriched_content"]) > 100, (
+                        "Fallback content should be substantial"
+                    )
 
                     # Test BSN Knowledge with fallback data
                     bsn_payload = {
@@ -650,20 +650,20 @@ class TestE2EPipeline:
                         timeout=15.0,
                     )
 
-                    assert (
-                        bsn_response.status_code == 200
-                    ), "BSN Knowledge should handle fallback data"
+                    assert bsn_response.status_code == 200, (
+                        "BSN Knowledge should handle fallback data"
+                    )
                     bsn_result = bsn_response.json()
-                    assert (
-                        len(bsn_result["questions"]) >= 1
-                    ), "Should generate at least 1 fallback question"
+                    assert len(bsn_result["questions"]) >= 1, (
+                        "Should generate at least 1 fallback question"
+                    )
 
                 else:
                     # Graceful failure
                     error_result = response.json()
-                    assert (
-                        "error" in error_result
-                    ), "Error response should contain error message"
+                    assert "error" in error_result, (
+                        "Error response should contain error message"
+                    )
                     assert (
                         "medical_terminology" in error_result["error"].lower()
                         or "umls" in error_result["error"].lower()
@@ -708,26 +708,26 @@ class TestE2EPipeline:
                 timeout=10.0,
             )
 
-            assert (
-                umls_response.status_code == 200
-            ), f"UMLS connectivity failed: {umls_response.text}"
+            assert umls_response.status_code == 200, (
+                f"UMLS connectivity failed: {umls_response.text}"
+            )
             umls_result = umls_response.json()
 
             # Validate UMLS response quality
             assert "concepts" in umls_result, "UMLS should return concepts"
             concepts = umls_result["concepts"]
-            assert len(concepts) >= len(
-                umls_test_cuis
-            ), "Should return data for all requested CUIs"
+            assert len(concepts) >= len(umls_test_cuis), (
+                "Should return data for all requested CUIs"
+            )
 
             for concept in concepts:
                 assert "cui" in concept, "Each concept should have CUI"
-                assert (
-                    "preferred_name" in concept
-                ), "Each concept should have preferred name"
-                assert (
-                    len(concept["preferred_name"]) > 0
-                ), "Preferred name should not be empty"
+                assert "preferred_name" in concept, (
+                    "Each concept should have preferred name"
+                )
+                assert len(concept["preferred_name"]) > 0, (
+                    "Preferred name should not be empty"
+                )
 
             # Step 2: Test UMLS integration through RAGnostic pipeline
             ragnostic_payload = {
@@ -743,19 +743,19 @@ class TestE2EPipeline:
                 timeout=20.0,
             )
 
-            assert (
-                ragnostic_response.status_code == 200
-            ), "RAGnostic with UMLS integration failed"
+            assert ragnostic_response.status_code == 200, (
+                "RAGnostic with UMLS integration failed"
+            )
             ragnostic_result = ragnostic_response.json()
 
             # Validate UMLS enrichment
-            assert (
-                "medical_concepts" in ragnostic_result
-            ), "Should return enriched medical concepts"
+            assert "medical_concepts" in ragnostic_result, (
+                "Should return enriched medical concepts"
+            )
             medical_concepts = ragnostic_result["medical_concepts"]
-            assert len(medical_concepts) >= len(
-                umls_test_cuis
-            ), "Should enrich all provided concepts"
+            assert len(medical_concepts) >= len(umls_test_cuis), (
+                "Should enrich all provided concepts"
+            )
 
             # Step 3: Test fallback when UMLS unavailable
             with patch("httpx.AsyncClient.post") as mock_post:
@@ -775,9 +775,9 @@ class TestE2EPipeline:
 
                 if fallback_response.status_code == 200:
                     fallback_result = fallback_response.json()
-                    assert (
-                        fallback_result.get("fallback_used") is True
-                    ), "Should indicate fallback was used"
+                    assert fallback_result.get("fallback_used") is True, (
+                        "Should indicate fallback was used"
+                    )
 
             logger.info(
                 "E2E-006 PASSED: External medical database connectivity validated"
@@ -858,9 +858,9 @@ class TestE2EPipeline:
                     timeout=10.0,
                 )
 
-                assert (
-                    search_response.status_code == 200
-                ), f"Search failed for query: {search_test['query']}"
+                assert search_response.status_code == 200, (
+                    f"Search failed for query: {search_test['query']}"
+                )
                 search_result = search_response.json()
 
                 # Validate search results
@@ -870,12 +870,12 @@ class TestE2EPipeline:
 
                 # Check result relevance
                 top_result = results[0]
-                assert (
-                    "similarity_score" in top_result
-                ), "Should include similarity score"
-                assert (
-                    top_result["similarity_score"] >= 0.7
-                ), f"Top result similarity too low: {top_result['similarity_score']}"
+                assert "similarity_score" in top_result, (
+                    "Should include similarity score"
+                )
+                assert top_result["similarity_score"] >= 0.7, (
+                    f"Top result similarity too low: {top_result['similarity_score']}"
+                )
 
                 # Check if expected topic is in top results
                 result_topics = [r.get("topic", "") for r in results[:3]]
@@ -899,12 +899,12 @@ class TestE2EPipeline:
             ) / len(search_accuracy_results)
 
             # Assert search accuracy requirements
-            assert (
-                avg_similarity >= 0.75
-            ), f"E2E-007 Average similarity {avg_similarity:.3f} < 0.75 threshold"
-            assert (
-                topic_accuracy >= 0.8
-            ), f"E2E-007 Topic accuracy {topic_accuracy:.3f} < 0.8 threshold"
+            assert avg_similarity >= 0.75, (
+                f"E2E-007 Average similarity {avg_similarity:.3f} < 0.75 threshold"
+            )
+            assert topic_accuracy >= 0.8, (
+                f"E2E-007 Topic accuracy {topic_accuracy:.3f} < 0.8 threshold"
+            )
 
             logger.info(
                 f"E2E-007 PASSED: Vector search accuracy - Similarity: {avg_similarity:.3f}, Topic accuracy: {topic_accuracy:.3f}"
@@ -971,26 +971,26 @@ class TestE2EPipeline:
 
                 if failure_response.status_code == 200:
                     failure_result = failure_response.json()
-                    assert (
-                        "questions" in failure_result
-                    ), "Fallback should still generate questions"
-                    assert (
-                        failure_result.get("fallback_mode") is True
-                    ), "Should indicate fallback mode"
+                    assert "questions" in failure_result, (
+                        "Fallback should still generate questions"
+                    )
+                    assert failure_result.get("fallback_mode") is True, (
+                        "Should indicate fallback mode"
+                    )
 
                     # Validate fallback question quality
                     questions = failure_result["questions"]
-                    assert (
-                        len(questions) >= 1
-                    ), "Should generate at least 1 fallback question"
+                    assert len(questions) >= 1, (
+                        "Should generate at least 1 fallback question"
+                    )
 
                     for question in questions:
-                        assert (
-                            len(question.get("question", "")) > 20
-                        ), "Fallback questions should be substantial"
-                        assert (
-                            len(question.get("rationale", "")) > 10
-                        ), "Should include rationales"
+                        assert len(question.get("question", "")) > 20, (
+                            "Fallback questions should be substantial"
+                        )
+                        assert len(question.get("rationale", "")) > 10, (
+                            "Should include rationales"
+                        )
 
             # Step 3: Test recovery after service restoration
             recovery_attempts = 0
@@ -1016,9 +1016,9 @@ class TestE2EPipeline:
                     recovery_attempts += 1
                     await asyncio.sleep(1)
 
-            assert (
-                recovery_attempts < max_attempts
-            ), f"Service failed to recover within {max_attempts} attempts"
+            assert recovery_attempts < max_attempts, (
+                f"Service failed to recover within {max_attempts} attempts"
+            )
             logger.info(
                 f"E2E-008 PASSED: Service recovery successful after {recovery_attempts} attempts"
             )
@@ -1093,24 +1093,24 @@ class TestE2EPipeline:
                 timeout=20.0,
             )
 
-            assert (
-                ragnostic_response.status_code == 200
-            ), "RAGnostic processing with context failed"
+            assert ragnostic_response.status_code == 200, (
+                "RAGnostic processing with context failed"
+            )
             ragnostic_result = ragnostic_response.json()
 
             # Validate context preservation in RAGnostic output
-            assert (
-                "student_context" in ragnostic_result
-            ), "Student context should be preserved"
+            assert "student_context" in ragnostic_result, (
+                "Student context should be preserved"
+            )
             assert "session_id" in ragnostic_result, "Session ID should be preserved"
-            assert (
-                ragnostic_result["session_id"] == session_id
-            ), "Session ID should match"
+            assert ragnostic_result["session_id"] == session_id, (
+                "Session ID should match"
+            )
 
             preserved_context = ragnostic_result["student_context"]
-            assert (
-                preserved_context["student_id"] == student_context["student_id"]
-            ), "Student ID should match"
+            assert preserved_context["student_id"] == student_context["student_id"], (
+                "Student ID should match"
+            )
             assert (
                 preserved_context["competency_level"]
                 == student_context["competency_level"]
@@ -1133,19 +1133,19 @@ class TestE2EPipeline:
                 timeout=15.0,
             )
 
-            assert (
-                bsn_response.status_code == 200
-            ), "Personalized content generation failed"
+            assert bsn_response.status_code == 200, (
+                "Personalized content generation failed"
+            )
             bsn_result = bsn_response.json()
 
             # Validate personalization based on context
-            assert (
-                "personalized_content" in bsn_result
-            ), "Should return personalized content"
+            assert "personalized_content" in bsn_result, (
+                "Should return personalized content"
+            )
             assert "adaptive_elements" in bsn_result, "Should include adaptive elements"
-            assert (
-                "context_applied" in bsn_result
-            ), "Should indicate context was applied"
+            assert "context_applied" in bsn_result, (
+                "Should indicate context was applied"
+            )
 
             bsn_result["personalized_content"]
             adaptive_elements = bsn_result["adaptive_elements"]
@@ -1180,17 +1180,17 @@ class TestE2EPipeline:
                 session_data["student_context"]["student_id"]
                 == student_context["student_id"]
             ), "Context should persist in session"
-            assert (
-                "interaction_history" in session_data
-            ), "Should track interaction history"
+            assert "interaction_history" in session_data, (
+                "Should track interaction history"
+            )
 
             performance_monitor_e2e.stop()
             total_time = performance_monitor_e2e.duration
 
             # Performance check - context preservation shouldn't add significant overhead
-            assert (
-                total_time < 10.0
-            ), f"E2E-009 Context preservation too slow: {total_time:.2f}s > 10.0s"
+            assert total_time < 10.0, (
+                f"E2E-009 Context preservation too slow: {total_time:.2f}s > 10.0s"
+            )
 
             logger.info(
                 f"E2E-009 PASSED: Context preserved through pipeline in {total_time:.3f}s"
@@ -1233,9 +1233,9 @@ class TestE2EPipeline:
                 timeout=15.0,
             )
 
-            assert (
-                ragnostic_response.status_code == 200
-            ), "Authenticated RAGnostic request should succeed"
+            assert ragnostic_response.status_code == 200, (
+                "Authenticated RAGnostic request should succeed"
+            )
             ragnostic_result = ragnostic_response.json()
 
             # BSN Knowledge with valid auth (should propagate authentication)
@@ -1255,9 +1255,9 @@ class TestE2EPipeline:
                 timeout=15.0,
             )
 
-            assert (
-                bsn_response.status_code == 200
-            ), "Authenticated BSN Knowledge request should succeed"
+            assert bsn_response.status_code == 200, (
+                "Authenticated BSN Knowledge request should succeed"
+            )
 
             # Step 2: Test with invalid authentication
             invalid_headers = {
@@ -1272,9 +1272,9 @@ class TestE2EPipeline:
             )
 
             expected_status = auth_tests["invalid_jwt"]["expected_status"]
-            assert (
-                invalid_ragnostic_response.status_code == expected_status
-            ), f"Invalid auth should return {expected_status}"
+            assert invalid_ragnostic_response.status_code == expected_status, (
+                f"Invalid auth should return {expected_status}"
+            )
 
             # Step 3: Test role-based access control
             student_headers = auth_headers.get("student1", {})
@@ -1305,9 +1305,9 @@ class TestE2EPipeline:
                 questions = restricted_result.get("questions", [])
                 if questions:
                     # Check that difficulty was downgraded (implementation-specific validation)
-                    assert (
-                        "expert_level" not in str(restricted_result).lower()
-                    ), "Should not provide expert content to students"
+                    assert "expert_level" not in str(restricted_result).lower(), (
+                        "Should not provide expert content to students"
+                    )
 
             # Step 4: Test session-based authentication continuity
             session_payload = {
@@ -1338,9 +1338,9 @@ class TestE2EPipeline:
                         timeout=10.0,
                     )
 
-                    assert (
-                        session_test_response.status_code == 200
-                    ), "Session-based auth should work"
+                    assert session_test_response.status_code == 200, (
+                        "Session-based auth should work"
+                    )
 
             logger.info(
                 "E2E-010 PASSED: Authentication validated across service boundaries"
@@ -1414,15 +1414,15 @@ class TestE2EPipeline:
                     timeout=10.0,
                 )
 
-                assert (
-                    integrity_check_response.status_code == 200
-                ), "Integrity check should execute"
+                assert integrity_check_response.status_code == 200, (
+                    "Integrity check should execute"
+                )
                 integrity_result = integrity_check_response.json()
 
                 # Should detect corruption
-                assert (
-                    "integrity_status" in integrity_result
-                ), "Should report integrity status"
+                assert "integrity_status" in integrity_result, (
+                    "Should report integrity status"
+                )
                 if integrity_result["integrity_status"] == "corrupted":
                     logger.info("Data corruption successfully detected")
 
@@ -1484,13 +1484,13 @@ class TestE2EPipeline:
                                 timeout=10.0,
                             )
 
-                            assert (
-                                usage_response.status_code == 200
-                            ), "Healed content should be usable"
+                            assert usage_response.status_code == 200, (
+                                "Healed content should be usable"
+                            )
                             usage_result = usage_response.json()
-                            assert (
-                                len(usage_result.get("questions", [])) > 0
-                            ), "Should generate questions from healed content"
+                            assert len(usage_result.get("questions", [])) > 0, (
+                                "Should generate questions from healed content"
+                            )
 
                             logger.info(
                                 "E2E-011 PASSED: Data corruption detected and healed successfully"
@@ -1509,16 +1509,16 @@ class TestE2EPipeline:
                 timeout=10.0,
             )
 
-            assert (
-                validation_response.status_code == 200
-            ), "Content validation should succeed"
+            assert validation_response.status_code == 200, (
+                "Content validation should succeed"
+            )
             validation_result = validation_response.json()
 
             # Should include integrity information
             if "integrity_verified" in validation_result:
-                assert (
-                    validation_result["integrity_verified"] is True
-                ), "Content integrity should be verified"
+                assert validation_result["integrity_verified"] is True, (
+                    "Content integrity should be verified"
+                )
 
             logger.info("E2E-011 PASSED: Basic integrity checking validated")
 
@@ -1566,16 +1566,16 @@ class TestE2EPipeline:
                     timeout=20.0,
                 )
 
-                assert (
-                    ragnostic_response.status_code == 200
-                ), f"RAGnostic processing failed for {topic['name']}"
+                assert ragnostic_response.status_code == 200, (
+                    f"RAGnostic processing failed for {topic['name']}"
+                )
                 ragnostic_result = ragnostic_response.json()
 
                 # Validate medical enrichment quality
                 medical_concepts = ragnostic_result.get("medical_concepts", [])
-                assert (
-                    len(medical_concepts) >= 3
-                ), f"Should enrich with at least 3 medical concepts for {topic['name']}"
+                assert len(medical_concepts) >= 3, (
+                    f"Should enrich with at least 3 medical concepts for {topic['name']}"
+                )
 
                 # Step 2: Generate NCLEX questions with validated terminology
                 nclex_payload = {
@@ -1602,16 +1602,16 @@ class TestE2EPipeline:
                     f"nclex_generation_{topic['id']}", generation_time * 1000
                 )
 
-                assert (
-                    nclex_response.status_code == 200
-                ), f"NCLEX generation failed for {topic['name']}"
+                assert nclex_response.status_code == 200, (
+                    f"NCLEX generation failed for {topic['name']}"
+                )
                 nclex_result = nclex_response.json()
 
                 # Step 3: Validate question quality and terminology
                 questions = nclex_result.get("questions", [])
-                assert (
-                    len(questions) >= 6
-                ), f"Should generate at least 6 questions for {topic['name']}"
+                assert len(questions) >= 6, (
+                    f"Should generate at least 6 questions for {topic['name']}"
+                )
 
                 # Validate each question comprehensively
                 topic_accuracy_scores = []
@@ -1622,9 +1622,9 @@ class TestE2EPipeline:
 
                     # NCLEX category alignment
                     question_category = question.get("nclex_category", "")
-                    assert (
-                        question_category in topic["expected_nclex_categories"]
-                    ), f"Question {i + 1} category '{question_category}' not in expected categories {topic['expected_nclex_categories']}"
+                    assert question_category in topic["expected_nclex_categories"], (
+                        f"Question {i + 1} category '{question_category}' not in expected categories {topic['expected_nclex_categories']}"
+                    )
 
                     # Medical terminology integration
                     question_text = (
@@ -1643,9 +1643,9 @@ class TestE2EPipeline:
                             medical_term_count += 1
 
                     # Each question should integrate at least 1 medical concept
-                    assert (
-                        medical_term_count > 0
-                    ), f"Question {i + 1} should integrate medical terminology"
+                    assert medical_term_count > 0, (
+                        f"Question {i + 1} should integrate medical terminology"
+                    )
 
                     # Clinical accuracy assessment
                     clinical_accuracy = assess_clinical_accuracy(
@@ -1714,18 +1714,18 @@ class TestE2EPipeline:
             ) / len(generation_results)
 
             # Assert E2E-012 requirements
-            assert (
-                avg_umls_accuracy >= 0.98
-            ), f"E2E-012 UMLS accuracy {avg_umls_accuracy:.3f} < 0.98 requirement"
-            assert (
-                avg_nclex_quality >= 0.90
-            ), f"E2E-012 NCLEX quality {avg_nclex_quality:.3f} < 0.90 requirement"
-            assert (
-                avg_clinical_accuracy >= 0.85
-            ), f"E2E-012 Clinical accuracy {avg_clinical_accuracy:.3f} < 0.85 requirement"
-            assert (
-                avg_generation_time <= 3000
-            ), f"E2E-012 Generation time {avg_generation_time:.1f}ms > 3000ms threshold"
+            assert avg_umls_accuracy >= 0.98, (
+                f"E2E-012 UMLS accuracy {avg_umls_accuracy:.3f} < 0.98 requirement"
+            )
+            assert avg_nclex_quality >= 0.90, (
+                f"E2E-012 NCLEX quality {avg_nclex_quality:.3f} < 0.90 requirement"
+            )
+            assert avg_clinical_accuracy >= 0.85, (
+                f"E2E-012 Clinical accuracy {avg_clinical_accuracy:.3f} < 0.85 requirement"
+            )
+            assert avg_generation_time <= 3000, (
+                f"E2E-012 Generation time {avg_generation_time:.1f}ms > 3000ms threshold"
+            )
 
             # Validate medical accuracy requirements
             medical_accuracy_validator.assert_medical_accuracy_requirements()
@@ -1941,32 +1941,32 @@ class TestE2EPipeline:
                 concurrent_users = metrics["concurrent_users"]
 
                 # Success rate should remain high even under load
-                assert (
-                    metrics["success_rate"] >= 90.0
-                ), f"E2E-013 Success rate {metrics['success_rate']:.1f}% < 90% at {concurrent_users} users"
+                assert metrics["success_rate"] >= 90.0, (
+                    f"E2E-013 Success rate {metrics['success_rate']:.1f}% < 90% at {concurrent_users} users"
+                )
 
                 # Response times should remain reasonable
                 if concurrent_users <= 100:
                     # Lower load - stricter requirements
-                    assert (
-                        metrics["avg_response_time"] <= 2.0
-                    ), f"E2E-013 Avg response time {metrics['avg_response_time']:.3f}s > 2.0s at {concurrent_users} users"
-                    assert (
-                        metrics["p95_response_time"] <= 5.0
-                    ), f"E2E-013 P95 response time {metrics['p95_response_time']:.3f}s > 5.0s at {concurrent_users} users"
+                    assert metrics["avg_response_time"] <= 2.0, (
+                        f"E2E-013 Avg response time {metrics['avg_response_time']:.3f}s > 2.0s at {concurrent_users} users"
+                    )
+                    assert metrics["p95_response_time"] <= 5.0, (
+                        f"E2E-013 P95 response time {metrics['p95_response_time']:.3f}s > 5.0s at {concurrent_users} users"
+                    )
                 else:
                     # Higher load - more relaxed but still reasonable
-                    assert (
-                        metrics["avg_response_time"] <= 4.0
-                    ), f"E2E-013 Avg response time {metrics['avg_response_time']:.3f}s > 4.0s at {concurrent_users} users"
-                    assert (
-                        metrics["p95_response_time"] <= 10.0
-                    ), f"E2E-013 P95 response time {metrics['p95_response_time']:.3f}s > 10.0s at {concurrent_users} users"
+                    assert metrics["avg_response_time"] <= 4.0, (
+                        f"E2E-013 Avg response time {metrics['avg_response_time']:.3f}s > 4.0s at {concurrent_users} users"
+                    )
+                    assert metrics["p95_response_time"] <= 10.0, (
+                        f"E2E-013 P95 response time {metrics['p95_response_time']:.3f}s > 10.0s at {concurrent_users} users"
+                    )
 
                 # System should handle reasonable throughput
-                assert (
-                    metrics["requests_per_second"] >= concurrent_users * 0.8
-                ), f"E2E-013 Low throughput {metrics['requests_per_second']:.1f} RPS for {concurrent_users} users"
+                assert metrics["requests_per_second"] >= concurrent_users * 0.8, (
+                    f"E2E-013 Low throughput {metrics['requests_per_second']:.1f} RPS for {concurrent_users} users"
+                )
 
             # Overall system stability - no significant degradation at higher loads
             if len(load_test_results) >= 2:
@@ -1974,9 +1974,9 @@ class TestE2EPipeline:
                 high_load_p95 = load_test_results[-1]["p95_response_time"]
                 degradation_ratio = high_load_p95 / baseline_p95
 
-                assert (
-                    degradation_ratio <= 3.0
-                ), f"E2E-013 Performance degradation too high: {degradation_ratio:.1f}x at high load"
+                assert degradation_ratio <= 3.0, (
+                    f"E2E-013 Performance degradation too high: {degradation_ratio:.1f}x at high load"
+                )
 
             logger.info(
                 f"E2E-013 PASSED: Performance benchmarking completed in {total_test_time:.1f}s"
@@ -2121,18 +2121,18 @@ class TestE2EPipeline:
                 audit_logs = audit_retrieval_response.json()
 
                 # Validate audit log completeness
-                assert (
-                    "session_id" in audit_logs
-                ), "Audit logs should include session ID"
-                assert (
-                    "activities" in audit_logs
-                ), "Audit logs should include activities"
-                assert (
-                    "user_info" in audit_logs
-                ), "Audit logs should include user information"
-                assert (
-                    "timestamps" in audit_logs
-                ), "Audit logs should include timestamps"
+                assert "session_id" in audit_logs, (
+                    "Audit logs should include session ID"
+                )
+                assert "activities" in audit_logs, (
+                    "Audit logs should include activities"
+                )
+                assert "user_info" in audit_logs, (
+                    "Audit logs should include user information"
+                )
+                assert "timestamps" in audit_logs, (
+                    "Audit logs should include timestamps"
+                )
 
                 activities = audit_logs["activities"]
                 logged_operations = [
@@ -2152,23 +2152,23 @@ class TestE2EPipeline:
 
                 # Validate audit log structure
                 for activity in activities:
-                    assert (
-                        "timestamp" in activity
-                    ), "Each activity should have timestamp"
+                    assert "timestamp" in activity, (
+                        "Each activity should have timestamp"
+                    )
                     assert "user_id" in activity, "Each activity should have user ID"
-                    assert (
-                        "operation_type" in activity
-                    ), "Each activity should have operation type"
+                    assert "operation_type" in activity, (
+                        "Each activity should have operation type"
+                    )
                     assert "outcome" in activity, "Each activity should have outcome"
 
                     # Check for compliance-specific fields
                     if activity.get("involves_medical_data"):
-                        assert (
-                            "medical_data_accessed" in activity
-                        ), "Medical data access should be detailed"
-                        assert (
-                            "compliance_category" in activity
-                        ), "Should categorize for compliance"
+                        assert "medical_data_accessed" in activity, (
+                            "Medical data access should be detailed"
+                        )
+                        assert "compliance_category" in activity, (
+                            "Should categorize for compliance"
+                        )
 
                 logger.info(
                     f"Audit trail validated: {len(activities)} activities logged"
@@ -2184,19 +2184,19 @@ class TestE2EPipeline:
                 if audit_integrity_response.status_code == 200:
                     integrity_result = audit_integrity_response.json()
 
-                    assert (
-                        "integrity_verified" in integrity_result
-                    ), "Should verify audit log integrity"
+                    assert "integrity_verified" in integrity_result, (
+                        "Should verify audit log integrity"
+                    )
                     if integrity_result.get("integrity_verified"):
-                        assert (
-                            "checksum" in integrity_result
-                        ), "Should provide checksum for verification"
-                        assert (
-                            "tamper_detected" in integrity_result
-                        ), "Should check for tampering"
-                        assert (
-                            integrity_result["tamper_detected"] is False
-                        ), "Audit logs should not be tampered"
+                        assert "checksum" in integrity_result, (
+                            "Should provide checksum for verification"
+                        )
+                        assert "tamper_detected" in integrity_result, (
+                            "Should check for tampering"
+                        )
+                        assert integrity_result["tamper_detected"] is False, (
+                            "Audit logs should not be tampered"
+                        )
 
                 # Step 6: Test compliance reporting
                 compliance_response = await client.get(
@@ -2214,28 +2214,28 @@ class TestE2EPipeline:
                 if compliance_response.status_code == 200:
                     compliance_report = compliance_response.json()
 
-                    assert (
-                        "compliance_summary" in compliance_report
-                    ), "Should provide compliance summary"
-                    assert (
-                        "educational_activities" in compliance_report
-                    ), "Should detail educational activities"
-                    assert (
-                        "data_access_patterns" in compliance_report
-                    ), "Should analyze access patterns"
+                    assert "compliance_summary" in compliance_report, (
+                        "Should provide compliance summary"
+                    )
+                    assert "educational_activities" in compliance_report, (
+                        "Should detail educational activities"
+                    )
+                    assert "data_access_patterns" in compliance_report, (
+                        "Should analyze access patterns"
+                    )
 
                     # Validate compliance metrics
                     if "metrics" in compliance_report:
                         metrics = compliance_report["metrics"]
-                        assert (
-                            "total_activities" in metrics
-                        ), "Should count total activities"
-                        assert (
-                            "medical_data_accesses" in metrics
-                        ), "Should count medical data accesses"
-                        assert (
-                            "compliance_violations" in metrics
-                        ), "Should identify violations"
+                        assert "total_activities" in metrics, (
+                            "Should count total activities"
+                        )
+                        assert "medical_data_accesses" in metrics, (
+                            "Should count medical data accesses"
+                        )
+                        assert "compliance_violations" in metrics, (
+                            "Should identify violations"
+                        )
 
                 logger.info(
                     "E2E-014 PASSED: Audit trail and compliance logging validated"
@@ -2253,9 +2253,9 @@ class TestE2EPipeline:
                 )
                 total_operations = len(operation_results)
 
-                assert (
-                    successful_operations >= total_operations * 0.8
-                ), f"Too many operations failed: {successful_operations}/{total_operations}"
+                assert successful_operations >= total_operations * 0.8, (
+                    f"Too many operations failed: {successful_operations}/{total_operations}"
+                )
 
                 logger.info("E2E-014 PASSED: Basic operation tracking validated")
 
@@ -2331,9 +2331,9 @@ class TestE2EPipeline:
                 )
                 ragnostic_time = time.time() - ragnostic_start
 
-                assert (
-                    ragnostic_response.status_code == 200
-                ), f"RAGnostic failed in iteration {iteration + 1}"
+                assert ragnostic_response.status_code == 200, (
+                    f"RAGnostic failed in iteration {iteration + 1}"
+                )
                 ragnostic_result = ragnostic_response.json()
 
                 # Step 2: BSN Knowledge processing (optimized)
@@ -2354,9 +2354,9 @@ class TestE2EPipeline:
                 )
                 bsn_time = time.time() - bsn_start
 
-                assert (
-                    bsn_response.status_code == 200
-                ), f"BSN Knowledge failed in iteration {iteration + 1}"
+                assert bsn_response.status_code == 200, (
+                    f"BSN Knowledge failed in iteration {iteration + 1}"
+                )
                 bsn_result = bsn_response.json()
 
                 # Complete pipeline time
@@ -2365,9 +2365,9 @@ class TestE2EPipeline:
 
                 # Validate basic quality to ensure performance optimization doesn't sacrifice quality
                 questions = bsn_result.get("questions", [])
-                assert (
-                    len(questions) >= 2
-                ), f"Should generate at least 2 questions in iteration {iteration + 1}"
+                assert len(questions) >= 2, (
+                    f"Should generate at least 2 questions in iteration {iteration + 1}"
+                )
 
                 # Basic medical accuracy check
                 medical_terms = [
@@ -2381,9 +2381,9 @@ class TestE2EPipeline:
                         )
                     )
                     # Allow slightly lower accuracy for performance-optimized mode
-                    assert (
-                        umls_accuracy >= 0.92
-                    ), f"UMLS accuracy too low in performance mode: {umls_accuracy:.3f}"
+                    assert umls_accuracy >= 0.92, (
+                        f"UMLS accuracy too low in performance mode: {umls_accuracy:.3f}"
+                    )
 
                 # Record results
                 iteration_result = {
@@ -2406,9 +2406,9 @@ class TestE2EPipeline:
                 )
 
                 # Assert individual iteration requirement
-                assert (
-                    total_time < max_acceptable_time
-                ), f"E2E-015 Iteration {iteration + 1} too slow: {total_time:.3f}s > {max_acceptable_time}s requirement"
+                assert total_time < max_acceptable_time, (
+                    f"E2E-015 Iteration {iteration + 1} too slow: {total_time:.3f}s > {max_acceptable_time}s requirement"
+                )
 
                 # Brief pause between iterations to avoid overwhelming services
                 if iteration < test_iterations - 1:
@@ -2442,31 +2442,31 @@ class TestE2EPipeline:
             coefficient_of_variation = std_deviation / avg_total_time
 
             # Assert E2E-015 overall requirements
-            assert (
-                success_rate >= 95.0
-            ), f"E2E-015 Success rate {success_rate:.1f}% < 95% requirement"
+            assert success_rate >= 95.0, (
+                f"E2E-015 Success rate {success_rate:.1f}% < 95% requirement"
+            )
 
-            assert (
-                avg_total_time < max_acceptable_time
-            ), f"E2E-015 Average time {avg_total_time:.3f}s > {max_acceptable_time}s requirement"
+            assert avg_total_time < max_acceptable_time, (
+                f"E2E-015 Average time {avg_total_time:.3f}s > {max_acceptable_time}s requirement"
+            )
 
-            assert (
-                p95_total_time < max_acceptable_time * 1.2
-            ), f"E2E-015 P95 time {p95_total_time:.3f}s > {max_acceptable_time * 1.2:.1f}s threshold"
+            assert p95_total_time < max_acceptable_time * 1.2, (
+                f"E2E-015 P95 time {p95_total_time:.3f}s > {max_acceptable_time * 1.2:.1f}s threshold"
+            )
 
             # Performance consistency requirement
-            assert (
-                coefficient_of_variation < 0.3
-            ), f"E2E-015 Performance too inconsistent: CV {coefficient_of_variation:.3f} > 0.3 threshold"
+            assert coefficient_of_variation < 0.3, (
+                f"E2E-015 Performance too inconsistent: CV {coefficient_of_variation:.3f} > 0.3 threshold"
+            )
 
             # Component performance analysis
-            assert (
-                avg_ragnostic_time < 1.0
-            ), f"E2E-015 RAGnostic average time {avg_ragnostic_time:.3f}s > 1.0s threshold"
+            assert avg_ragnostic_time < 1.0, (
+                f"E2E-015 RAGnostic average time {avg_ragnostic_time:.3f}s > 1.0s threshold"
+            )
 
-            assert (
-                avg_bsn_time < 1.0
-            ), f"E2E-015 BSN Knowledge average time {avg_bsn_time:.3f}s > 1.0s threshold"
+            assert avg_bsn_time < 1.0, (
+                f"E2E-015 BSN Knowledge average time {avg_bsn_time:.3f}s > 1.0s threshold"
+            )
 
             # Log comprehensive results
             logger.info("E2E-015 PASSED: Response time validation completed")
@@ -2582,9 +2582,9 @@ class TestResilienceAndFailure:
 
             # At least some requests should succeed (queuing/retry mechanisms)
             success_rate = successful_responses / len(results) * 100
-            assert (
-                success_rate >= 70.0
-            ), f"Too many failures under load: {success_rate:.1f}% success rate"
+            assert success_rate >= 70.0, (
+                f"Too many failures under load: {success_rate:.1f}% success rate"
+            )
 
             logger.info(
                 f"Database stress test: {successful_responses}/{concurrent_requests} successful ({success_rate:.1f}%)"
@@ -2626,9 +2626,9 @@ class TestResilienceAndFailure:
                     await asyncio.sleep(1)
 
             # Assert recovery within acceptable time
-            assert (
-                recovery_attempts < max_attempts
-            ), f"Service failed to recover within {max_attempts} attempts"
+            assert recovery_attempts < max_attempts, (
+                f"Service failed to recover within {max_attempts} attempts"
+            )
 
             # Step 3: Verify full functionality after recovery
             test_payload = {
@@ -2642,9 +2642,9 @@ class TestResilienceAndFailure:
                 json=test_payload,
             )
 
-            assert (
-                functionality_response.status_code == 200
-            ), "Functionality not restored after recovery"
+            assert functionality_response.status_code == 200, (
+                "Functionality not restored after recovery"
+            )
 
             logger.info(f"Recovery successful after {recovery_attempts} attempts")
 
@@ -2715,9 +2715,9 @@ class TestCrossServiceSecurity:
                 )
 
                 # Should either reject (4xx) or safely handle without injection
-                assert (
-                    response.status_code != 500
-                ), f"Server error with SQL injection: {sql_payload}"
+                assert response.status_code != 500, (
+                    f"Server error with SQL injection: {sql_payload}"
+                )
 
                 if response.status_code == 200:
                     # If processed, ensure no sensitive data leaked
@@ -2777,9 +2777,9 @@ class TestCrossServiceSecurity:
             )
 
             # Should have some rate limited responses
-            assert (
-                rate_limited_count > 0
-            ), f"Rate limiting not enforced: {rate_limited_count} blocked out of {burst_requests}"
+            assert rate_limited_count > 0, (
+                f"Rate limiting not enforced: {rate_limited_count} blocked out of {burst_requests}"
+            )
 
             rate_limit_percentage = rate_limited_count / burst_requests * 100
             logger.info(
@@ -2877,6 +2877,6 @@ def assert_question_quality(question: dict[str, Any]) -> None:
     # Validate rationale quality
     rationale = question["rationale"]
     assert len(rationale) >= 20, "Rationale should be substantive"
-    assert not rationale.lower().startswith(
-        "the answer is"
-    ), "Rationale should explain why, not just state answer"
+    assert not rationale.lower().startswith("the answer is"), (
+        "Rationale should explain why, not just state answer"
+    )

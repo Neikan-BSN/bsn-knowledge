@@ -342,15 +342,15 @@ class TestIntegrationArchitectureValidation:
                 duration = time.time() - start_time
 
                 assert response.status_code == 200
-                assert (
-                    duration < 0.5
-                ), f"Endpoint {endpoint} took {duration:.3f}s (>500ms)"
+                assert duration < 0.5, (
+                    f"Endpoint {endpoint} took {duration:.3f}s (>500ms)"
+                )
 
                 # Verify process time header is reasonable
                 process_time = float(response.headers.get("X-Process-Time", "0"))
-                assert (
-                    process_time < 0.5
-                ), f"Process time {process_time:.3f}s exceeds target"
+                assert process_time < 0.5, (
+                    f"Process time {process_time:.3f}s exceeds target"
+                )
 
     @pytest.mark.asyncio
     async def test_clean_architecture_separation(self):
@@ -397,9 +397,9 @@ class TestIntegrationArchitectureValidation:
         ]
 
         for forbidden in forbidden_imports:
-            assert (
-                forbidden not in client_source
-            ), f"Found direct database access: {forbidden}"
+            assert forbidden not in client_source, (
+                f"Found direct database access: {forbidden}"
+            )
 
     @pytest.mark.asyncio
     async def test_concurrent_request_handling(self):

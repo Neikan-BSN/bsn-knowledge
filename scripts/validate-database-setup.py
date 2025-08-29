@@ -6,15 +6,16 @@ Validates database systems deployment and connectivity for E2E testing
 """
 
 import asyncio
-import asyncpg
-import redis
-import httpx
-import time
 import json
-import sys
-from typing import Dict, Any
-from datetime import datetime
 import logging
+import sys
+import time
+from datetime import datetime
+from typing import Any
+
+import asyncpg
+import httpx
+import redis
 
 # Configure logging
 logging.basicConfig(
@@ -22,7 +23,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
         logging.FileHandler(
-            f'/tmp/database-validation-{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'  # noqa: S108
+            f"/tmp/database-validation-{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"  # noqa: S108
         ),
         logging.StreamHandler(sys.stdout),
     ],
@@ -70,10 +71,10 @@ class DatabaseValidator:
     """Comprehensive database validation for E2E testing infrastructure"""
 
     def __init__(self):
-        self.results: Dict[str, Dict] = {}
+        self.results: dict[str, dict] = {}
         self.start_time = time.time()
 
-    async def validate_postgresql(self) -> Dict[str, Any]:
+    async def validate_postgresql(self) -> dict[str, Any]:
         """Validate PostgreSQL multi-database setup"""
         logger.info("🐘 Validating PostgreSQL setup...")
 
@@ -168,7 +169,7 @@ class DatabaseValidator:
 
         return results
 
-    async def validate_redis(self) -> Dict[str, Any]:
+    async def validate_redis(self) -> dict[str, Any]:
         """Validate Redis cache setup"""
         logger.info("🔴 Validating Redis setup...")
 
@@ -256,7 +257,7 @@ class DatabaseValidator:
 
         return results
 
-    async def validate_qdrant(self) -> Dict[str, Any]:
+    async def validate_qdrant(self) -> dict[str, Any]:
         """Validate Qdrant vector database setup"""
         logger.info("📊 Validating Qdrant vector database...")
 
@@ -332,7 +333,7 @@ class DatabaseValidator:
 
         return results
 
-    async def validate_neo4j(self) -> Dict[str, Any]:
+    async def validate_neo4j(self) -> dict[str, Any]:
         """Validate Neo4j graph database setup"""
         logger.info("🔗 Validating Neo4j graph database...")
 
@@ -395,7 +396,7 @@ class DatabaseValidator:
 
         return results
 
-    async def run_comprehensive_validation(self) -> Dict[str, Any]:
+    async def run_comprehensive_validation(self) -> dict[str, Any]:
         """Run all database validations and generate comprehensive report"""
         logger.info("🚀 Starting comprehensive database validation...")
         logger.info(
@@ -432,7 +433,7 @@ class DatabaseValidator:
             "total_validation_time_seconds": round(total_time, 2),
         }
 
-    def generate_summary_report(self, total_time: float) -> Dict[str, Any]:
+    def generate_summary_report(self, total_time: float) -> dict[str, Any]:
         """Generate summary report of database validation"""
         healthy_services = []
         partial_services = []
@@ -490,7 +491,7 @@ class DatabaseValidator:
         return summary
 
 
-def save_validation_report(results: Dict[str, Any], filename: str = None) -> str:
+def save_validation_report(results: dict[str, Any], filename: str = None) -> str:
     """Save validation results to JSON file"""
     if filename is None:
         filename = f"/tmp/database-validation-report-{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"  # noqa: S108
@@ -550,8 +551,8 @@ if __name__ == "__main__":
     # Check for required packages
     try:
         import asyncpg
-        import redis
         import httpx
+        import redis
     except ImportError as e:
         print(f"❌ Required package not found: {e}")
         print("Please install required packages:")

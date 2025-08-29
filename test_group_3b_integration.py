@@ -14,15 +14,15 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent / "tests"))
 
 try:
+    from tests.framework.performance_validator import AdvancedPerformanceValidator
+    from tests.performance.database_performance_suite import DatabasePerformanceSuite
+    from tests.performance.network_latency_analyzer import NetworkLatencyAnalyzer
     from tests.performance.test_group_3b_advanced_performance import (
-        Group3BAdvancedPerformanceTester,
         AdvancedDatabasePerformanceTester,
         AdvancedNetworkLatencyTester,
         Context7IntegrationTester,
+        Group3BAdvancedPerformanceTester,
     )
-    from tests.performance.database_performance_suite import DatabasePerformanceSuite
-    from tests.performance.network_latency_analyzer import NetworkLatencyAnalyzer
-    from tests.framework.performance_validator import AdvancedPerformanceValidator
 except ImportError as e:
     logging.error(f"Import error: {e}")
     logging.error("Please ensure all Group 3B components are properly implemented")

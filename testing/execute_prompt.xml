@@ -237,7 +237,7 @@
     </examples>
 
     <task>
-        {DYNAMIC_TASK_ASSIGNMENT}
+        Group 3B: Advanced Performance Testing (Day 2-4) and Group 3C: Complete Security Validation (Day 3-5) [PARALLEL]
 
         This prompt is designed to be reusable for each test phase execution. The specific task assignment will be provided dynamically when this prompt is used, following the reusable_task_structure format above.
 

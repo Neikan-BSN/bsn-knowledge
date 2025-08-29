@@ -14,19 +14,19 @@ Designed to integrate with established multi-database infrastructure from Groups
 """
 
 import asyncio
+import hashlib
 import json
 import logging
 import random
 import time
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import Any, Dict, List
-import hashlib
+from datetime import UTC, datetime
+from typing import Any
 
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
-from sqlalchemy import text
 
 # Configure logging
 logging.basicConfig(
@@ -51,11 +51,11 @@ class MedicalConcept:
     umls_cui: str
     semantic_type: str
     definition: str
-    synonyms: List[str]
+    synonyms: list[str]
     category: str
     confidence_score: float
     nursing_relevance: str
-    nclex_categories: List[str]
+    nclex_categories: list[str]
     clinical_context: str
 
 
@@ -70,13 +70,13 @@ class NursingEducationDocument:
     nclex_category: str
     difficulty_level: int  # 1-5 scale
     target_audience: str  # bsn_student, adn_student, instructor
-    medical_concepts: List[MedicalConcept]
-    learning_objectives: List[str]
-    clinical_scenarios: List[Dict]
-    evidence_sources: List[str]
+    medical_concepts: list[MedicalConcept]
+    learning_objectives: list[str]
+    clinical_scenarios: list[dict]
+    evidence_sources: list[str]
     umls_accuracy: float
     content_hash: str
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
     created_at: datetime
 
     def __post_init__(self):
@@ -99,9 +99,9 @@ class TestDataGenerationConfig:
     total_documents: int = 1000
     min_medical_accuracy: float = 0.98
     target_umls_accuracy: float = 0.995
-    nclex_categories: List[str] = None
-    clinical_domains: List[str] = None
-    difficulty_distribution: Dict[int, float] = None
+    nclex_categories: list[str] = None
+    clinical_domains: list[str] = None
+    difficulty_distribution: dict[int, float] = None
 
     def __post_init__(self):
         if self.nclex_categories is None:
@@ -141,7 +141,7 @@ class UMLSTerminologyValidator:
         self.umls_concepts = self._load_validated_umls_concepts()
         self.validation_cache = {}
 
-    def _load_validated_umls_concepts(self) -> Dict[str, MedicalConcept]:
+    def _load_validated_umls_concepts(self) -> dict[str, MedicalConcept]:
         """Load pre-validated UMLS medical concepts with high confidence scores."""
         return {
             # Cardiovascular System
@@ -350,7 +350,7 @@ class UMLSTerminologyValidator:
             ),
         }
 
-    async def validate_terminology(self, terms: List[str]) -> Dict[str, MedicalConcept]:
+    async def validate_terminology(self, terms: list[str]) -> dict[str, MedicalConcept]:
         """Validate medical terminology against UMLS concepts."""
         validated_concepts = {}
 
@@ -386,7 +386,7 @@ class NursingContentGenerator:
         self.umls_validator = umls_validator
         self.content_templates = self._load_content_templates()
 
-    def _load_content_templates(self) -> Dict[str, List[str]]:
+    def _load_content_templates(self) -> dict[str, list[str]]:
         """Load nursing education content templates by clinical domain."""
         return {
             "medical_surgical": [
@@ -524,17 +524,17 @@ class NursingContentGenerator:
             metadata={
                 "word_count": len(content.split()),
                 "concept_count": len(validated_concepts),
-                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "generated_at": datetime.now(UTC).isoformat(),
                 "generator_version": "1.0.0",
             },
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
         )
 
         return document
 
     def _generate_medical_terms_for_topic(
         self, topic: str, subject_area: str
-    ) -> List[str]:
+    ) -> list[str]:
         """Generate relevant medical terminology for the topic."""
         # Map topics to relevant medical terms
         term_mappings = {
@@ -579,7 +579,7 @@ class NursingContentGenerator:
         topic: str,
         subject_area: str,
         difficulty: int,
-        concepts: List[MedicalConcept],
+        concepts: list[MedicalConcept],
     ) -> str:
         """Generate comprehensive nursing education content."""
 
@@ -641,7 +641,7 @@ class NursingContentGenerator:
 
         return "".join(content_sections)
 
-    def _generate_learning_objectives(self, topic: str, difficulty: int) -> List[str]:
+    def _generate_learning_objectives(self, topic: str, difficulty: int) -> list[str]:
         """Generate appropriate learning objectives based on difficulty level."""
         base_objectives = [
             f"Demonstrate understanding of {topic} pathophysiology",
@@ -669,7 +669,7 @@ class NursingContentGenerator:
 
         return base_objectives
 
-    def _generate_clinical_scenarios(self, topic: str, subject_area: str) -> List[Dict]:
+    def _generate_clinical_scenarios(self, topic: str, subject_area: str) -> list[dict]:
         """Generate relevant clinical scenarios for the topic."""
         scenarios = [
             {
@@ -725,7 +725,7 @@ class NursingContentGenerator:
         }
         return category_mappings.get(subject_area, "Physiological Integrity")
 
-    def _generate_evidence_sources(self, subject_area: str) -> List[str]:
+    def _generate_evidence_sources(self, subject_area: str) -> list[str]:
         """Generate evidence-based sources for the content."""
         base_sources = [
             "American Nurses Association Practice Standards",
@@ -753,7 +753,7 @@ class NursingContentGenerator:
 class MedicalTestDatabaseManager:
     """Manages medical test database creation and validation."""
 
-    def __init__(self, database_config: Dict[str, str]):
+    def __init__(self, database_config: dict[str, str]):
         self.database_config = database_config
         self.engines = {}
         self.performance_metrics = {
@@ -999,7 +999,7 @@ class MedicalTestDatabaseManager:
         metric_name: str,
         metric_value: float,
         metric_unit: str,
-        metadata: Dict = None,
+        metadata: dict = None,
     ):
         """Record performance metrics for analysis."""
         metric_sql = """
@@ -1021,7 +1021,7 @@ class MedicalTestDatabaseManager:
                     )
                 break
 
-    async def get_generation_summary(self) -> Dict[str, Any]:
+    async def get_generation_summary(self) -> dict[str, Any]:
         """Get comprehensive summary of test data generation."""
         return {
             "performance_metrics": self.performance_metrics,
@@ -1083,7 +1083,7 @@ async def main():
     db_manager = MedicalTestDatabaseManager(database_config)
 
     generation_run_id = (
-        f"medical_data_gen_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
+        f"medical_data_gen_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}"
     )
 
     try:

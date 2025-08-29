@@ -6,13 +6,14 @@ Validates service health, inter-service communication, and performance baselines
 """
 
 import asyncio
-import httpx
 import json
-import time
 import logging
 import sys
+import time
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Any
+
+import httpx
 
 # Configure logging
 logging.basicConfig(
@@ -90,12 +91,12 @@ class ServiceHealthValidator:
     """Comprehensive service health validation for E2E infrastructure"""
 
     def __init__(self):
-        self.results: Dict[str, Any] = {}
+        self.results: dict[str, Any] = {}
         self.start_time = time.time()
 
     async def validate_service_health(
-        self, service_name: str, config: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, service_name: str, config: dict[str, Any]
+    ) -> dict[str, Any]:
         """Validate individual service health"""
         logger.info(f"🔍 Validating {service_name} health...")
 
@@ -150,7 +151,7 @@ class ServiceHealthValidator:
                         f"  ❌ {service_name}: Unhealthy (HTTP {response.status_code})"
                     )
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             result["status"] = "timeout"
             result["error"] = f"Timeout after {timeout}s"
             logger.error(f"  ⏰ {service_name}: Timeout after {timeout}s")
@@ -162,7 +163,7 @@ class ServiceHealthValidator:
 
         return result
 
-    async def test_inter_service_communication(self) -> Dict[str, Any]:
+    async def test_inter_service_communication(self) -> dict[str, Any]:
         """Test communication between services"""
         logger.info("🔗 Testing inter-service communication...")
 
@@ -222,7 +223,7 @@ class ServiceHealthValidator:
 
         return results
 
-    async def validate_service_dependencies(self) -> Dict[str, Any]:
+    async def validate_service_dependencies(self) -> dict[str, Any]:
         """Validate service dependency resolution"""
         logger.info("📋 Validating service dependencies...")
 
@@ -299,7 +300,7 @@ class ServiceHealthValidator:
 
         return results
 
-    async def measure_performance_baselines(self) -> Dict[str, Any]:
+    async def measure_performance_baselines(self) -> dict[str, Any]:
         """Establish performance baselines for the E2E environment"""
         logger.info("📊 Measuring performance baselines...")
 
@@ -357,7 +358,7 @@ class ServiceHealthValidator:
 
         return baselines
 
-    async def run_comprehensive_validation(self) -> Dict[str, Any]:
+    async def run_comprehensive_validation(self) -> dict[str, Any]:
         """Run complete service health validation"""
         logger.info("🚀 Starting comprehensive service health validation...")
 
@@ -411,8 +412,8 @@ class ServiceHealthValidator:
         return validation_results
 
     async def simulate_service_health(
-        self, service_name: str, config: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        self, service_name: str, config: dict[str, Any]
+    ) -> dict[str, Any]:
         """Simulate service health check results"""
         # Simulate different response times and statuses
         simulated_response_times = {
@@ -447,8 +448,8 @@ class ServiceHealthValidator:
         }
 
     def generate_validation_summary(
-        self, all_services: List[Dict], validation_results: Dict
-    ) -> Dict[str, Any]:
+        self, all_services: list[dict], validation_results: dict
+    ) -> dict[str, Any]:
         """Generate comprehensive validation summary"""
         total_services = len(all_services)
         healthy_services = sum(1 for s in all_services if s["status"] == "healthy")
@@ -507,7 +508,7 @@ class ServiceHealthValidator:
         return summary
 
 
-def save_validation_report(results: Dict[str, Any]) -> str:
+def save_validation_report(results: dict[str, Any]) -> str:
     """Save validation results to JSON file"""
     timestamp = int(time.time())
     filename = f"/tmp/service-health-validation-{timestamp}.json"  # noqa: S108

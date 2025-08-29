@@ -5,18 +5,18 @@ Shows the implemented AACN competency framework and learning analytics
 """
 
 import asyncio
-from datetime import datetime
 import logging
 import sys
+from datetime import datetime
 
 # Add src to path for imports
 sys.path.insert(0, "src")
 
+from src.assessment.competency_framework import AACNCompetencyFramework
 from src.models.assessment_models import (
     AACNDomain,
     CompetencyProficiencyLevel,
 )
-from src.assessment.competency_framework import AACNCompetencyFramework
 from src.services.analytics_service import AnalyticsService
 from src.services.ragnostic_client import RAGnosticClient
 
@@ -162,7 +162,7 @@ async def main():
         # Show first few learning activities
         for i, activity in enumerate(learning_path.recommended_sequence[:3]):
             print(
-                f"   Activity {i+1}: {activity.get('competency_name', 'Learning Activity')}"
+                f"   Activity {i + 1}: {activity.get('competency_name', 'Learning Activity')}"
             )
             print(f"     - Current Level: {activity.get('current_level', 'Unknown')}")
             print(f"     - Target Level: {activity.get('target_level', 'Unknown')}")

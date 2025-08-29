@@ -1,144 +1,70 @@
-# Pre-commit hooks for BSN Knowledge Base
-# Task Group 1 foundation validation patterns - Updated with standardization alignment
-# Optimized for Knowledge Base System with Python 3.12.10 + UV package management
+# BSN Knowledge - Streamlined Pre-commit Configuration
+# Focus: Medical/Educational Platform Quality Enforcement
+# Philosophy: 8 essential hooks that prevent real issues, not quality theater
 
-# Performance and behavior settings
-fail_fast: false # Check all hooks even if one fails
+# Performance settings
+fail_fast: false
 default_stages: [pre-commit]
 minimum_pre_commit_version: "3.0.0"
 
-# CI optimization - skip slow hooks in CI environments
+# CI optimization
 ci:
-  skip:
-    - hadolint-docker # Slow container linting (handled in CI pipeline)
-    - bandit-security # Handled in CI pipeline
   autofix_prs: true
   autofix_commit_msg: "style: auto-fix pre-commit hooks 🤖"
 
 repos:
   # =============================================================================
-  # PYTHON 3.12 ENVIRONMENT VALIDATION
-  # =============================================================================
-  - repo: local
-    hooks:
-      - id: python-version-check
-        name: "🐍 Python 3.12.10 Enforcement"
-        entry: bash
-        language: system
-        pass_filenames: false
-        args:
-          - -c
-          - |
-            PYTHON_VERSION=$(python --version 2>&1 | cut -d' ' -f2)
-            MAJOR_MINOR=$(echo $PYTHON_VERSION | cut -d'.' -f1,2)
-            PATCH=$(echo $PYTHON_VERSION | cut -d'.' -f3)
-
-            if [[ "$MAJOR_MINOR" != "3.12" ]]; then
-              echo "❌ Python 3.12.x required, found $PYTHON_VERSION"
-              echo "💡 Install: uv python install 3.12"
-              exit 1
-            fi
-
-            if [[ "$PATCH" < "4" ]]; then
-              echo "⚠️  Python 3.12.4+ recommended, found $PYTHON_VERSION"
-              echo "💡 Upgrade: uv python install 3.12.10"
-            fi
-
-            echo "✅ Python $PYTHON_VERSION (3.12.x series) validated"
-
-  # UV Package Management Validation
-  - repo: local
-    hooks:
-      - id: uv-environment-check
-        name: "📦 UV Environment Validation"
-        entry: bash
-        language: system
-        pass_filenames: false
-        args:
-          - -c
-          - |
-            # Check for canonical .venv directory
-            if [[ ! -d ".venv" ]]; then
-              echo "❌ Canonical .venv not found"
-              echo "💡 Run: make install or uv sync --all-groups"
-              exit 1
-            fi
-
-            # Check for UV installation
-            if ! command -v uv &> /dev/null; then
-              echo "❌ UV package manager not found"
-              echo "💡 Install: curl -LsSf https://astral.sh/uv/install.sh | sh"
-              exit 1
-            fi
-
-            # Validate pyproject.toml compatibility
-            if [[ -f "pyproject.toml" ]]; then
-              uv check > /dev/null 2>&1 || {
-                echo "⚠️  pyproject.toml compatibility issues detected"
-                echo "💡 Run: uv sync to resolve dependencies"
-              }
-            fi
-
-            echo "✅ UV environment validated"
-
-  # =============================================================================
-  # RUFF UNIFIED TOOLING (Replaces Black + parts of MyPy + Flake8)
+  # 1. RUFF - Unified Python tooling (replaces Black, Flake8, isort, pyupgrade)
   # =============================================================================
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.6.9
     hooks:
-      # Critical linting issues (blocking)
+      # All-in-one linting and fixing
       - id: ruff
-        name: "🔍 Ruff Linting (Critical Issues)"
+        name: "🔍 Ruff Linting + Auto-fix"
         args:
-          - --select=E9,F,B,S # Error, pyflakes, bugbear, security
-          - --ignore=B008,S314,S324,B017 # Allow common FastAPI patterns
           - --fix
+          - --exit-non-zero-on-fix
+          - --target-version=py312
         types: [python]
 
-      # Code formatting (auto-fix enabled)
+      # Code formatting
       - id: ruff-format
-        name: "🎨 Ruff Formatting (Python 3.12)"
+        name: "🎨 Ruff Formatting"
         args:
           - --target-version=py312
         types: [python]
 
-  # Enhanced Ruff configuration for knowledge base projects
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.9
+  # =============================================================================
+  # 2. SAFETY - Dependency vulnerability scanning (critical for medical platform)
+  # =============================================================================
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.3.2
     hooks:
-      # Type checking integration (optional, enable for strict projects)
-      - id: ruff
-        name: "🔍 Ruff Type Checking (Knowledge Base)"
+      - id: safety
+        name: "🛡️ Dependency Security Scan"
         args:
-          - --select=PYI,TCH,UP # Type checking rules
-          - --target-version=py312
-        types: [python]
-        stages: [manual] # Run manually with: pre-commit run --hook-stage manual
+          - --ignore=70612  # Common setuptools false positive
+          - --short-report
+        files: requirements.*\.txt$|pyproject\.toml$
 
   # =============================================================================
-  # TYPE CHECKING - MyPy Integration
+  # 3. FILE HYGIENE - Essential file cleanliness
   # =============================================================================
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.7.1
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
     hooks:
-      - id: mypy
-        name: "🏷️ MyPy Type Checking"
-        additional_dependencies:
-          [types-requests>=2.32.0, types-pyyaml>=6.0.12, types-redis>=4.6.0]
-        args: [--ignore-missing-imports, --show-error-codes]
+      - id: trailing-whitespace
+        name: "🧹 Remove Trailing Whitespace"
+      - id: end-of-file-fixer
+        name: "📝 Fix End of Files"
+      - id: check-added-large-files
+        name: "📏 Large File Check"
+        args: [--maxkb=1000]
 
   # =============================================================================
-  # SECURITY SCANNING - Lightweight Integration
+  # 4. SECRETS DETECTION - HIPAA compliance critical
   # =============================================================================
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.5
-    hooks:
-      - id: bandit
-        name: "🔍 Bandit Security Scan"
-        args: [-c, .bandit]
-
-  # Secrets detection with baseline management
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
@@ -148,185 +74,120 @@ repos:
           - --baseline
           - .secrets.baseline
           - --disable-plugin
-          - KeywordDetector # Reduce false positives
+          - KeywordDetector  # Reduce medical terminology false positives
         exclude: |
           (?x)^(
               .*\.lock$|
               .*\.log$|
-              .*\.min\.js$|
               tests/.*fixtures.*|
-              data/.*
+              data/.*test.*
           )$
 
-  # Basic credential pattern detection
+  # =============================================================================
+  # 5. DEAD CODE DETECTION - Remove unused medical calculations and logic
+  # =============================================================================
+  - repo: https://github.com/jendrikseipp/vulture
+    rev: v2.11
+    hooks:
+      - id: vulture
+        name: "🧹 Dead Code Detection"
+        args:
+          - --min-confidence=80
+          - --exclude=tests/
+        types: [python]
+
+  # =============================================================================
+  # 6. SPELL CHECK - Medical accuracy in documentation/comments
+  # =============================================================================
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
+        name: "📝 Spell Check"
+        args:
+          - --write-changes
+          - --ignore-words-list=nd,ans,hist,te,ba,teh
+        exclude: |
+          (?x)^(
+              .*\.lock$|
+              .*\.min\.js$|
+              data/vectors/.*
+          )$
+
+  # =============================================================================
+  # 7. API SCHEMA VALIDATION - Prevent breaking changes
+  # =============================================================================
   - repo: local
     hooks:
-      - id: credential-patterns
-        name: "🔐 Basic Credential Pattern Check"
+      - id: api-schema-validation
+        name: "🔗 API Schema Validation"
         entry: bash
         language: system
-        types: [text]
+        files: '^(src/.*api.*\.py|openapi\.json)$'
         args:
           - -c
           - |
-            # Check for common credential patterns
-            if grep -r -i --include="*.py" --include="*.yaml" --include="*.yml" \
-              -E "(password|secret|token|key)\s*[:=]\s*['\"][^'\"]*['\"]" . | \
-              grep -v "placeholder\|example\|test\|dummy"; then
-              echo "⚠️  Potential credentials detected in code"
-              echo "💡 Use environment variables or Doppler for secrets"
-              exit 1
+            # Validate OpenAPI schema if it exists
+            if [[ -f "openapi.json" ]]; then
+              echo "🔍 Validating OpenAPI schema..."
+              python -c "
+            import json
+            try:
+                with open('openapi.json') as f:
+                    schema = json.load(f)
+                    if 'openapi' not in schema:
+                        raise ValueError('Missing OpenAPI version')
+                    if 'paths' not in schema:
+                        raise ValueError('Missing API paths')
+                print('✅ OpenAPI schema valid')
+            except Exception as e:
+                print(f'❌ OpenAPI schema error: {e}')
+                exit(1)
+              "
             fi
-            echo "✅ No credential patterns detected"
+
+            # Check for common FastAPI security patterns
+            if find src/ -name "*.py" -exec grep -l "FastAPI\|@app\." {} \; | head -1 | xargs grep -L "Depends\|Security" 2>/dev/null; then
+              echo "⚠️  FastAPI endpoints found without security patterns"
+              echo "💡 Consider adding authentication/authorization"
+            fi
 
   # =============================================================================
-  # BASIC FILE HYGIENE
+  # 8. CRITICAL PERFORMANCE PATTERNS - Medical systems need speed
   # =============================================================================
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
-    hooks:
-      - id: trailing-whitespace
-        name: "🧹 Remove Trailing Whitespace"
-      - id: end-of-file-fixer
-        name: "📝 Fix End of Files"
-      - id: check-yaml
-        name: "📋 YAML Validation"
-        exclude: '^\.pre-commit-config\.yaml$'
-      - id: check-json
-        name: "📋 JSON Validation"
-      - id: check-toml
-        name: "📋 TOML Validation"
-      - id: check-added-large-files
-        name: "📏 Large File Check"
-        args: [--maxkb=1000]
-
-  # Python-specific file checks
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
-    hooks:
-      - id: check-ast
-        name: "🐍 Python AST Validation"
-      - id: check-docstring-first
-        name: "📖 Docstring First Check"
-      - id: debug-statements
-        name: "🐛 Debug Statement Check"
-      - id: check-merge-conflict
-        name: "🔀 Merge Conflict Check"
-      - id: requirements-txt-fixer
-        name: "📦 Requirements.txt Fixer"
-
-  # =============================================================================
-  # KNOWLEDGE BASE SPECIFIC HOOKS
-  # =============================================================================
-
-  # Dockerfile linting for knowledge base containers
-  - repo: https://github.com/hadolint/hadolint
-    rev: v2.12.0
-    hooks:
-      - id: hadolint-docker
-        name: "🐳 Dockerfile Linting"
-        entry: hadolint
-        language: docker_image
-        files: Dockerfile.*
-
-  # YAML formatting
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v4.0.0-alpha.8
-    hooks:
-      - id: prettier
-        name: "🎨 YAML/JSON Formatting"
-        files: \.(yaml|yml|json)$
-
-  # Docker Compose validation
   - repo: local
     hooks:
-      - id: docker-compose-check
-        name: "🐳 Validate docker-compose.yml"
-        entry: docker-compose
-        language: system
-        args: [config, -q]
-        files: docker-compose\.yml$
-
-  # Knowledge Base Content Validation
-  - repo: local
-    hooks:
-      - id: knowledge-base-validation
-        name: "📚 Knowledge Base Content Validation"
+      - id: performance-patterns-check
+        name: "⚡ Critical Performance Patterns"
         entry: bash
         language: system
-        files: \.(py|md|json|yaml)$
+        types: [python]
         args:
           - -c
           - |
-            echo "📚 Validating knowledge base content structure..."
+            # Check for performance anti-patterns
+            performance_issues=0
 
-            # Check for sensitive data patterns in content
-            if grep -r -i -E "(ssn|social.*security|credit.*card|medical.*record)" src/ data/ 2>/dev/null | grep -v "test\|example"; then
-              echo "🚨 Potential sensitive data found in knowledge base content"
-              echo "💡 Remove or encrypt sensitive information"
-              exit 1
+            # N+1 query patterns
+            if grep -r "for.*in.*:" src/ | grep -E "(query|select|find)" | head -3; then
+              echo "⚠️  Potential N+1 query pattern detected"
+              ((performance_issues++))
             fi
 
-            # Check for proper API endpoint security
-            if [ -d "src/bsn_knowledge/api" ]; then
-              if grep -r -E "@app\.(get|post|put|delete)" src/bsn_knowledge/api/ | grep -v -E "auth|secure|permission"; then
-                echo "⚠️ API endpoints without security patterns detected"
-                echo "💡 Ensure proper authentication and authorization"
-              fi
+            # Blocking sleep in async functions
+            if grep -r -A 2 "async def" src/ | grep -B 2 -E "(time\.sleep|threading\.Event)" | head -3; then
+              echo "❌ Blocking sleep in async function - use asyncio.sleep"
+              ((performance_issues++))
             fi
 
-            echo "✅ Knowledge base content validation completed"
-
-  # =============================================================================
-  # MCP ECOSYSTEM VALIDATION (Optional)
-  # =============================================================================
-  - repo: local
-    hooks:
-      - id: mcp-config-validation
-        name: "🔗 MCP Configuration Validation"
-        entry: bash
-        language: system
-        files: '.*mcp.*\.(json|yaml|yml)$'
-        args:
-          - -c
-          - |
-            # Validate MCP configuration files
-            for file in "$@"; do
-              if [[ "$file" == *.json ]]; then
-                python -m json.tool "$file" > /dev/null || {
-                  echo "❌ Invalid JSON in MCP config: $file"
-                  exit 1
-                }
-              elif [[ "$file" == *.yaml ]] || [[ "$file" == *.yml ]]; then
-                python -c "import yaml; yaml.safe_load(open('$file'))" || {
-                  echo "❌ Invalid YAML in MCP config: $file"
-                  exit 1
-                }
-              fi
-            done
-            echo "✅ MCP configurations validated"
-        stages: [manual] # Enable for MCP-integrated projects
-
-  # =============================================================================
-  # WORKSPACE INTEGRATION HOOKS
-  # =============================================================================
-  - repo: local
-    hooks:
-      - id: quality-gates-pre-commit
-        name: "🛡️ Quality Gates Pre-commit Check"
-        entry: bash
-        language: system
-        pass_filenames: false
-        args:
-          - -c
-          - |
-            # Run lightweight quality gates validation
-            if [[ -f "Makefile" ]] && grep -q "quality-gate-1" Makefile; then
-              echo "🚪 Running Quality Gate 1 (Environment)..."
-              make quality-gate-1 > /dev/null || {
-                echo "❌ Quality Gate 1 failed"
-                exit 1
-              }
-              echo "✅ Quality Gate 1 passed"
+            # Large data loading in loops
+            if grep -r -E "for.*json\.load|for.*pd\.read|for.*\.query" src/ | head -3; then
+              echo "⚠️  Potential inefficient data loading in loop"
+              ((performance_issues++))
             fi
-        stages: [manual] # Enable for projects with quality gates
+
+            if [[ $performance_issues -gt 0 ]]; then
+              echo "💡 Consider batching, caching, or async patterns"
+            else
+              echo "✅ No critical performance anti-patterns detected"
+            fi

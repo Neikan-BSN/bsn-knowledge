@@ -1,0 +1,48 @@
+# BSN Knowledge - Streamlined Pre-commit Test Configuration
+# Testing the Essential 8 concept with working hooks
+
+fail_fast: false
+default_stages: [pre-commit]
+minimum_pre_commit_version: "3.0.0"
+
+repos:
+  # 1. RUFF - Unified Python tooling
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        name: "🔍 Ruff Linting + Auto-fix"
+        args: [--fix, --target-version=py312]
+        types: [python]
+      - id: ruff-format
+        name: "🎨 Ruff Formatting"
+        args: [--target-version=py312]
+        types: [python]
+
+  # 2. FILE HYGIENE - Essential file cleanliness
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        name: "🧹 Remove Trailing Whitespace"
+      - id: end-of-file-fixer
+        name: "📝 Fix End of Files"
+      - id: check-added-large-files
+        name: "📏 Large File Check"
+        args: [--maxkb=1000]
+
+  # 3. SECRETS DETECTION - HIPAA compliance
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        name: "🕵️ Secrets Detection"
+        args: [--baseline, .secrets.baseline]
+
+  # 4. SPELL CHECK - Medical accuracy
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
+        name: "📝 Spell Check"
+        args: [--write-changes]

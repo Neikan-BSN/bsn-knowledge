@@ -28,8 +28,8 @@ async def test_b3_clinical_decision_support():
     try:
         # Import B.3 implementation
         from src.generators.clinical_decision_support import (
-            ClinicalDecisionSupport,
             CaseScenario,
+            ClinicalDecisionSupport,
             RecommendationResult,
         )
         from src.services.ragnostic_client import RAGnosticClient

@@ -7,8 +7,8 @@ Demonstrates the enhanced content generation capabilities
 import asyncio
 import json
 import logging
-from typing import Dict, Any
 from datetime import datetime
+from typing import Any
 
 # Configure logging
 logging.basicConfig(
@@ -23,7 +23,7 @@ class MockRAGnosticClient:
     async def search_content(
         self,
         query: str,
-        filters: Dict[str, Any] = None,
+        filters: dict[str, Any] = None,
         limit: int = 10,
         offset: int = 0,
     ):
@@ -91,7 +91,7 @@ class MockOpenAIClient:
                     "ANA Standards 2024",
                     "Evidence-Based Nursing Practice 2024",
                 ],
-                "umls_concepts": [f"C00{1000+i}", f"C00{2000+i}"],
+                "umls_concepts": [f"C00{1000 + i}", f"C00{2000 + i}"],
             }
             questions.append(question)
 
@@ -281,9 +281,9 @@ class ContentGenerationDemo:
 
     async def demonstrate_nclex_generation(self, topic: str = "diabetes management"):
         """Demonstrate NCLEX question generation"""
-        logger.info(f"\n{'='*60}")
+        logger.info(f"\n{'=' * 60}")
         logger.info("🎓 NCLEX QUESTION GENERATION DEMONSTRATION")
-        logger.info(f"{'='*60}")
+        logger.info(f"{'=' * 60}")
 
         # Simulate RAGnostic content enrichment
         logger.info(f"📚 Retrieving enriched content from RAGnostic for: {topic}")
@@ -327,9 +327,9 @@ class ContentGenerationDemo:
 
     async def demonstrate_study_guide_generation(self, topic: str = "cardiac care"):
         """Demonstrate study guide generation"""
-        logger.info(f"\n{'='*60}")
+        logger.info(f"\n{'=' * 60}")
         logger.info("📚 STUDY GUIDE GENERATION DEMONSTRATION")
-        logger.info(f"{'='*60}")
+        logger.info(f"{'=' * 60}")
 
         # Generate study guide
         logger.info(f"📖 Generating comprehensive study guide for: {topic}")
@@ -360,9 +360,9 @@ class ContentGenerationDemo:
 
     async def demonstrate_clinical_support(self, condition: str = "heart failure"):
         """Demonstrate clinical decision support"""
-        logger.info(f"\n{'='*60}")
+        logger.info(f"\n{'=' * 60}")
         logger.info("🏥 CLINICAL DECISION SUPPORT DEMONSTRATION")
-        logger.info(f"{'='*60}")
+        logger.info(f"{'=' * 60}")
 
         # Generate clinical recommendations
         logger.info(f"⚕️ Generating evidence-based recommendations for: {condition}")
@@ -409,9 +409,9 @@ class ContentGenerationDemo:
 
     async def demonstrate_integration_workflow(self):
         """Demonstrate complete integration workflow"""
-        logger.info(f"\n{'='*60}")
+        logger.info(f"\n{'=' * 60}")
         logger.info("🔄 INTEGRATED WORKFLOW DEMONSTRATION")
-        logger.info(f"{'='*60}")
+        logger.info(f"{'=' * 60}")
 
         logger.info(
             "🚀 Starting integrated BSN Knowledge content generation workflow..."
@@ -435,9 +435,9 @@ class ContentGenerationDemo:
         results["clinical"] = await self.demonstrate_clinical_support("pneumonia")
 
         # Summary
-        logger.info(f"\n{'='*60}")
+        logger.info(f"\n{'=' * 60}")
         logger.info("📊 WORKFLOW COMPLETION SUMMARY")
-        logger.info(f"{'='*60}")
+        logger.info(f"{'=' * 60}")
         logger.info(
             f"✅ NCLEX Questions Generated: {len(results['nclex']['questions'])}"
         )
@@ -464,9 +464,9 @@ class ContentGenerationDemo:
             # Run integrated workflow
             results = await self.demonstrate_integration_workflow()
 
-            logger.info(f"\n{'='*60}")
+            logger.info(f"\n{'=' * 60}")
             logger.info("🎯 DEMONSTRATION COMPLETED SUCCESSFULLY")
-            logger.info(f"{'='*60}")
+            logger.info(f"{'=' * 60}")
             logger.info("✅ All content generation systems operational")
             logger.info("✅ RAGnostic integration functioning")
             logger.info("✅ Medical accuracy validation working")

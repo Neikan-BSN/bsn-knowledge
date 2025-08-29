@@ -71,9 +71,9 @@ class TestSecurityHeadersImplementation:
             xframe_header = response.headers.get("X-Frame-Options")
             if xframe_header:
                 acceptable_values = ["DENY", "SAMEORIGIN"]
-                assert (
-                    xframe_header.upper() in acceptable_values
-                ), f"X-Frame-Options has insecure value: {xframe_header}"
+                assert xframe_header.upper() in acceptable_values, (
+                    f"X-Frame-Options has insecure value: {xframe_header}"
+                )
 
     def test_x_content_type_options_header(self, client: TestClient):
         """Test X-Content-Type-Options header for MIME type sniffing prevention."""
@@ -81,9 +81,9 @@ class TestSecurityHeadersImplementation:
 
         xcto_header = response.headers.get("X-Content-Type-Options")
         if xcto_header:
-            assert (
-                xcto_header.lower() == "nosniff"
-            ), f"X-Content-Type-Options should be 'nosniff', got: {xcto_header}"
+            assert xcto_header.lower() == "nosniff", (
+                f"X-Content-Type-Options should be 'nosniff', got: {xcto_header}"
+            )
 
     def test_referrer_policy_header(self, client: TestClient):
         """Test Referrer Policy header for privacy protection."""
@@ -99,9 +99,9 @@ class TestSecurityHeadersImplementation:
                 "no-referrer",
             ]
 
-            assert (
-                referrer_header.lower() in secure_policies
-            ), f"Insecure Referrer Policy: {referrer_header}"
+            assert referrer_header.lower() in secure_policies, (
+                f"Insecure Referrer Policy: {referrer_header}"
+            )
 
     def test_permissions_policy_header(self, client: TestClient):
         """Test Permissions Policy header (formerly Feature Policy)."""
@@ -144,9 +144,9 @@ class TestSecurityHeadersImplementation:
                     directive in cache_header for directive in secure_cache_directives
                 )
 
-                assert (
-                    has_secure_directive
-                ), f"Sensitive endpoint {endpoint} missing secure cache directives"
+                assert has_secure_directive, (
+                    f"Sensitive endpoint {endpoint} missing secure cache directives"
+                )
 
     def test_server_information_disclosure(self, client: TestClient):
         """Test that server information is not disclosed in headers."""
@@ -167,9 +167,9 @@ class TestSecurityHeadersImplementation:
             ]
 
             for pattern in version_patterns:
-                assert not re.search(
-                    pattern, header_value, re.IGNORECASE
-                ), f"Server information disclosed in {header}: {header_value}"
+                assert not re.search(pattern, header_value, re.IGNORECASE), (
+                    f"Server information disclosed in {header}: {header_value}"
+                )
 
     def _parse_csp_header(self, csp_header: str) -> dict[str, list[str]]:
         """Parse Content Security Policy header into directives."""
@@ -274,9 +274,9 @@ class TestCORSSecurityValidation:
 
         # If credentials are allowed, origin should not be wildcard
         if allow_credentials and allow_credentials.lower() == "true":
-            assert (
-                allow_origin != "*"
-            ), "CORS allows credentials with wildcard origin (security risk)"
+            assert allow_origin != "*", (
+                "CORS allows credentials with wildcard origin (security risk)"
+            )
 
     def test_cors_headers_security(self, client: TestClient):
         """Test CORS allowed headers security."""
@@ -303,9 +303,9 @@ class TestCORSSecurityValidation:
         # Should not allow dangerous headers
         dangerous_headers = ["x-malicious-header", "x-forwarded-for", "x-real-ip"]
         for header in dangerous_headers:
-            assert (
-                header not in allowed_headers
-            ), f"Dangerous header allowed in CORS: {header}"
+            assert header not in allowed_headers, (
+                f"Dangerous header allowed in CORS: {header}"
+            )
 
     def test_preflight_cache_control(self, client: TestClient):
         """Test CORS preflight response caching."""
@@ -322,9 +322,9 @@ class TestCORSSecurityValidation:
         if max_age:
             max_age_value = int(max_age)
             # Reasonable cache time for security (not too long)
-            assert (
-                0 <= max_age_value <= 86400
-            ), f"CORS preflight cache time too long: {max_age_value} seconds"
+            assert 0 <= max_age_value <= 86400, (
+                f"CORS preflight cache time too long: {max_age_value} seconds"
+            )
 
 
 @pytest.mark.security
@@ -447,16 +447,16 @@ class TestContentTypeAndMIMEValidation:
 
             # API endpoints should return JSON
             if "/api/" in endpoint:
-                assert (
-                    "application/json" in content_type.lower()
-                ), f"API endpoint {endpoint} not returning JSON: {content_type}"
+                assert "application/json" in content_type.lower(), (
+                    f"API endpoint {endpoint} not returning JSON: {content_type}"
+                )
 
             # Health endpoint might return JSON or text
             if endpoint == "/health":
                 acceptable_types = ["application/json", "text/plain", "text/html"]
-                assert any(
-                    t in content_type.lower() for t in acceptable_types
-                ), f"Health endpoint unexpected content type: {content_type}"
+                assert any(t in content_type.lower() for t in acceptable_types), (
+                    f"Health endpoint unexpected content type: {content_type}"
+                )
 
     def test_file_upload_mime_validation(self, client: TestClient, auth_headers):
         """Test MIME type validation for file uploads (if supported)."""
@@ -549,9 +549,9 @@ class TestSecurityHeadersEdgeCases:
             header_value = response.headers.get(header_name)
             if header_value:
                 # Validate custom header values
-                assert (
-                    header_value.lower() == expected_value.lower()
-                ), f"Custom header {header_name} unexpected value: {header_value}"
+                assert header_value.lower() == expected_value.lower(), (
+                    f"Custom header {header_name} unexpected value: {header_value}"
+                )
 
     def test_security_headers_performance_impact(self, client: TestClient):
         """Test that security headers don't significantly impact performance."""
@@ -567,6 +567,6 @@ class TestSecurityHeadersEdgeCases:
         avg_response_time = (end_time - start_time) / 10
 
         # Security headers should not add significant overhead
-        assert (
-            avg_response_time < 0.1
-        ), f"Security headers causing performance issues: {avg_response_time:.3f}s average"
+        assert avg_response_time < 0.1, (
+            f"Security headers causing performance issues: {avg_response_time:.3f}s average"
+        )

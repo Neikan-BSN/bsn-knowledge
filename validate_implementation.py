@@ -29,7 +29,7 @@ def validate_implementation():
     print("\\n📁 File Existence Check:")
     for file_path in files_to_check:
         try:
-            with open(file_path, "r") as f:
+            with open(file_path) as f:
                 content = f.read()
                 lines = len(content.split("\\n"))
                 print(f"   ✅ {file_path} ({lines} lines)")
@@ -41,7 +41,7 @@ def validate_implementation():
     # Check dependencies
     print("\\n📦 Dependency Check:")
     try:
-        with open("pyproject.toml", "r") as f:
+        with open("pyproject.toml") as f:
             content = f.read()
 
         dependencies = ["openai>=1.0.0", "tiktoken>=0.5.0", "fastapi>=0.110.0"]
@@ -95,7 +95,7 @@ def validate_implementation():
 
     for feature_name, file_path, check_string in features_to_check:
         try:
-            with open(file_path, "r") as f:
+            with open(file_path) as f:
                 content = f.read()
                 if check_string in content:
                     print(f"   ✅ {feature_name}")

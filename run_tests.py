@@ -4,9 +4,9 @@ Test runner script for BSN Knowledge API testing suite.
 Provides easy commands for running different test categories.
 """
 
-import sys
-import subprocess
 import argparse
+import subprocess
+import sys
 from pathlib import Path
 
 

@@ -4,11 +4,12 @@ Qdrant Vector Database Integration for Group 1C
 Creates vector embeddings for medical content search integration
 """
 
-import sqlite3
 import json
 import os
-import numpy as np
+import sqlite3
 from datetime import datetime
+
+import numpy as np
 
 
 def create_mock_embeddings(text: str, dimension: int = 384) -> list:

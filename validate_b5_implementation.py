@@ -11,8 +11,8 @@ Quick validation script for B.5 implementation per REVISED_PHASE3_PLAN.md:
 Validates all REVISED_PHASE3_PLAN.md B.5 success criteria.
 """
 
-import sys
 import os
+import sys
 from datetime import datetime
 
 # Add src directory to path
@@ -168,7 +168,7 @@ for criteria, condition in success_criteria:
         validate_error(criteria)
 
 print(
-    f"\n🏆 B.5 SUCCESS CRITERIA: {criteria_met}/{len(success_criteria)} MET ({criteria_met/len(success_criteria)*100:.1f}%)"
+    f"\n🏆 B.5 SUCCESS CRITERIA: {criteria_met}/{len(success_criteria)} MET ({criteria_met / len(success_criteria) * 100:.1f}%)"
 )
 
 if criteria_met == len(success_criteria):

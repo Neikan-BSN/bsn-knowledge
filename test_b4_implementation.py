@@ -14,10 +14,10 @@ Validates that all REVISED_PHASE3_PLAN.md B.4 requirements are met:
 """
 
 import asyncio
-import sys
-from pathlib import Path
 import logging
+import sys
 from datetime import datetime
+from pathlib import Path
 
 # Add the src directory to Python path
 src_path = Path(__file__).parent / "src"
@@ -54,29 +54,29 @@ def test_b4_imports():
 
         # Test knowledge gap analyzer import
         from assessment.knowledge_gap_analyzer import (
-            KnowledgeGapAnalyzer,
             GapAnalysisResult,
+            KnowledgeGapAnalyzer,
         )
 
         print("✅ KnowledgeGapAnalyzer imported successfully")
 
         # Test models import
         from models.assessment_models import (
-            StudentProgressMetrics,
             AACNDomain,
-            CompetencyProficiencyLevel,
-            StudentCompetencyProfile,
-            LearningPathRecommendation,
-            KnowledgeGap,
             CohortAnalytics,
+            CompetencyProficiencyLevel,
             InstitutionalReport,
+            KnowledgeGap,
+            LearningPathRecommendation,
             ProgramEffectivenessMetrics,
+            StudentCompetencyProfile,
+            StudentProgressMetrics,
         )
 
         print("✅ All assessment models imported successfully")
 
         # Test dependencies import
-        from dependencies import get_learning_analytics_dep, get_learning_analytics
+        from dependencies import get_learning_analytics, get_learning_analytics_dep
 
         print("✅ Learning analytics dependencies imported successfully")
 
@@ -172,10 +172,10 @@ def test_b4_models_compliance():
 
     try:
         from models.assessment_models import (
-            StudentProgressMetrics,
             AACNDomain,
             CompetencyProficiencyLevel,
             StudentCompetencyProfile,
+            StudentProgressMetrics,
         )
 
         # Test AACN Domain enum completeness
@@ -313,8 +313,8 @@ async def test_b4_functionality():
     print("\n=== B.4 Functionality Tests (Mock) ===")
 
     try:
-        from assessment.learning_path_optimizer import LearningPathOptimizer
         from assessment.knowledge_gap_analyzer import KnowledgeGapAnalyzer
+        from assessment.learning_path_optimizer import LearningPathOptimizer
 
         # Test LearningPathOptimizer functionality
         optimizer = LearningPathOptimizer()

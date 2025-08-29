@@ -41,9 +41,9 @@ async def test_postgresql_fixtures_integration(e2e_database_connections):
                 # For SQLAlchemy async engines, test basic connectivity
                 async with connection.begin() as conn:
                     result = await conn.execute("SELECT 1 as test_connection")
-                    assert (
-                        result is not None
-                    ), f"Database {db_name} connection test failed"
+                    assert result is not None, (
+                        f"Database {db_name} connection test failed"
+                    )
             except Exception as e:
                 if TEST_CONFIG["E2E_MODE"]:
                     pytest.fail(f"Database {db_name} connection failed: {str(e)}")
@@ -84,12 +84,12 @@ async def test_medical_test_data_fixtures(
     accuracy = medical_accuracy_validator.validate_umls_terminology(medical_terms)
 
     # Should meet Group 1A established 99.5% accuracy baseline
-    assert (
-        accuracy >= 0.995
-    ), f"Medical data accuracy {accuracy:.3f} below Group 1A 99.5% baseline"
-    assert (
-        accuracy >= TEST_CONFIG["MEDICAL_ACCURACY_THRESHOLD"]
-    ), f"Medical data accuracy {accuracy:.3f} below required {TEST_CONFIG['MEDICAL_ACCURACY_THRESHOLD']}"
+    assert accuracy >= 0.995, (
+        f"Medical data accuracy {accuracy:.3f} below Group 1A 99.5% baseline"
+    )
+    assert accuracy >= TEST_CONFIG["MEDICAL_ACCURACY_THRESHOLD"], (
+        f"Medical data accuracy {accuracy:.3f} below required {TEST_CONFIG['MEDICAL_ACCURACY_THRESHOLD']}"
+    )
 
 
 @pytest.mark.e2e
@@ -121,14 +121,14 @@ async def test_ragnostic_mock_client_integration(
         )
 
         if TEST_CONFIG["E2E_MODE"]:
-            assert (
-                response.status_code == 200
-            ), f"RAGnostic {service_name} service not accessible: {response.status_code}"
+            assert response.status_code == 200, (
+                f"RAGnostic {service_name} service not accessible: {response.status_code}"
+            )
 
             # Validate response time meets Group 1A baselines (82.5ms avg, 156ms max)
-            assert (
-                response_time <= 200
-            ), f"RAGnostic {service_name} response time {response_time:.1f}ms exceeds 200ms"
+            assert response_time <= 200, (
+                f"RAGnostic {service_name} response time {response_time:.1f}ms exceeds 200ms"
+            )
 
     performance_monitor_e2e.stop()
     performance_monitor_e2e.assert_performance_targets()
@@ -147,12 +147,12 @@ async def test_competency_framework_fixtures(auth_tokens, auth_headers, test_use
 
     # Validate authentication headers are properly formatted
     for username, headers in auth_headers.items():
-        assert (
-            "Authorization" in headers
-        ), f"Missing Authorization header for {username}"
-        assert headers["Authorization"].startswith(
-            "Bearer "
-        ), f"Invalid Authorization header format for {username}"
+        assert "Authorization" in headers, (
+            f"Missing Authorization header for {username}"
+        )
+        assert headers["Authorization"].startswith("Bearer "), (
+            f"Invalid Authorization header format for {username}"
+        )
 
     # Test competency framework with different user roles
     student_user = test_users["student1"]
@@ -188,23 +188,23 @@ async def test_cache_and_redis_fixtures(e2e_database_connections):
 
         # Validate database configuration structure
         assert "cache" in expected_databases, "Missing cache database configuration"
-        assert (
-            "sessions" in expected_databases
-        ), "Missing sessions database configuration"
+        assert "sessions" in expected_databases, (
+            "Missing sessions database configuration"
+        )
         assert "tasks" in expected_databases, "Missing tasks database configuration"
         assert "test" in expected_databases, "Missing test database configuration"
 
         # Test database isolation
         for db_name, db_id in expected_databases.items():
             assert isinstance(db_id, int), f"Database {db_name} ID must be integer"
-            assert (
-                0 <= db_id <= 15
-            ), f"Database {db_name} ID {db_id} out of range (0-15)"
+            assert 0 <= db_id <= 15, (
+                f"Database {db_name} ID {db_id} out of range (0-15)"
+            )
     else:
         # Mock validation for unit tests
-        assert hasattr(redis_connection, "get") or callable(
-            redis_connection
-        ), "Redis mock connection invalid"
+        assert hasattr(redis_connection, "get") or callable(redis_connection), (
+            "Redis mock connection invalid"
+        )
 
 
 @pytest.mark.e2e
@@ -224,19 +224,19 @@ async def test_vector_database_fixtures(e2e_database_connections):
         expected_collections = E2E_DATABASE_CONFIG["qdrant"]["collections"]
 
         # Validate collection configuration
-        assert (
-            "medical_terminology" in expected_collections
-        ), "Missing medical_terminology collection"
-        assert (
-            "nursing_content" in expected_collections
-        ), "Missing nursing_content collection"
+        assert "medical_terminology" in expected_collections, (
+            "Missing medical_terminology collection"
+        )
+        assert "nursing_content" in expected_collections, (
+            "Missing nursing_content collection"
+        )
         assert "embeddings" in expected_collections, "Missing embeddings collection"
 
         # Test Qdrant service accessibility
         qdrant_url = E2E_DATABASE_CONFIG["qdrant"]["url"]
-        assert qdrant_url.startswith(
-            "http://"
-        ), f"Invalid Qdrant URL format: {qdrant_url}"
+        assert qdrant_url.startswith("http://"), (
+            f"Invalid Qdrant URL format: {qdrant_url}"
+        )
     else:
         # Mock validation for unit tests
         assert callable(qdrant_connection), "Qdrant mock connection invalid"
@@ -265,12 +265,12 @@ async def test_graph_database_fixtures(e2e_database_connections):
         assert "password" in neo4j_config, "Missing Neo4j password"
 
         # Test URL format validation
-        assert neo4j_config["url"].startswith(
-            "bolt://"
-        ), f"Invalid Neo4j Bolt URL: {neo4j_config['url']}"
-        assert neo4j_config["http_url"].startswith(
-            "http://"
-        ), f"Invalid Neo4j HTTP URL: {neo4j_config['http_url']}"
+        assert neo4j_config["url"].startswith("bolt://"), (
+            f"Invalid Neo4j Bolt URL: {neo4j_config['url']}"
+        )
+        assert neo4j_config["http_url"].startswith("http://"), (
+            f"Invalid Neo4j HTTP URL: {neo4j_config['http_url']}"
+        )
     else:
         # Mock validation for unit tests
         assert callable(neo4j_connection), "Neo4j mock connection invalid"
@@ -301,9 +301,9 @@ async def test_service_fixture_performance_baselines(
 
     if TEST_CONFIG["E2E_MODE"]:
         # Group 1A baseline: <5s target, 1.2s actual average
-        assert (
-            db_connection_time <= 5000
-        ), f"Database connection time {db_connection_time:.1f}ms exceeds 5s target"
+        assert db_connection_time <= 5000, (
+            f"Database connection time {db_connection_time:.1f}ms exceeds 5s target"
+        )
 
     # Test service health check performance (Group 1A: 78.3ms avg, 156ms max)
     health_check_times = []
@@ -322,9 +322,9 @@ async def test_service_fixture_performance_baselines(
 
             if TEST_CONFIG["E2E_MODE"]:
                 # Group 1A baseline: 82.5ms average, <200ms target
-                assert (
-                    response_time <= 200
-                ), f"Service {service_name} health check {response_time:.1f}ms exceeds 200ms"
+                assert response_time <= 200, (
+                    f"Service {service_name} health check {response_time:.1f}ms exceeds 200ms"
+                )
 
         except Exception as e:
             if TEST_CONFIG["E2E_MODE"]:
@@ -334,9 +334,9 @@ async def test_service_fixture_performance_baselines(
     if health_check_times and TEST_CONFIG["E2E_MODE"]:
         avg_health_check_time = sum(health_check_times) / len(health_check_times)
         # Group 1A established baseline: 78.3ms average
-        assert (
-            avg_health_check_time <= 100
-        ), f"Average health check time {avg_health_check_time:.1f}ms exceeds 100ms baseline"
+        assert avg_health_check_time <= 100, (
+            f"Average health check time {avg_health_check_time:.1f}ms exceeds 100ms baseline"
+        )
 
     performance_monitor_e2e.stop()
     performance_monitor_e2e.assert_performance_targets()
@@ -370,17 +370,17 @@ async def test_medical_content_validation_fixtures(medical_accuracy_validator):
         accuracy_results.append(accuracy)
 
         # Each set should meet accuracy threshold
-        assert (
-            accuracy >= TEST_CONFIG["MEDICAL_ACCURACY_THRESHOLD"]
-        ), f"Medical terminology accuracy {accuracy:.3f} below threshold for: {terminology_set}"
+        assert accuracy >= TEST_CONFIG["MEDICAL_ACCURACY_THRESHOLD"], (
+            f"Medical terminology accuracy {accuracy:.3f} below threshold for: {terminology_set}"
+        )
 
     # Test overall medical accuracy across all terminology sets
     overall_accuracy = sum(accuracy_results) / len(accuracy_results)
 
     # Should meet Group 1A baseline of 99.5%
-    assert (
-        overall_accuracy >= 0.994
-    ), f"Overall medical accuracy {overall_accuracy:.3f} below Group 1A 99.4% baseline (allowing for floating point precision)"
+    assert overall_accuracy >= 0.994, (
+        f"Overall medical accuracy {overall_accuracy:.3f} below Group 1A 99.4% baseline (allowing for floating point precision)"
+    )
 
     # Test NCLEX-style content validation
     sample_nclex_content = [
@@ -400,9 +400,9 @@ async def test_medical_content_validation_fixtures(medical_accuracy_validator):
     nclex_quality = medical_accuracy_validator.validate_nclex_question_quality(
         sample_nclex_content
     )
-    assert nclex_quality[
-        "meets_standards"
-    ], f"NCLEX content quality below standards: {nclex_quality['quality_score']:.2f}"
+    assert nclex_quality["meets_standards"], (
+        f"NCLEX content quality below standards: {nclex_quality['quality_score']:.2f}"
+    )
 
     # Assert all medical accuracy requirements
     medical_accuracy_validator.assert_medical_accuracy_requirements()
@@ -426,9 +426,9 @@ async def test_test_data_seeding_performance():
     target_seeding_time = 15.0
 
     if TEST_CONFIG["E2E_MODE"]:
-        assert (
-            seeding_time <= target_seeding_time
-        ), f"Test data seeding took {seeding_time:.1f}s, exceeds {target_seeding_time}s target"
+        assert seeding_time <= target_seeding_time, (
+            f"Test data seeding took {seeding_time:.1f}s, exceeds {target_seeding_time}s target"
+        )
 
     # Validate seeding completed successfully
     assert seeding_time >= 0, "Invalid seeding time measurement"

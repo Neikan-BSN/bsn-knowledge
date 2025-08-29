@@ -49,15 +49,15 @@ class TestServiceToServiceAuthentication:
             headers = call_args[1].get("headers", {})
 
             # Should include API key in headers
-            assert (
-                "Authorization" in headers or "X-API-Key" in headers
-            ), "API key not included in service-to-service request headers"
+            assert "Authorization" in headers or "X-API-Key" in headers, (
+                "API key not included in service-to-service request headers"
+            )
 
             # API key should not be empty
             api_key_header = headers.get("Authorization", headers.get("X-API-Key", ""))
-            assert (
-                api_key_header.strip() != ""
-            ), "Empty API key in service-to-service authentication"
+            assert api_key_header.strip() != "", (
+                "Empty API key in service-to-service authentication"
+            )
 
     @patch("src.services.ragnostic_client.httpx.AsyncClient")
     async def test_invalid_api_key_handling(self, mock_http_client):
@@ -77,19 +77,19 @@ class TestServiceToServiceAuthentication:
         result = await invalid_client.search_content("test query")
 
         # Should handle authentication failure gracefully
-        assert (
-            "error" in result
-        ), "Service authentication failure not handled gracefully"
+        assert "error" in result, (
+            "Service authentication failure not handled gracefully"
+        )
 
         # Should enable fallback mode for graceful degradation
-        assert (
-            result.get("fallback_mode") is True
-        ), "Fallback mode not enabled for authentication failures"
+        assert result.get("fallback_mode") is True, (
+            "Fallback mode not enabled for authentication failures"
+        )
 
         # Should not expose sensitive authentication details
-        assert "invalid_key" not in str(
-            result
-        ), "Sensitive API key exposed in error response"
+        assert "invalid_key" not in str(result), (
+            "Sensitive API key exposed in error response"
+        )
 
     def test_service_authentication_isolation(self, client: TestClient, auth_headers):
         """Test that user authentication tokens are not forwarded to services."""
@@ -116,14 +116,14 @@ class TestServiceToServiceAuthentication:
                 # Should not contain user's JWT token
                 user_token = auth_headers.get("student1", {}).get("Authorization", "")
                 if user_token:
-                    assert (
-                        user_token not in call_str
-                    ), "User JWT token leaked to cross-service call"
+                    assert user_token not in call_str, (
+                        "User JWT token leaked to cross-service call"
+                    )
 
                 # Should not contain "Bearer" prefix from user auth
-                assert (
-                    "Bearer" not in call_str or "service_token" in call_str
-                ), "User authentication method leaked to service call"
+                assert "Bearer" not in call_str or "service_token" in call_str, (
+                    "User authentication method leaked to service call"
+                )
 
     @patch("src.services.ragnostic_client.httpx.AsyncClient")
     async def test_api_key_rotation_handling(self, mock_http_client):
@@ -186,16 +186,16 @@ class TestServiceToServiceAuthentication:
                 response_data = response.json()
 
                 # Should not leak service metadata to end users
-                assert "service_metadata" not in str(
-                    response_data
-                ), "Service identity information leaked to end user"
+                assert "service_metadata" not in str(response_data), (
+                    "Service identity information leaked to end user"
+                )
 
                 # Should not expose internal service details
                 internal_fields = ["instance_id", "service_version", "internal_config"]
                 for field in internal_fields:
-                    assert field not in str(
-                        response_data
-                    ), f"Internal service field '{field}' exposed to end user"
+                    assert field not in str(response_data), (
+                        f"Internal service field '{field}' exposed to end user"
+                    )
 
 
 @pytest.mark.security
@@ -223,14 +223,14 @@ class TestSecureCommunicationChannels:
             url = call_args[0][1]  # Second positional argument should be URL
 
             # Cross-service URLs should use HTTPS
-            assert url.startswith(
-                "https://"
-            ), f"Cross-service communication not using HTTPS: {url}"
+            assert url.startswith("https://"), (
+                f"Cross-service communication not using HTTPS: {url}"
+            )
 
             # Should not use HTTP for external service calls
-            assert (
-                not url.startswith("http://") or "localhost" in url
-            ), "Insecure HTTP used for external service communication"
+            assert not url.startswith("http://") or "localhost" in url, (
+                "Insecure HTTP used for external service communication"
+            )
 
     @patch("src.services.ragnostic_client.httpx.AsyncClient")
     async def test_certificate_validation_cross_service(self, mock_http_client):
@@ -248,9 +248,9 @@ class TestSecureCommunicationChannels:
 
             # Should not disable SSL verification
             verify_setting = init_kwargs.get("verify", True)
-            assert (
-                verify_setting is not False
-            ), "SSL certificate verification disabled for cross-service communication"
+            assert verify_setting is not False, (
+                "SSL certificate verification disabled for cross-service communication"
+            )
 
     def test_service_endpoint_security_validation(
         self, client: TestClient, auth_headers
@@ -303,15 +303,15 @@ class TestSecureCommunicationChannels:
         request_time = end_time - start_time
 
         # Should have reasonable timeout to prevent resource exhaustion
-        assert (
-            request_time < 30
-        ), f"Cross-service request timeout too long: {request_time:.1f}s"
+        assert request_time < 30, (
+            f"Cross-service request timeout too long: {request_time:.1f}s"
+        )
 
         # Should handle timeout gracefully
         if request_time > 10:  # If it took a while, should have timeout handling
-            assert (
-                "error" in result or "timeout" in str(result).lower()
-            ), "Timeout not handled gracefully in cross-service communication"
+            assert "error" in result or "timeout" in str(result).lower(), (
+                "Timeout not handled gracefully in cross-service communication"
+            )
 
 
 @pytest.mark.security
@@ -352,9 +352,9 @@ class TestCrossServiceAuthorization:
                 # Service authorization should be enforced
                 if response.status_code == 200:
                     # Verify service was called with appropriate context
-                    assert (
-                        mock_instance.search_content.called
-                    ), "Service not called for authorized request"
+                    assert mock_instance.search_content.called, (
+                        "Service not called for authorized request"
+                    )
 
     def test_user_context_propagation(self, client: TestClient, auth_headers):
         """Test proper user context propagation to cross-service calls."""
@@ -419,9 +419,9 @@ class TestCrossServiceAuthorization:
                 response_data = response.json()
 
                 # Should not receive admin-level content
-                assert "privileged" not in str(
-                    response_data
-                ), "Privilege escalation through cross-service call"
+                assert "privileged" not in str(response_data), (
+                    "Privilege escalation through cross-service call"
+                )
 
                 # Should receive appropriate content for user level
                 assert "content" in str(response_data) or "items" in str(
@@ -458,9 +458,9 @@ class TestCrossServiceAuthorization:
             )
 
             # Should handle service permission boundaries appropriately
-            assert (
-                response.status_code != 500
-            ), "Service permission boundary not handled gracefully"
+            assert response.status_code != 500, (
+                "Service permission boundary not handled gracefully"
+            )
 
 
 @pytest.mark.security
@@ -576,9 +576,9 @@ class TestDataIntegrityAcrossServices:
                 )
 
                 # Should handle various encodings without corruption
-                assert (
-                    response.status_code != 500
-                ), f"Encoding issue with topic: {topic}"
+                assert response.status_code != 500, (
+                    f"Encoding issue with topic: {topic}"
+                )
 
                 if response.status_code == 200:
                     # Response should be valid JSON (no encoding corruption)
@@ -795,13 +795,13 @@ class TestMedicalDataProtectionCrossService:
                     response_data = response.json()
 
                     # Should not expose PHI classification metadata to end users
-                    assert "phi_detected" not in str(
-                        response_data
-                    ), "HIPAA metadata exposed to end user"
+                    assert "phi_detected" not in str(response_data), (
+                        "HIPAA metadata exposed to end user"
+                    )
 
-                    assert "hipaa_compliant" not in str(
-                        response_data
-                    ), "HIPAA compliance metadata exposed to end user"
+                    assert "hipaa_compliant" not in str(response_data), (
+                        "HIPAA compliance metadata exposed to end user"
+                    )
 
                 # Should log HIPAA compliance handling
                 if mock_logger.info.called:
@@ -850,13 +850,13 @@ class TestMedicalDataProtectionCrossService:
                 response_data = response.json()
 
                 # Sanitization metadata should not be exposed
-                assert "contains_phi" not in str(
-                    response_data
-                ), "PHI detection metadata exposed to end user"
+                assert "contains_phi" not in str(response_data), (
+                    "PHI detection metadata exposed to end user"
+                )
 
-                assert "sanitization_applied" not in str(
-                    response_data
-                ), "Sanitization metadata exposed to end user"
+                assert "sanitization_applied" not in str(response_data), (
+                    "Sanitization metadata exposed to end user"
+                )
 
                 # Content should be safe for educational use
                 # (Implementation-specific validation)
@@ -905,9 +905,9 @@ class TestMedicalDataProtectionCrossService:
                     "classification",
                 ]
                 for field in classification_fields:
-                    assert field not in str(
-                        response_data
-                    ), f"Medical classification field '{field}' exposed to end user"
+                    assert field not in str(response_data), (
+                        f"Medical classification field '{field}' exposed to end user"
+                    )
 
                 # Content should be appropriate for user's level
                 # (Content filtering is implementation-specific)

@@ -50,9 +50,9 @@ class TestAuthenticationBypassPrevention:
         for headers in bypass_headers:
             for endpoint in protected_endpoints:
                 response = client.get(endpoint, headers=headers)
-                assert (
-                    response.status_code == status.HTTP_401_UNAUTHORIZED
-                ), f"Authentication bypassed with headers {headers} on {endpoint}"
+                assert response.status_code == status.HTTP_401_UNAUTHORIZED, (
+                    f"Authentication bypassed with headers {headers} on {endpoint}"
+                )
 
     def test_no_authentication_bypass_via_query_params(self, client: TestClient):
         """Test that authentication cannot be bypassed via query parameters."""
@@ -68,9 +68,9 @@ class TestAuthenticationBypassPrevention:
 
         for params in bypass_params:
             response = client.get("/api/v1/auth/me", params=params)
-            assert (
-                response.status_code == status.HTTP_401_UNAUTHORIZED
-            ), f"Authentication bypassed with params {params}"
+            assert response.status_code == status.HTTP_401_UNAUTHORIZED, (
+                f"Authentication bypassed with params {params}"
+            )
 
     def test_no_authentication_bypass_via_body(self, client: TestClient):
         """Test that authentication cannot be bypassed via request body."""
@@ -84,9 +84,9 @@ class TestAuthenticationBypassPrevention:
 
         for body in bypass_bodies:
             response = client.post("/api/v1/nclex/generate", json=body)
-            assert (
-                response.status_code == status.HTTP_401_UNAUTHORIZED
-            ), f"Authentication bypassed with body {body}"
+            assert response.status_code == status.HTTP_401_UNAUTHORIZED, (
+                f"Authentication bypassed with body {body}"
+            )
 
     def test_malformed_jwt_token_rejection(self, client: TestClient):
         """Test that malformed JWT tokens are properly rejected."""
@@ -107,9 +107,9 @@ class TestAuthenticationBypassPrevention:
                 else token
             }
             response = client.get("/api/v1/auth/me", headers=headers)
-            assert (
-                response.status_code == status.HTTP_401_UNAUTHORIZED
-            ), f"Malformed token accepted: {token[:50]}..."
+            assert response.status_code == status.HTTP_401_UNAUTHORIZED, (
+                f"Malformed token accepted: {token[:50]}..."
+            )
 
 
 @pytest.mark.security
@@ -445,9 +445,9 @@ class TestRateLimitingSecurityBypass:
         rate_limited_count = sum(
             1 for code in responses if code == status.HTTP_429_TOO_MANY_REQUESTS
         )
-        assert (
-            rate_limited_count > 0
-        ), "Rate limiting not working across distributed requests"
+        assert rate_limited_count > 0, (
+            "Rate limiting not working across distributed requests"
+        )
 
 
 @pytest.mark.security
@@ -506,9 +506,9 @@ class TestAuthenticationPerformanceAttacks:
 
         # All authentic requests should succeed
         success_count = sum(1 for r in results if r.status_code == status.HTTP_200_OK)
-        assert (
-            success_count >= 15
-        ), "Authentication system unstable under concurrent load"
+        assert success_count >= 15, (
+            "Authentication system unstable under concurrent load"
+        )
 
 
 @pytest.mark.security
@@ -555,9 +555,9 @@ class TestTokenSecurityBestPractices:
         ]
 
         for sensitive in sensitive_data:
-            assert (
-                sensitive not in token_str
-            ), f"Token contains sensitive data: {sensitive}"
+            assert sensitive not in token_str, (
+                f"Token contains sensitive data: {sensitive}"
+            )
 
     def test_token_algorithm_security(self):
         """Test that secure algorithms are used for token signing."""

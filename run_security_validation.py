@@ -18,7 +18,6 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
 
 class SecurityValidationRunner:
@@ -36,10 +35,10 @@ class SecurityValidationRunner:
     def run_security_tests(
         self,
         level: str = "standard",
-        categories: Optional[List[str]] = None,
-        compliance: Optional[List[str]] = None,
+        categories: list[str] | None = None,
+        compliance: list[str] | None = None,
         output_format: str = "detailed",
-    ) -> Dict:
+    ) -> dict:
         """Run comprehensive security validation tests."""
 
         self.start_time = datetime.now()
@@ -76,7 +75,7 @@ class SecurityValidationRunner:
 
         return report
 
-    def _get_categories_for_level(self, level: str) -> List[str]:
+    def _get_categories_for_level(self, level: str) -> list[str]:
         """Get test categories based on validation level."""
         base_categories = ["authentication", "injection_prevention"]
 
@@ -94,9 +93,9 @@ class SecurityValidationRunner:
 
         # Check Python security modules
         try:
+            import bcrypt
             import cryptography
             import jwt
-            import bcrypt
 
             print("   ✓ Security dependencies available")
         except ImportError as e:
@@ -119,7 +118,7 @@ class SecurityValidationRunner:
             else:
                 print(f"   ⚠  Security config missing: {file}")
 
-    def _run_test_category(self, category: str, level: str) -> Dict:
+    def _run_test_category(self, category: str, level: str) -> dict:
         """Run tests for a specific security category."""
         category_mapping = {
             "authentication": "tests/security/auth_security_tests.py",
@@ -157,7 +156,7 @@ class SecurityValidationRunner:
             # Parse JSON results if available
             json_file = f"security_results_{category}.json"
             if Path(json_file).exists():
-                with open(json_file, "r") as f:
+                with open(json_file) as f:
                     json_results = json.load(f)
 
                 return {
@@ -183,7 +182,7 @@ class SecurityValidationRunner:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
-    def _run_compliance_tests(self, compliance_types: List[str]):
+    def _run_compliance_tests(self, compliance_types: list[str]):
         """Run compliance-specific security tests."""
         print(f"\n📋 Running Compliance Tests: {', '.join(compliance_types)}")
 
@@ -239,7 +238,7 @@ class SecurityValidationRunner:
         print(f"   Failed: {self.failed_tests}")
         print(f"   Security Issues: {len(self.security_issues)}")
 
-    def _assess_severity(self, category: str, result: Dict) -> str:
+    def _assess_severity(self, category: str, result: dict) -> str:
         """Assess severity of security test failures."""
         failed_count = result.get("failed", 0)
 
@@ -254,7 +253,7 @@ class SecurityValidationRunner:
         else:
             return "LOW"
 
-    def _generate_security_report(self, level: str, format: str) -> Dict:
+    def _generate_security_report(self, level: str, format: str) -> dict:
         """Generate comprehensive security validation report."""
         duration = (self.end_time - self.start_time).total_seconds()
 
@@ -284,7 +283,7 @@ class SecurityValidationRunner:
 
         return report
 
-    def _generate_recommendations(self) -> List[str]:
+    def _generate_recommendations(self) -> list[str]:
         """Generate security recommendations based on test results."""
         recommendations = []
 
@@ -325,7 +324,7 @@ class SecurityValidationRunner:
 
         return recommendations
 
-    def _assess_compliance_status(self) -> Dict[str, str]:
+    def _assess_compliance_status(self) -> dict[str, str]:
         """Assess compliance status based on test results."""
         compliance_status = {
             "overall": "COMPLIANT" if self.failed_tests == 0 else "NON_COMPLIANT",
@@ -344,7 +343,7 @@ class SecurityValidationRunner:
 
         return compliance_status
 
-    def _output_results(self, report: Dict, format: str):
+    def _output_results(self, report: dict, format: str):
         """Output security validation results."""
         print("\n" + "=" * 70)
         print("🔒 SECURITY VALIDATION RESULTS")

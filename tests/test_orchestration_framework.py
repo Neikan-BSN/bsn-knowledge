@@ -22,12 +22,12 @@ async def test_orchestration_framework_initialization(e2e_test_orchestrator):
     """Test E2E test orchestration framework initialization and configuration."""
 
     # Validate orchestrator structure
-    assert hasattr(
-        e2e_test_orchestrator, "config"
-    ), "Orchestrator missing configuration"
-    assert hasattr(
-        e2e_test_orchestrator, "health_checker"
-    ), "Orchestrator missing health checker"
+    assert hasattr(e2e_test_orchestrator, "config"), (
+        "Orchestrator missing configuration"
+    )
+    assert hasattr(e2e_test_orchestrator, "health_checker"), (
+        "Orchestrator missing health checker"
+    )
     assert hasattr(e2e_test_orchestrator, "executor"), "Orchestrator missing executor"
     assert hasattr(e2e_test_orchestrator, "reporter"), "Orchestrator missing reporter"
 
@@ -47,19 +47,19 @@ async def test_orchestration_framework_initialization(e2e_test_orchestrator):
             assert field in config, f"Missing required configuration field: {field}"
 
         # Validate medical accuracy threshold
-        assert (
-            config["medical_accuracy_threshold"] >= 0.98
-        ), f"Medical accuracy threshold too low: {config['medical_accuracy_threshold']}"
+        assert config["medical_accuracy_threshold"] >= 0.98, (
+            f"Medical accuracy threshold too low: {config['medical_accuracy_threshold']}"
+        )
 
         # Validate performance target
-        assert (
-            config["performance_target_ms"] > 0
-        ), f"Invalid performance target: {config['performance_target_ms']}"
+        assert config["performance_target_ms"] > 0, (
+            f"Invalid performance target: {config['performance_target_ms']}"
+        )
 
         # Validate worker configuration
-        assert (
-            1 <= config["max_workers"] <= 16
-        ), f"Invalid max workers configuration: {config['max_workers']}"
+        assert 1 <= config["max_workers"] <= 16, (
+            f"Invalid max workers configuration: {config['max_workers']}"
+        )
 
 
 @pytest.mark.e2e
@@ -153,22 +153,22 @@ async def test_45_test_scenario_coordination_structure():
 
     # Validate each scenario category
     for scenario_name, scenario_data in test_scenarios.items():
-        assert (
-            "category" in scenario_data
-        ), f"Missing category for scenario {scenario_name}"
-        assert (
-            "test_count" in scenario_data
-        ), f"Missing test count for scenario {scenario_name}"
-        assert (
-            "tests" in scenario_data
-        ), f"Missing tests list for scenario {scenario_name}"
+        assert "category" in scenario_data, (
+            f"Missing category for scenario {scenario_name}"
+        )
+        assert "test_count" in scenario_data, (
+            f"Missing test count for scenario {scenario_name}"
+        )
+        assert "tests" in scenario_data, (
+            f"Missing tests list for scenario {scenario_name}"
+        )
 
         # Validate test count matches actual tests
         actual_test_count = len(scenario_data["tests"])
         expected_count = scenario_data["test_count"]
-        assert (
-            actual_test_count == expected_count
-        ), f"Scenario {scenario_name}: expected {expected_count} tests, found {actual_test_count}"
+        assert actual_test_count == expected_count, (
+            f"Scenario {scenario_name}: expected {expected_count} tests, found {actual_test_count}"
+        )
 
         # Validate test naming convention
         for test_name in scenario_data["tests"]:
@@ -298,35 +298,35 @@ async def test_result_aggregation_and_reporting_framework():
     assert aggregated_results["total_tests"] == 5, "Incorrect total test count"
     assert aggregated_results["passed"] == 4, "Incorrect passed test count"
     assert aggregated_results["failed"] == 1, "Incorrect failed test count"
-    assert (
-        aggregated_results["success_rate"] == 80.0
-    ), "Incorrect success rate calculation"
+    assert aggregated_results["success_rate"] == 80.0, (
+        "Incorrect success rate calculation"
+    )
 
     # Validate category aggregation
     assert len(aggregated_results["categories"]) == 5, "Incorrect category count"
 
     for category, category_data in aggregated_results["categories"].items():
         assert category_data["total"] == 1, f"Incorrect total for category {category}"
-        assert (
-            0 <= category_data["success_rate"] <= 100
-        ), f"Invalid success rate for {category}"
+        assert 0 <= category_data["success_rate"] <= 100, (
+            f"Invalid success rate for {category}"
+        )
 
     # Validate medical accuracy aggregation
-    assert (
-        len(aggregated_results["medical_accuracy_results"]) == 1
-    ), "Incorrect medical accuracy results count"
+    assert len(aggregated_results["medical_accuracy_results"]) == 1, (
+        "Incorrect medical accuracy results count"
+    )
 
     medical_result = aggregated_results["medical_accuracy_results"][0]
     assert medical_result["accuracy"] == 0.995, "Incorrect medical accuracy value"
     assert medical_result["meets_threshold"], "Medical accuracy should meet threshold"
 
     # Validate performance summary
-    assert (
-        "avg_response_time_ms" in aggregated_results["performance_summary"]
-    ), "Missing average response time"
-    assert (
-        aggregated_results["performance_summary"]["response_time_count"] == 5
-    ), "Incorrect response time count"
+    assert "avg_response_time_ms" in aggregated_results["performance_summary"], (
+        "Missing average response time"
+    )
+    assert aggregated_results["performance_summary"]["response_time_count"] == 5, (
+        "Incorrect response time count"
+    )
 
 
 @pytest.mark.e2e
@@ -373,15 +373,15 @@ async def test_dependency_management_and_execution_sequencing():
         resolved_deps = resolve_dependencies(test_name, test_dependencies)
 
         # Validate no circular dependencies
-        assert (
-            test_name not in resolved_deps
-        ), f"Circular dependency detected for {test_name}"
+        assert test_name not in resolved_deps, (
+            f"Circular dependency detected for {test_name}"
+        )
 
         # Validate all dependencies are valid test names
         for dep in resolved_deps:
-            assert (
-                dep in test_dependencies
-            ), f"Invalid dependency {dep} for test {test_name}"
+            assert dep in test_dependencies, (
+                f"Invalid dependency {dep} for test {test_name}"
+            )
 
     # Test execution sequencing
     execution_sequence = []
@@ -397,9 +397,9 @@ async def test_dependency_management_and_execution_sequencing():
     while remaining_tests:
         ready_tests = [test for test in remaining_tests if can_execute(test)]
 
-        assert (
-            ready_tests
-        ), f"Deadlock detected: no tests can be executed from {remaining_tests}"
+        assert ready_tests, (
+            f"Deadlock detected: no tests can be executed from {remaining_tests}"
+        )
 
         # Execute ready tests (simulate)
         for test in ready_tests:
@@ -408,26 +408,26 @@ async def test_dependency_management_and_execution_sequencing():
             remaining_tests.remove(test)
 
     # Validate execution sequence
-    assert len(execution_sequence) == len(
-        test_dependencies
-    ), "Not all tests included in execution sequence"
+    assert len(execution_sequence) == len(test_dependencies), (
+        "Not all tests included in execution sequence"
+    )
 
     # Validate dependencies are respected in sequence
     for i, test_name in enumerate(execution_sequence):
         for dependency in test_dependencies[test_name]:
             dep_index = execution_sequence.index(dependency)
-            assert (
-                dep_index < i
-            ), f"Dependency {dependency} executed after {test_name} (violation)"
+            assert dep_index < i, (
+                f"Dependency {dependency} executed after {test_name} (violation)"
+            )
 
     # Validate specific sequencing requirements
     infra_index = execution_sequence.index("infrastructure_setup")
     health_index = execution_sequence.index("service_health_validation")
     final_index = execution_sequence.index("final_validation")
 
-    assert (
-        infra_index < health_index
-    ), "Infrastructure should execute before health validation"
+    assert infra_index < health_index, (
+        "Infrastructure should execute before health validation"
+    )
     assert final_index == len(execution_sequence) - 1, "Final validation should be last"
 
 
@@ -515,15 +515,15 @@ async def test_parallel_test_execution_capabilities():
         group_duration = time.time() - group_start_time
 
         # Validate execution results
-        assert len(results) == len(
-            tests
-        ), f"Incorrect result count for group {group_name}"
+        assert len(results) == len(tests), (
+            f"Incorrect result count for group {group_name}"
+        )
 
         for result in results:
             assert result["status"] == "passed", f"Test failed in group {group_name}"
-            assert (
-                result["test_name"] in tests
-            ), f"Unexpected test name in group {group_name}"
+            assert result["test_name"] in tests, (
+                f"Unexpected test name in group {group_name}"
+            )
 
         # Validate parallel execution efficiency
         if can_parallel and len(tests) > 1:
@@ -553,9 +553,9 @@ async def test_parallel_test_execution_capabilities():
 
         if can_parallel:
             # Should respect max_workers limit
-            assert (
-                concurrent_tests <= max_workers
-            ), f"Exceeded max workers for group {group_name}: {concurrent_tests} > {max_workers}"
+            assert concurrent_tests <= max_workers, (
+                f"Exceeded max workers for group {group_name}: {concurrent_tests} > {max_workers}"
+            )
 
 
 @pytest.mark.e2e
@@ -670,9 +670,9 @@ async def test_orchestration_error_handling_and_recovery():
             )
 
     # Validate error handling results
-    assert len(scenario_results) == len(
-        error_scenarios
-    ), "Not all error scenarios were processed"
+    assert len(scenario_results) == len(error_scenarios), (
+        "Not all error scenarios were processed"
+    )
 
     for result in scenario_results:
         scenario_name = result["scenario_name"]
@@ -685,33 +685,33 @@ async def test_orchestration_error_handling_and_recovery():
 
         # Validate recovery behavior based on expected behavior
         if expected_behavior == "mark_failed_continue":
-            assert result.get(
-                "tests_continued", False
-            ), f"Test execution should continue after {scenario_name}"
+            assert result.get("tests_continued", False), (
+                f"Test execution should continue after {scenario_name}"
+            )
 
         elif expected_behavior == "retry_then_skip":
-            assert (
-                "retry_attempts" in result
-            ), f"Retry attempts should be recorded for {scenario_name}"
+            assert "retry_attempts" in result, (
+                f"Retry attempts should be recorded for {scenario_name}"
+            )
 
         elif expected_behavior == "adaptive_execution":
-            assert result.get(
-                "concurrency_reduced", False
-            ), f"Concurrency should be reduced for {scenario_name}"
+            assert result.get("concurrency_reduced", False), (
+                f"Concurrency should be reduced for {scenario_name}"
+            )
 
         elif expected_behavior == "graceful_shutdown":
-            assert result.get(
-                "graceful_shutdown", False
-            ), f"Graceful shutdown should occur for {scenario_name}"
-            assert result.get(
-                "cleanup_completed", False
-            ), f"Cleanup should complete for {scenario_name}"
+            assert result.get("graceful_shutdown", False), (
+                f"Graceful shutdown should occur for {scenario_name}"
+            )
+            assert result.get("cleanup_completed", False), (
+                f"Cleanup should complete for {scenario_name}"
+            )
 
         # Validate recovery times are reasonable
         if "recovery_time" in result:
-            assert (
-                0 <= result["recovery_time"] <= 5.0
-            ), f"Recovery time unreasonable for {scenario_name}: {result['recovery_time']}"
+            assert 0 <= result["recovery_time"] <= 5.0, (
+                f"Recovery time unreasonable for {scenario_name}: {result['recovery_time']}"
+            )
 
 
 if __name__ == "__main__":
