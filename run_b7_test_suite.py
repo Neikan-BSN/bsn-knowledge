@@ -33,6 +33,7 @@ Options:
 import argparse
 import concurrent.futures
 import json
+import logging
 import subprocess
 import sys
 import time
@@ -40,6 +41,12 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+
+# Configure logging for medical platform audit trail
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -248,12 +255,15 @@ class B7TestSuiteRunner:
         print(f"  🔸 Command: {' '.join(cmd)}")
 
         try:
-            result = subprocess.run(
-                cmd,
+            # S603 fix: Validate subprocess command for medical platform security
+            validated_cmd = self._validate_command_for_medical_security(cmd)
+            result = subprocess.run(  # noqa: S603 # Validated subprocess call with medical platform security
+                validated_cmd,
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
                 timeout=config["timeout"],
+                check=False,  # Handle return codes explicitly
             )
 
             execution_time = time.time() - start_time
@@ -317,6 +327,59 @@ class B7TestSuiteRunner:
                 output=str(e),
                 performance_metrics={},
             )
+
+    def _validate_command_for_medical_security(self, cmd: list[str]) -> list[str]:
+        """Validate subprocess commands for medical platform security compliance.
+
+        Ensures only safe commands are executed in medical data processing environment.
+        Critical for HIPAA compliance and audit trails.
+        """
+        if not cmd:
+            raise ValueError("Empty command not allowed in medical platform")
+
+        # Allowlist of safe commands for medical testing environment
+        safe_commands = {
+            "python",
+            "pytest",
+            "coverage",
+            "bandit",
+            "ruff",
+            "mypy",
+            "uv",
+            "pip",
+            "git",
+            "echo",
+            "cat",
+            "ls",
+            "find",
+            "grep",
+        }
+
+        base_command = cmd[0].split("/")[-1]  # Get command name without path
+
+        if base_command not in safe_commands:
+            raise ValueError(
+                f"Command '{base_command}' not authorized for medical platform: {cmd}"
+            )
+
+        # Additional validation for medical data processing
+        dangerous_patterns = [
+            "rm",
+            "del",
+            "format",
+            "fdisk",
+            "wget",
+            "curl",
+            "nc",
+            "netcat",
+        ]
+        for pattern in dangerous_patterns:
+            if any(pattern in arg.lower() for arg in cmd):
+                raise ValueError(
+                    f"Dangerous pattern '{pattern}' detected in command: {cmd}"
+                )
+
+        return cmd
 
     def _build_pytest_command(self, category: str, config: dict[str, Any]) -> list[str]:
         """Build pytest command for a specific test category."""
@@ -524,8 +587,12 @@ class B7TestSuiteRunner:
                 with open(benchmark_file) as f:
                     benchmark_data = json.load(f)
                     benchmarks["detailed_benchmarks"] = benchmark_data
-            except Exception:
-                pass
+            except Exception as e:
+                # S110 fix: Log exceptions for medical platform audit trail
+                print(f"Warning: Could not load benchmark data: {e}")
+                logger.warning(
+                    "benchmark_load_failed", error=str(e), file=str(benchmark_file)
+                )
 
         return benchmarks
 

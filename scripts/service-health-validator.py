@@ -126,8 +126,17 @@ class ServiceHealthValidator:
                     try:
                         health_data = response.json()
                         result["health_data"] = health_data
-                    except:
-                        result["health_data"] = {"raw_response": response.text[:200]}
+                    except (ValueError, json.JSONDecodeError) as e:
+                        # E722 fix: Specific exception handling for medical service validation
+                        result["health_data"] = {
+                            "raw_response": response.text[:200],
+                            "parse_error": str(e),
+                        }
+                        logger.warning(
+                            "health_data_parse_failed",
+                            service=service_name,
+                            error=str(e),
+                        )
 
                     # Check performance target
                     performance_ok = (

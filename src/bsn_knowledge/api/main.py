@@ -406,9 +406,11 @@ if __name__ == "__main__":
 
     logger.info("starting_bsn_knowledge_api", version="0.1.0")
 
+    # HIPAA-compliant network binding - restrict to localhost for medical data security
+    # Production deployments should use reverse proxy (nginx) with proper SSL/TLS
     uvicorn.run(
         "main:app",
-        host="0.0.0.0",
+        host="127.0.0.1",  # Secure binding for medical platform
         port=8000,
         log_level="info",
         access_log=True,

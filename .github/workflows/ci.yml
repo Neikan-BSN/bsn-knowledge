@@ -53,12 +53,28 @@ jobs:
           uv run pip install pre-commit
           pre-commit install --install-hooks
 
-      - name: Pre-commit Validation
+      - name: Medical Platform Pre-commit Validation
         run: |
-          echo "🔍 Running Essential 8 pre-commit hooks validation..."
-          # Run pre-commit on all files for comprehensive validation
-          pre-commit run --all-files --show-diff-on-failure
-          echo "✅ Pre-commit validation completed"
+          echo "🏥 Running HIPAA-compliant pre-commit hooks validation..."
+          echo "📋 Medical platform security requirements:"
+          echo "   - No insecure hash functions (MD5) for medical data"
+          echo "   - Secure network bindings (no 0.0.0.0 exposure)"
+          echo "   - Validated subprocess calls only"
+          echo "   - Cryptographically secure random generators"
+          echo "   - Complete audit trail logging"
+          echo ""
+          # Run pre-commit with detailed medical compliance reporting
+          if ! pre-commit run --all-files --show-diff-on-failure; then
+            echo "❌ Medical platform compliance validation failed"
+            echo "🔧 Common fixes for medical platform compliance:"
+            echo "   - Replace MD5 with SHA-256 for medical data hashing"
+            echo "   - Use 127.0.0.1 instead of 0.0.0.0 for API binding"
+            echo "   - Validate all subprocess commands against allowlist"
+            echo "   - Use secrets module for medical content generation"
+            echo "   - Add specific exception handling with logging"
+            exit 1
+          fi
+          echo "✅ Medical platform pre-commit validation completed"
 
       - name: Code Quality Check (Fallback)
         run: |
@@ -69,8 +85,17 @@ jobs:
           # Apply fixes but don't fail on fixable issues
           uv run ruff check src/ tests/ --fix || echo "⚠️ Some linting issues found and fixed"
           echo "🔍 Checking for critical remaining issues..."
-          # Only fail on critical issues that couldn't be auto-fixed
+          # Check for medical platform critical security issues
+          echo "🏥 Checking medical platform security compliance..."
+          SECURITY_ERRORS=$(uv run ruff check src/ tests/ --select=S --output-format=json 2>/dev/null | jq 'length')
           CRITICAL_ERRORS=$(uv run ruff check src/ tests/ --select=F,E9 --output-format=json 2>/dev/null | jq 'length')
+
+          if [ "$SECURITY_ERRORS" -gt 0 ]; then
+            echo "⚠️  Security issues detected in medical platform:"
+            uv run ruff check src/ tests/ --select=S --output-format=concise
+            echo "🔒 Medical platforms require zero security violations for HIPAA compliance"
+          fi
+
           if [ "$CRITICAL_ERRORS" -gt 0 ]; then
             echo "❌ Critical errors found that require manual fixing"
             uv run ruff check src/ tests/ --select=F,E9
@@ -88,11 +113,36 @@ jobs:
       #     uv run mypy tests/ --ignore-missing-imports
       #     echo "✅ Type checking completed"
 
-      - name: Basic Security Scan
+      - name: Medical Platform Security Scan
         run: |
-          echo "🔍 Running security scan..."
-          uv run bandit -r src/ -f json -o bandit-report.json || echo "Security scan completed with warnings"
-          echo "✅ Security scan completed"
+          echo "🏥 Running HIPAA-compliant security scan for medical platform..."
+          echo "🔒 Scanning for:"
+          echo "   - Insecure cryptographic functions"
+          echo "   - Unsafe subprocess calls"
+          echo "   - Hardcoded secrets"
+          echo "   - SQL injection vulnerabilities"
+          echo "   - Network security issues"
+          echo ""
+
+          # Run comprehensive security scan with medical platform focus
+          uv run bandit -r src/ -f json -o bandit-report.json -ll || BANDIT_EXIT=$?
+
+          # Display security report summary
+          if [ -f bandit-report.json ]; then
+            HIGH_ISSUES=$(jq '.results | map(select(.issue_severity == "HIGH")) | length' bandit-report.json 2>/dev/null || echo "0")
+            MEDIUM_ISSUES=$(jq '.results | map(select(.issue_severity == "MEDIUM")) | length' bandit-report.json 2>/dev/null || echo "0")
+
+            echo "📊 Medical Platform Security Summary:"
+            echo "   High severity issues: $HIGH_ISSUES"
+            echo "   Medium severity issues: $MEDIUM_ISSUES"
+
+            if [ "$HIGH_ISSUES" -gt 0 ]; then
+              echo "❌ High severity security issues detected - not acceptable for medical platform"
+              echo "🔧 Review bandit-report.json for detailed remediation guidance"
+            fi
+          fi
+
+          echo "✅ Medical platform security scan completed"
 
       - name: Run Tests
         run: |

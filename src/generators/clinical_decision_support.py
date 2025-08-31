@@ -227,8 +227,9 @@ Response Format: Always respond in valid JSON format.
         logger.info("Clinical Recommendation Engine initialized")
 
     def _generate_case_id(self, case_scenario: CaseScenario) -> str:
-        """Generate unique case identifier for caching"""
-        case_hash = hashlib.md5(
+        """Generate unique case identifier for caching using HIPAA-compliant hashing"""
+        # Use SHA-256 instead of MD5 for medical data security compliance
+        case_hash = hashlib.sha256(
             json.dumps(case_scenario.dict(), sort_keys=True).encode()
         ).hexdigest()[:16]
         return f"case_{case_hash}"

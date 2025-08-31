@@ -137,7 +137,8 @@ class RAGnosticClient:
         import json
 
         key_data = f"{endpoint}:{json.dumps(params, sort_keys=True)}"
-        return hashlib.md5(key_data.encode()).hexdigest()
+        # Use SHA-256 for HIPAA-compliant cache key generation
+        return hashlib.sha256(key_data.encode()).hexdigest()
 
     async def _make_request_with_resilience(
         self,

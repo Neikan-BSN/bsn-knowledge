@@ -5,7 +5,8 @@ Creates nursing education test data with UMLS validation
 """
 
 import os
-import random
+import random  # Note: Only used for non-security-critical operations
+import secrets  # S311 fix: Secure random for medical content generation
 import sqlite3
 import time
 import uuid
@@ -113,10 +114,11 @@ def create_medical_test_data():
     start_time = time.time()
 
     for _ in range(target_documents):
-        # Select random domain and template
-        domain = random.choice(domains)
+        # Select random domain and template using secure random for medical content
+        # S311 fix: Use cryptographically secure random for medical content generation
+        domain = secrets.choice(domains)
         template_list = templates[domain]
-        title = random.choice(template_list)
+        title = secrets.choice(template_list)
 
         # Select medical concepts for this domain
         domain_concepts = medical_concepts.get(
@@ -175,7 +177,8 @@ def create_medical_test_data():
                     title,
                     content,
                     domain,
-                    random.randint(1, 5),
+                    secrets.randbelow(5)
+                    + 1,  # S311 fix: Secure random for medical difficulty rating
                     umls_accuracy,
                     "Physiological Integrity",
                     datetime.now().isoformat(),
