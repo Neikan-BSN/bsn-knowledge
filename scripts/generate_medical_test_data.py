@@ -161,7 +161,7 @@ class UMLSTerminologyValidator:
                 clinical_context="Requires ongoing assessment, medication compliance monitoring, lifestyle education",
             ),
             "myocardial_infarction": MedicalConcept(
-                term="Myocardial Infarction",
+                term="Myocardial Infraction",
                 umls_cui="C0027051",
                 semantic_type="Disease or Syndrome",
                 definition="Necrosis of the myocardium caused by obstruction of blood supply",

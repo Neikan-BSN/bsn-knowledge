@@ -215,7 +215,7 @@ def test_b4_models_compliance():
                 return False
 
         # Test model instantiation with required fields
-        test_progress = StudentProgressMetrics(
+        StudentProgressMetrics(
             student_id="test_student",
             time_period="semester_1",
             engagement_score=75.0,
@@ -223,7 +223,7 @@ def test_b4_models_compliance():
         )
         print("✅ StudentProgressMetrics model instantiated successfully")
 
-        test_profile = StudentCompetencyProfile(
+        StudentCompetencyProfile(
             student_id="test_student",
             program="BSN",
             semester=3,

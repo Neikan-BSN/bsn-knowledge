@@ -56,7 +56,7 @@ INSERT INTO medical_terms (term, umls_cui, semantic_type, definition, synonyms, 
 INSERT INTO documents (job_id, original_filename, file_type, file_size_bytes, content_hash, medical_content_type, processing_status, extracted_text, metadata, medical_metadata) VALUES
 ((SELECT id FROM jobs WHERE job_type = 'nursing_content_processing' LIMIT 1),
  'medical_surgical_nursing_chapter_12.pdf', 'pdf', 2485760, 'sha256:a1b2c3d4e5f6', 'nursing_textbook', 'completed',
- 'Chapter 12: Cardiovascular Disorders - This chapter covers the pathophysiology, assessment, and nursing management of cardiovascular conditions including hypertension, myocardial infarction, and heart failure...',
+ 'Chapter 12: Cardiovascular Disorders - This chapter covers the pathophysiology, assessment, and nursing management of cardiovascular conditions including hypertension, myocardial infraction, and heart failure...',
  '{"pages": 45, "images": 12, "tables": 8, "ocr_confidence": 0.97}',
  '{"medical_accuracy": 0.98, "terminology_validated": true, "umls_concepts": 67, "nursing_focus": true}'),
 

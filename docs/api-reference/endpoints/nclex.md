@@ -89,7 +89,7 @@ POST /api/v1/nclex/generate
   "questions": [
     {
       "id": "q_001",
-      "question_text": "A nurse is caring for a patient with acute myocardial infarction. Which of the following medications would be most appropriate for immediate administration?",
+      "question_text": "A nurse is caring for a patient with acute myocardial infraction. Which of the following medications would be most appropriate for immediate administration?",
       "question_type": "multiple_choice",
       "options": [
         {

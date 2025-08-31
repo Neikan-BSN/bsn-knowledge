@@ -352,7 +352,7 @@ async def test_medical_content_validation_fixtures(medical_accuracy_validator):
     # Test comprehensive medical terminology validation
     medical_terminology_sets = [
         # Cardiovascular nursing
-        ["myocardial infarction", "cardiac catheterization", "arrhythmia management"],
+        ["myocardial infraction", "cardiac catheterization", "arrhythmia management"],
         # Medication administration
         ["pharmacokinetics", "drug interactions", "adverse drug reactions"],
         # Infection control
@@ -385,7 +385,7 @@ async def test_medical_content_validation_fixtures(medical_accuracy_validator):
     # Test NCLEX-style content validation
     sample_nclex_content = [
         {
-            "question": "A nurse is caring for a patient with acute myocardial infarction. Which nursing intervention should be prioritized?",
+            "question": "A nurse is caring for a patient with acute myocardial infraction. Which nursing intervention should be prioritized?",
             "options": [
                 "A. Administer prescribed analgesics",
                 "B. Monitor for signs of cardiogenic shock",

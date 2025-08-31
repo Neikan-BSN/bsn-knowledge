@@ -22,7 +22,7 @@ def create_medical_test_data():
         "cardiovascular": [
             {"term": "Hypertension", "cui": "C0020538", "accuracy": 0.999},
             {"term": "Heart Failure", "cui": "C0018802", "accuracy": 0.998},
-            {"term": "Myocardial Infarction", "cui": "C0027051", "accuracy": 0.999},
+            {"term": "Myocardial Infraction", "cui": "C0027051", "accuracy": 0.999},
         ],
         "respiratory": [
             {"term": "Pneumonia", "cui": "C0032285", "accuracy": 0.997},

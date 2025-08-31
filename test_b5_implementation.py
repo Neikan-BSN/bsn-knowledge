@@ -626,9 +626,7 @@ async def test_performance_and_caching(adaptive_engine):
 
         # First request (cache miss)
         start_time = datetime.now()
-        recommendations1 = await adaptive_engine.generate_personalized_content(
-            student_profile
-        )
+        await adaptive_engine.generate_personalized_content(student_profile)
         first_duration = (datetime.now() - start_time).total_seconds()
 
         # Check cache

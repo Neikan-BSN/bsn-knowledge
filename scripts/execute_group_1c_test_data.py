@@ -62,7 +62,7 @@ class Group1CMedicalDataGenerator:
                     "definition": "Persistently high arterial blood pressure",
                 },
                 {
-                    "term": "Myocardial Infarction",
+                    "term": "Myocardial Infraction",
                     "cui": "C0027051",
                     "accuracy": 0.999,
                     "definition": "Necrosis of myocardium from blood supply obstruction",

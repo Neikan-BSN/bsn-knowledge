@@ -389,7 +389,7 @@ async def test_medical_accuracy_validation_framework(medical_accuracy_validator)
 
     # Test UMLS terminology validation
     medical_terms = [
-        "myocardial infarction",
+        "myocardial infraction",
         "diabetes mellitus",
         "hypertension",
         "chronic obstructive pulmonary disease",

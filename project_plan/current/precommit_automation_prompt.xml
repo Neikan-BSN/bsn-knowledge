@@ -429,11 +429,11 @@
                 <analysis>Identified formatters (black, isort, prettier) can run in parallel as they don't
                     have dependencies</analysis>
                 <parallel_execution>
-                    Task(subagent_type="code-reviewer", description="Execute black formatting", 
+                    Task(subagent_type="code-reviewer", description="Execute black formatting",
                     prompt="Execute black formatting with auto-fix on all Python files using pre-commit run black --all-files")
-                    Task(subagent_type="code-reviewer", description="Execute isort import sorting", 
+                    Task(subagent_type="code-reviewer", description="Execute isort import sorting",
                     prompt="Execute isort import sorting with auto-fix using pre-commit run isort --all-files")
-                    Task(subagent_type="devops-engineer", description="Execute prettier formatting", 
+                    Task(subagent_type="devops-engineer", description="Execute prettier formatting",
                     prompt="Execute prettier formatting for JS/CSS files using pre-commit run prettier --all-files")
                 </parallel_execution>
                 <coordination>Wait for all parallel tasks completion, then proceed with linting hooks that

@@ -112,21 +112,21 @@ async def test_quick_execution():
     try:
         # Quick database test
         logger.info("Running quick database performance test...")
-        db_tester = AdvancedDatabasePerformanceTester(test_duration_minutes=1)
+        AdvancedDatabasePerformanceTester(test_duration_minutes=1)
         # Just test the first phase
         # results = await db_tester._measure_baseline_performance()
         logger.info("✅ Database performance test structure - OK")
 
         # Quick network test
         logger.info("Running quick network latency test...")
-        net_tester = AdvancedNetworkLatencyTester()
+        AdvancedNetworkLatencyTester()
         # Just test the simulator
         # baseline = await net_tester._measure_baseline_cross_service_latency()
         logger.info("✅ Network latency test structure - OK")
 
         # Quick Context7 test
         logger.info("Running quick Context7 integration test...")
-        ctx_tester = Context7IntegrationTester()
+        Context7IntegrationTester()
         # results = await ctx_tester.run_context7_integration_test()
         logger.info("✅ Context7 integration test structure - OK")
 

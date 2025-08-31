@@ -34,7 +34,7 @@ Your BSN Knowledge account includes:
 1. **Institution Profile Setup**
    - Institution name, address, and contact information
    - Accreditation body (CCNE, ACEN, etc.)
-   - Program types offered (BSN, ADN, MSN, etc.)
+   - Program types offered (BSN, AND, MSN, etc.)
    - Academic calendar configuration
 
 2. **User Role Configuration**
@@ -158,7 +158,7 @@ Reporting: Monthly simulation effectiveness reports
 #### Academic Configuration
 
 **Program Setup**:
-- Nursing program types (BSN, ADN, MSN, DNP)
+- Nursing program types (BSN, AND, MSN, DNP)
 - Curriculum mapping and course sequencing
 - Credit hour requirements and prerequisites
 - Clinical hour tracking and requirements

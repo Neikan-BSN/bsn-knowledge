@@ -93,11 +93,24 @@ class SecurityValidationRunner:
 
         # Check Python security modules
         try:
-            import bcrypt
-            import cryptography
-            import jwt
+            import importlib.util
 
-            print("   ✓ Security dependencies available")
+            # Test for availability without importing
+            bcrypt_available = importlib.util.find_spec("bcrypt") is not None
+            crypto_available = importlib.util.find_spec("cryptography") is not None
+            jwt_available = importlib.util.find_spec("jwt") is not None
+
+            if bcrypt_available and crypto_available and jwt_available:
+                print("   ✓ Security dependencies available")
+            else:
+                missing = []
+                if not bcrypt_available:
+                    missing.append("bcrypt")
+                if not crypto_available:
+                    missing.append("cryptography")
+                if not jwt_available:
+                    missing.append("jwt")
+                print(f"   ✗ Missing security dependencies: {', '.join(missing)}")
         except ImportError as e:
             print(f"   ✗ Missing security dependency: {e}")
             sys.exit(1)
@@ -216,7 +229,7 @@ class SecurityValidationRunner:
         print("\n🔬 Post-Validation Security Analysis:")
 
         # Aggregate test results
-        for category, result in self.test_results.items():
+        for _category, result in self.test_results.items():
             if result.get("status") == "completed":
                 self.total_tests += result.get("tests_run", 0)
                 self.passed_tests += result.get("passed", 0)

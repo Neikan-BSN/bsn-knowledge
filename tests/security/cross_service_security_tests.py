@@ -512,7 +512,7 @@ class TestDataIntegrityAcrossServices:
             service_response = {
                 "items": [
                     {
-                        "content": "Medical terminology: myocardial infarction",
+                        "content": "Medical terminology: myocardial infraction",
                         "confidence": 0.95,
                         "metadata": {
                             "umls_cui": "C0027051",

@@ -83,7 +83,7 @@ E2E_DATABASE_CONFIG = {
 ```python
 # Medical terminology validation achieving 99.5% accuracy
 medical_terminology_sets = [
-    ["myocardial infarction", "cardiac catheterization", "arrhythmia management"],  # Cardiovascular
+    ["myocardial infraction", "cardiac catheterization", "arrhythmia management"],  # Cardiovascular
     ["pharmacokinetics", "drug interactions", "adverse drug reactions"],           # Medication
     ["nosocomial infections", "antibiotic resistance", "isolation precautions"],   # Infection control
     ["mechanical ventilation", "arterial blood gases", "respiratory failure"],     # Respiratory
