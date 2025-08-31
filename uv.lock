@@ -220,6 +220,7 @@ dependencies = [
     { name = "alembic" },
     { name = "asyncpg" },
     { name = "click" },
+    { name = "codespell" },
     { name = "fastapi" },
     { name = "httpx", extra = ["http2"] },
     { name = "idna" },
@@ -239,6 +240,7 @@ dependencies = [
     { name = "structlog" },
     { name = "tiktoken" },
     { name = "uvicorn", extra = ["standard"] },
+    { name = "vulture" },
     { name = "websockets" },
 ]
 
@@ -332,6 +334,7 @@ requires-dist = [
     { name = "bandit", extras = ["toml"], marker = "extra == 'all'", specifier = ">=1.7.8" },
     { name = "bandit", extras = ["toml"], marker = "extra == 'security'", specifier = ">=1.7.8" },
     { name = "click", specifier = ">=8.1.7" },
+    { name = "codespell", specifier = ">=2.4.1" },
     { name = "coverage", extras = ["toml"], marker = "extra == 'all'", specifier = ">=7.4.0" },
     { name = "coverage", extras = ["toml"], marker = "extra == 'test'", specifier = ">=7.4.0" },
     { name = "detect-secrets", marker = "extra == 'all'", specifier = ">=1.5.0" },
@@ -392,6 +395,7 @@ requires-dist = [
     { name = "types-requests", marker = "extra == 'all'", specifier = ">=2.31.0" },
     { name = "types-requests", marker = "extra == 'lint'", specifier = ">=2.31.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.29.0" },
+    { name = "vulture", specifier = ">=2.14" },
     { name = "websockets", specifier = ">=12.0" },
 ]
 provides-extras = ["test", "format", "lint", "security", "docs", "dev", "all"]
@@ -503,6 +507,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/60/6c/8ca2efa64cf75a977a0d7fac081354553ebe483345c734fb6b6515d96bbc/click-8.2.1.tar.gz", hash = "sha256:27c491cc05d968d271d5a1db13e3b5a184636d9d930f148c50b038f0d0646202", size = 286342, upload-time = "2025-05-20T23:19:49.832Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/85/32/10bb5764d90a8eee674e9dc6f4db6a0ab47c8c4d0d83c27f7c39ac415a4d/click-8.2.1-py3-none-any.whl", hash = "sha256:61a3265b914e850b85317d0b3109c7f8cd35a670f963866005d6ef1d5175a12b", size = 102215, upload-time = "2025-05-20T23:19:47.796Z" },
+]
+
+[[package]]
+name = "codespell"
+version = "2.4.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/15/e0/709453393c0ea77d007d907dd436b3ee262e28b30995ea1aa36c6ffbccaf/codespell-2.4.1.tar.gz", hash = "sha256:299fcdcb09d23e81e35a671bbe746d5ad7e8385972e65dbb833a2eaac33c01e5", size = 344740, upload-time = "2025-01-28T18:52:39.411Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/20/01/b394922252051e97aab231d416c86da3d8a6d781eeadcdca1082867de64e/codespell-2.4.1-py3-none-any.whl", hash = "sha256:3dadafa67df7e4a3dbf51e0d7315061b80d265f9552ebd699b3dd6834b47e425", size = 344501, upload-time = "2025-01-28T18:52:37.057Z" },
 ]
 
 [[package]]
@@ -2477,6 +2490,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/1c/14/37fcdba2808a6c615681cd216fecae00413c9dab44fb2e57805ecf3eaee3/virtualenv-20.34.0.tar.gz", hash = "sha256:44815b2c9dee7ed86e387b842a84f20b93f7f417f95886ca1996a72a4138eb1a", size = 6003808, upload-time = "2025-08-13T14:24:07.464Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/76/06/04c8e804f813cf972e3262f3f8584c232de64f0cde9f703b46cf53a45090/virtualenv-20.34.0-py3-none-any.whl", hash = "sha256:341f5afa7eee943e4984a9207c025feedd768baff6753cd660c857ceb3e36026", size = 5983279, upload-time = "2025-08-13T14:24:05.111Z" },
+]
+
+[[package]]
+name = "vulture"
+version = "2.14"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/8e/25/925f35db758a0f9199113aaf61d703de891676b082bd7cf73ea01d6000f7/vulture-2.14.tar.gz", hash = "sha256:cb8277902a1138deeab796ec5bef7076a6e0248ca3607a3f3dee0b6d9e9b8415", size = 58823, upload-time = "2024-12-08T17:39:43.319Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a0/56/0cc15b8ff2613c1d5c3dc1f3f576ede1c43868c1bc2e5ccaa2d4bcd7974d/vulture-2.14-py2.py3-none-any.whl", hash = "sha256:d9a90dba89607489548a49d557f8bac8112bd25d3cbc8aeef23e860811bd5ed9", size = 28915, upload-time = "2024-12-08T17:39:40.573Z" },
 ]
 
 [[package]]

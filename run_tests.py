@@ -19,12 +19,15 @@ def run_command(cmd, description=""):
     print(f"Command: {cmd}")
 
     try:
+        # S603 fix: Validate command arguments for medical platform security
+        validated_cmd = _validate_test_command(cmd.split())
         result = subprocess.run(
-            cmd.split(),
+            validated_cmd,
             shell=False,
             capture_output=True,
             text=True,
             cwd=Path(__file__).parent,
+            check=False,
         )
 
         if result.returncode == 0:
@@ -123,6 +126,56 @@ def main():
         return 1
 
     return 0
+
+
+def _validate_test_command(cmd: list[str]) -> list[str]:
+    """Validate test command for BSN Knowledge medical platform security (S603 fix)."""
+    if not cmd:
+        raise ValueError("Empty command not allowed for medical platform")
+
+    # Whitelist of allowed executables for BSN Knowledge medical education platform
+    allowed_executables = {
+        "python",
+        "python3",
+        "pytest",
+        "/usr/bin/python3",
+        "/usr/bin/pytest",
+    }
+
+    executable = cmd[0]
+    if executable not in allowed_executables:
+        raise ValueError(
+            f"Executable '{executable}' not allowed for medical education platform security"
+        )
+
+    # Validate pytest arguments for medical education compliance
+    if len(cmd) > 1:
+        allowed_args = {
+            "-m",
+            "pytest",
+            "tests/",
+            "-v",
+            "--cov=src",
+            "--cov-report=term-missing",
+            "--cov-report=html",
+            "performance",
+            "not",
+            "slow",
+            "and",
+        }
+
+        for arg in cmd[1:]:
+            # Allow test file paths and coverage patterns
+            if (arg.startswith("tests/") and arg.endswith(".py")) or arg == "tests/":
+                continue
+            if arg.startswith("'not") or arg.startswith("'performance"):
+                continue
+            if arg not in allowed_args:
+                raise ValueError(
+                    f"Test argument '{arg}' not allowed for medical platform security"
+                )
+
+    return cmd
 
 
 if __name__ == "__main__":

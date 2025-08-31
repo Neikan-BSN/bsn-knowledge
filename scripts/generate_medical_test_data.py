@@ -17,7 +17,7 @@ import asyncio
 import hashlib
 import json
 import logging
-import random
+import secrets
 import time
 import uuid
 from dataclasses import dataclass
@@ -364,7 +364,7 @@ class UMLSTerminologyValidator:
                 # In real implementation, this would call UMLS API
                 synthetic_concept = MedicalConcept(
                     term=term,
-                    umls_cui=f"C{random.randint(1000000, 9999999):07d}",  # noqa: S311
+                    umls_cui=f"C{secrets.randbelow(8999999) + 1000000:07d}",  # S311 fix: Use cryptographically secure random for medical data
                     semantic_type="Clinical Concept",
                     definition=f"Clinical concept: {term}",
                     synonyms=[],
@@ -479,7 +479,9 @@ class NursingContentGenerator:
 
         # Select content template and medical concepts
         topics = self.content_templates.get(subject_area, ["General nursing care"])
-        selected_topic = random.choice(topics)
+        selected_topic = secrets.choice(
+            topics
+        )  # S311 fix: Use cryptographically secure random for medical content selection
 
         # Generate relevant medical terminology
         medical_terms = self._generate_medical_terms_for_topic(
@@ -568,7 +570,9 @@ class NursingContentGenerator:
         # Ensure minimum number of terms
         all_terms = [term for terms in term_mappings.values() for term in terms]
         while len(selected_terms) < 3:
-            term = random.choice(all_terms)
+            term = secrets.choice(
+                all_terms
+            )  # S311 fix: Use cryptographically secure random for medical terminology
             if term not in selected_terms:
                 selected_terms.append(term)
 
@@ -590,7 +594,9 @@ class NursingContentGenerator:
         ]
 
         content_sections = [
-            random.choice(intro_templates),
+            secrets.choice(
+                intro_templates
+            ),  # S311 fix: Use cryptographically secure random for medical content templates
             # Pathophysiology section
             "\n\nPathophysiology and Clinical Presentation:\n"
             "The underlying pathophysiology involves complex physiological processes that require "

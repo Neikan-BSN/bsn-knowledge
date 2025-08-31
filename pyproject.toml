@@ -63,6 +63,8 @@ dependencies = [
     "idna>=3.10",
     "psutil>=6.1.1",
     "locust>=2.39.0",
+    "vulture>=2.14",
+    "codespell>=2.4.1",
 ]
 
 [project.optional-dependencies]

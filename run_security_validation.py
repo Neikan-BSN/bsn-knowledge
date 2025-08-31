@@ -164,7 +164,11 @@ class SecurityValidationRunner:
 
         try:
             print(f"   Running: {' '.join(cmd)}")
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+            # S603 fix: Validate subprocess command arguments for medical data security
+            validated_cmd = self._validate_subprocess_command(cmd)
+            result = subprocess.run(
+                validated_cmd, capture_output=True, text=True, timeout=300, check=False
+            )
 
             # Parse JSON results if available
             json_file = f"security_results_{category}.json"
@@ -212,7 +216,11 @@ class SecurityValidationRunner:
                 cmd = ["python", "-m", "pytest", "tests/security/", "-m", marker, "-v"]
 
                 try:
-                    result = subprocess.run(cmd, capture_output=True, text=True)
+                    # S603 fix: Validate subprocess command arguments for HIPAA compliance
+                    validated_cmd = self._validate_subprocess_command(cmd)
+                    result = subprocess.run(
+                        validated_cmd, capture_output=True, text=True, check=False
+                    )
                     self.test_results[f"compliance_{compliance_type}"] = {
                         "status": "completed",
                         "return_code": result.returncode,
@@ -426,6 +434,62 @@ class SecurityValidationRunner:
         print("=" * 70)
 
         sys.exit(exit_code)
+
+    def _validate_subprocess_command(self, cmd: list[str]) -> list[str]:
+        """Validate subprocess command for medical platform security (S603 fix)."""
+        if not cmd:
+            raise ValueError("Empty command not allowed")
+
+        # Whitelist of allowed commands for medical platform security
+        allowed_executables = {
+            "python",
+            "python3",
+            "pytest",
+            "/usr/bin/python3",
+            "/usr/bin/pytest",
+        }
+
+        executable = cmd[0]
+        if executable not in allowed_executables:
+            raise ValueError(
+                f"Executable '{executable}' not in allowed list for medical data security"
+            )
+
+        # Validate pytest-specific arguments for HIPAA compliance
+        if "pytest" in executable or "-m" in cmd:
+            allowed_pytest_args = {
+                "-v",
+                "--tb=short",
+                "-m",
+                "--json-report",
+                "--json-report-file",
+                "security",
+                "not",
+                "slow",
+                "or",
+                "enterprise",
+                "hipaa_compliance",
+                "ferpa_compliance",
+                "gdpr_compliance",
+                "soc2_compliance",
+            }
+
+            for arg in cmd[1:]:
+                # Allow file paths and report file names
+                if (
+                    arg.startswith("tests/")
+                    or arg.endswith(".py")
+                    or arg.endswith(".json")
+                ):
+                    continue
+                if arg.startswith("security_results_") and arg.endswith(".json"):
+                    continue
+                if arg not in allowed_pytest_args:
+                    raise ValueError(
+                        f"Pytest argument '{arg}' not allowed for medical platform security"
+                    )
+
+        return cmd
 
 
 def main():
